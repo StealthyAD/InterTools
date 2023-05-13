@@ -266,12 +266,6 @@
                     check_interval=default_check_interval,
                 },
                 {
-                    name="FunnyMeme",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/Sounds/Prigozhin.wav",
-                    script_relpath="resources/Inter/Sounds/Prigozhin.wav",
-                    check_interval=default_check_interval,
-                },
-                {
                     name="Self",
                     source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/lib/InterTools/Roots/Self.lua",
                     script_relpath="lib/InterTools/Roots/Self.lua",
