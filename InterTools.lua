@@ -137,12 +137,6 @@
                     check_interval=default_check_interval,
                 },
                 {
-                    name="Version",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/version.InterTools",
-                    script_relpath="resources/Inter/version.InterTools",
-                    check_interval=default_check_interval,
-                },
-                {
                     name="aalib",
                     source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/lib/aalib.dll",
                     script_relpath="lib/aalib.dll",
