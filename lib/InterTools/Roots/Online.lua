@@ -21,6 +21,8 @@
 ]]--
 
         local int_max = 2147483647
+        local SND_ASYNC<const> = 0x0001
+        local SND_FILENAME<const> = 0x00020000
 
     ----========================================----
     ---              Exclude Functions
@@ -185,10 +187,11 @@
         end)
         
         ChatParts:action("Send Message", {""}, "", function()
-            if ChatFinal ~= nil then
+            local text = display_onscreen_keyboard()
+            if text ~= nil or text == "" then
                 local isProhibited = false
                 for _, word in ipairs(prohibitedWords) do
-                    if string.match(string.lower(ChatFinal), string.lower(word)) then
+                    if string.match(string.lower(text), string.lower(word)) then
                         isProhibited = true
                         break
                     end
@@ -196,11 +199,9 @@
                 if isProhibited then
                     InterNotify("You cannot use prohibited words.")
                 else
-                    chat.send_message(ChatFinal, false, true, true)
+                    chat.send_message(text, false, true, true)
                     InterWait(50)
                 end
-            else
-                InterNotify("Please enter a message to send.\nPlease try later")
             end
         end)
         
@@ -507,11 +508,40 @@
                 if AvailableSession() then
                     for i = 1, menu.get_value(PlaneCount) do
                         harass_vehicle(pid, planesHash, true, false)
-                        InterWait(menu.get_value(delayAirForce) * 1000)
+                        InterWait(3000)
                     end
                 end
             end
         end, nil, nil, COMMANDPERM_AGGRESSIVE)
+
+        local planeModels = {
+            "molotok",
+            "rogue",
+            "pyro",
+            "nokota",
+            "starling",
+            "mogul",
+            "seabreeze",
+            "strikeforce",
+        }
+        
+        AerialRoots:action("Random Plane (Aggressive)", {"interusafa"}, "Sending America to war and intervene more various planes.\nWARNING: The action is irreversible in the session if toggle godmode on.\nNOTE: Toggle Exclude features.", function()
+            local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+            local PresetMusicParts = script_resources .. "/PresetsMusics"
+            PlaySong(join_path(PresetMusicParts, "FortunateSon.wav"), SND_FILENAME | SND_ASYNC)
+            local counter = 0
+            local max_iterations = 5 -- change this to adjust the number of iterations
+            while counter < max_iterations do
+                for _, pid in pairs(playerList) do
+                    if AvailableSession() then
+                        local randomModel = planeModels[math.random(#planeModels)]
+                        AggressivePlanes(pid, randomModel)
+                        InterWait(4000)
+                    end
+                end
+                counter = counter + 1
+            end
+        end)
 
     ----========================================----
     ---           Aerial Roots (Choppers)
@@ -554,7 +584,7 @@
                 if AvailableSession() then
                     for i = 1, menu.get_value(HelisCount) do
                         harass_vehicle(pid, heliHash, false, true)
-                        InterWait(menu.get_value(delayAirForce) * 1000)
+                        InterWait(3000)
                     end
                 end
             end
@@ -581,8 +611,9 @@
         }
 
         local modelToDelete = {
-            util.joaat("s_m_y_marine_01"),
-            util.joaat("s_m_y_marine_03"),
+            util.joaat("s_m_y_blackops_01"),
+            util.joaat("s_m_m_marine_01"),
+            util.joaat("s_m_m_pilot_02"),
             util.joaat("s_m_y_pilot_01")
         }
         
@@ -609,7 +640,6 @@
             end
         end)
 
-        delayAirForce = AerialRoots:slider("Delay Time", {"interdelayaf"}, "Recommended to not spam if you are in public session to avoid saturation of vehicle.\nRecommended: 3 seconds.\nApplies also for helicopters & Planes", 2, int_max, 3, 1, function()end)
         HelisCount = AerialRoots:slider("Number of Generation of Choppers", {"interafheli"}, "For purposes: limit atleast 5 helicopters if you are in Public session with 30 players.\nMore NPCs in a chopper = reducing spawning generation for choppers. 1 only need.", 1, 10, 1, 1, function()end)
         PlaneCount = AerialRoots:slider("Number of Generation of Planes", {"interaf"}, "For purposes: limit atleast 5 planes if you are in Public session with 30 players.".."\n\nFor recommendation:".."\n".."- for Hydra: 1 or 2 planes per session while using to avoid instance.\n- Lazer: 3 or 5 more.", 1, 10, 1, 1, function()end)
 
