@@ -237,6 +237,12 @@
             local coords = ENTITY.GET_ENTITY_COORDS(entity, true)
             FIRE.ADD_EXPLOSION(coords['x'], coords['y'], coords['z'], 7, 0, false, true, force)
         end
+
+        function EnhanceOTR(toggled)
+            otr = otr ?? memory.script_global(2657589 + 1 + (players.user() * 466) + 321)
+            local v = memory.read_byte(otr)
+            memory.write_byte(otr, toggled ? (v | 0xA) : (v & ~0xA))
+        end
     
         function RandomGenerator(min, max)
             return math.random(min, max)
