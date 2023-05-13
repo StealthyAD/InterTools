@@ -1156,7 +1156,7 @@
             end
         end)
 
-        SessionRoots:action_slider("Random Elimination", {}, "Different type of eliminations:\n- Explosive\n- Silent Mode\n- Gas Mode\n- Randomize\n- Gas Randomize\n- Silent Random", {"Explosive", "Silent Mode", "Gas Mode", "Randomize", "Gas Randomize", "Silent Random"}, function(randselect)
+        SessionRoots:action_slider("Random Elimination", {}, "Different type of eliminations:\n- Explosive\n- Silent Mode\n- Gas Mode\n- Randomize\n- Gas Randomize\n- Silent Random\n- Russian Roulette", {"Explosive", "Silent Mode", "Gas Mode", "Randomize", "Gas Randomize", "Silent Random", "Russian Roulette"}, function(randselect)
             if randselect == 1 then -- Explosive
                 local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
                 if #playerList > 0 then
@@ -1176,7 +1176,7 @@
                                 FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 34, 1, true, false, 0.0, false)
                             end
                         else
-                            InterNotify(playerName.." can't be eliminated.")
+                            return
                         end
                     end
                 else
@@ -1201,7 +1201,7 @@
                                 FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 34, 1, false, true, 0.0, false)
                             end
                         else
-                            InterNotify(playerName.." can't be eliminated.")
+                            return
                         end
                     end
                 else
@@ -1226,7 +1226,7 @@
                                 FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 48, 1, true, false, 0.0, false)
                             end
                         else
-                            InterNotify(playerName.." can't be eliminated.")
+                            return
                         end
                     end
                 else
@@ -1239,7 +1239,7 @@
                     local playerId = playerList[randomIndex]
                     local playerName = players.get_name(playerId)
                     if not PLAYER.IS_PLAYER_DEAD(playerId) then
-                        if AvailableSession() and not players.is_in_interior(playerId) and not players.is_godmode(playerId) and not players.is_marked_as_modder(playerId) then
+                        if AvailableSession() and not players.is_in_interior(playerId) and not players.is_godmode(playerId) then
                             local pos = players.get_position(playerId)
                             pos.z = pos.z - 1.0
                             local randomPlayerIndex = math.random(#playerList)
@@ -1260,7 +1260,7 @@
                                 FIRE.ADD_OWNED_EXPLOSION(RandomPed, pos.x, pos.y, pos.z, 34, 1, true, false, 0.0, false)
                             end
                         else
-                            InterNotify(playerName.." can't be eliminated.")
+                            return
                         end
                     end
                 else
@@ -1273,7 +1273,7 @@
                     local playerId = playerList[randomIndex]
                     local playerName = players.get_name(playerId)
                     if not PLAYER.IS_PLAYER_DEAD(playerId) then
-                        if AvailableSession() and not players.is_in_interior(playerId) and not players.is_godmode(playerId) and not players.is_marked_as_modder(playerId) then
+                        if AvailableSession() and not players.is_in_interior(playerId) and not players.is_godmode(playerId) then
                             local pos = players.get_position(playerId)
                             pos.z = pos.z - 1.0
                             local randomPlayerIndex = math.random(#playerList)
@@ -1294,13 +1294,13 @@
                                 FIRE.ADD_OWNED_EXPLOSION(RandomPed, pos.x, pos.y, pos.z, 48, 1, true, false, 0.0, false)
                             end
                         else
-                            InterNotify(playerName.." can't be eliminated.")
+                            return
                         end
                     end
                 else
                     InterNotify("No players are currently in the session.")
                 end
-            else -- Silent Kill Random
+            elseif randselect == 6 then -- Silent Kill Random
                 local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
                 if #playerList > 0 then
                     local randomIndex = math.random(#playerList)
@@ -1328,7 +1328,39 @@
                                 FIRE.ADD_OWNED_EXPLOSION(RandomPed, pos.x, pos.y, pos.z, 34, 1, false, true, 0.0, false)
                             end
                         else
-                            InterNotify(playerName.." can't be eliminated.")
+                            return
+                        end
+                    end
+                else
+                    InterNotify("No players are currently in the session.")
+                end
+            else
+                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                if #playerList > 0 then
+                    local randomIndex = math.random(#playerList)
+                    local playerId = playerList[randomIndex]
+                    if not PLAYER.IS_PLAYER_DEAD(playerId) and playerId ~= PLAYER.PLAYER_ID() then
+                        local playerName = players.get_name(playerId)
+                        -- Simulating the survival chance using a random number from 1 to 6
+                        local survivalChance = math.random(6)
+                        if not players.is_in_interior(playerId) and not players.is_godmode(playerId) then
+                            local pos = players.get_position(playerId)
+                            pos.z = pos.z - 1.0
+                            if survivalChance == 1 then
+                                InterNotify(playerName.." survived the Russian Roulette.")
+                            else
+                                InterNotify(playerName.." did not survive the Russian Roulette.")
+                                -- Triggering explosions to simulate elimination
+                                for i = 0, 5 do
+                                    FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 34, 1, false, true, 0.0, false)
+                                end
+                                InterWait(100)
+                                for i = 0, 10 do
+                                    FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 34, 1, false, true, 0.0, false)
+                                end
+                            end
+                        else
+                            return
                         end
                     end
                 else
