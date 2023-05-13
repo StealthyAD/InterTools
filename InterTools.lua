@@ -324,7 +324,17 @@
             }
         }
 
+        auto_update_config_ver = {
+            source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/version.InterTools",
+            script_relpath="resources/Inter/version.InterTools",
+            switch_to_branch=selected_branch,
+            verify_file_begins_with="--",
+            check_interval=86400,
+            silent_updates=true,
+        }
+
         auto_updater.run_auto_update(auto_update_config)
+        auto_updater.run_auto_update(auto_update_config_ver)
 
     ----========================================----
     ---              Root Parts
