@@ -9,8 +9,7 @@
                                                                                     
     Features:
     - Compatible All Stand Versions if deprecated versions too.
-    - Largest Lua Script ain't even written.
-    - Bigger and complete script.
+    - Complete script.
 
     Help with Lua?
     - GTAV Natives: https://nativedb.dotindustries.dev/natives/
@@ -80,10 +79,13 @@
         end)
 
         VehicleParts:toggle_loop("Boost Heli Engine", {}, "Enable the feature will make helicopter faster than 1 second\nDisable the feature will able to stop engine and continue.", function()
-            if entities.get_user_vehicle_as_handle() ~= 0 then
-                VEHICLE.SET_HELI_BLADES_FULL_SPEED(entities.get_user_vehicle_as_handle())
+            local player = players.user_ped()
+            local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+            if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                VEHICLE.SET_HELI_BLADES_FULL_SPEED(playerVehicle)
             else
-                VEHICLE.SET_HELI_BLADES_SPEED(entities.get_user_vehicle_as_handle(), 0)
+                VEHICLE.SET_HELI_BLADES_SPEED(playerVehicle, 0)
             end
         end)
 
@@ -103,6 +105,7 @@
         end, function()
             AUDIO.SET_FRONTEND_RADIO_ACTIVE(true)
         end)
+
         VehicleParts:toggle_loop("Toggle Bypass Depth Submarine", {""}, "", function()
             local vehicle = PED.GET_VEHICLE_PED_IS_IN(players.user_ped(), false)
             local tables = {
@@ -132,9 +135,13 @@
         end)
 
         VehicleParts:toggle_loop("Toggle Engine", {""}, "Toggle (Disable/Enable) engine.", function()
-            VEHICLE.SET_VEHICLE_ENGINE_ON(entities.get_user_vehicle_as_handle(), false, true, true)
+            local player = players.user_ped()
+            local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+            if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                VEHICLE.SET_VEHICLE_ENGINE_ON(playerVehicle, false, true, true)
+            end
         end,function()
-            VEHICLE.SET_VEHICLE_ENGINE_ON(entities.get_user_vehicle_as_handle(), true, true, false)
+            VEHICLE.SET_VEHICLE_ENGINE_ON(PED.GET_VEHICLE_PED_IS_IN(player, true), true, true, false)
         end)
         
         VehicleParts:slider("Opacity Vehicle", {"intveht"}, "", 0, 100, 100, 20, function(value)
@@ -228,78 +235,78 @@
    ---         The part of active vehicle
    ----========================================----
 
-       local VehicleWCompart = {
-           { "All" },
-           { "Left front window" }, -- 0
-           { "Right front window" }, -- 1
-           { "Left rear window" }, -- 2
-           { "Right rear window " }, -- 3
-           { "Front windshield window" }, -- 4
-           { "Rear windshield window" } -- 5
-       }
-       local WindowsTParts = 1 
-       VehicleSettings:list_select("Select Part Windows", {}, "", VehicleWCompart, 1, function(value)
-           WindowsTParts = value
-       end)
+        local VehicleWCompart = {
+            {"All" },
+            {"Left front window"}, -- 0
+            {"Right front window"}, -- 1
+            {"Left rear window"}, -- 2
+            {"Right rear window "}, -- 3
+            {"Front windshield window"}, -- 4
+            {"Rear windshield window"} -- 5
+        }
+        local WindowsTParts = 1 
+        VehicleSettings:list_select("Select Part Windows", {}, "", VehicleWCompart, 1, function(value)
+            WindowsTParts = value
+        end)
 
-       VehicleSettings:toggle_loop("Toggle Windows (Open/Close)", {}, "", function()
-           local vehicle = entities.get_user_vehicle_as_handle()
-           if vehicle ~= 0 then
-               if WindowsTParts == 1 then
-                   for i = 0, 7 do
-                       VEHICLE.ROLL_DOWN_WINDOW(vehicle, i)
-                   end
-               elseif WindowsTParts > 1 then
-                   VEHICLE.ROLL_DOWN_WINDOW(vehicle, WindowsTParts - 2)
-               end
-           end
-       end, function()
-           local vehicle = entities.get_user_vehicle_as_handle()
-           if vehicle ~= 0 then
-               if WindowsTParts == 1 then
-                   for i = 0, 7 do
-                       VEHICLE.ROLL_UP_WINDOW(vehicle, i)
-                   end
-               elseif WindowsTParts > 1 then
-                   VEHICLE.ROLL_UP_WINDOW(vehicle, WindowsTParts - 2)
-               end
-           end
-       end)
+        VehicleSettings:toggle_loop("Toggle Windows (Open/Close)", {}, "", function()
+            local vehicle = entities.get_user_vehicle_as_handle()
+            if vehicle ~= 0 then
+                if WindowsTParts == 1 then
+                    for i = 0, 7 do
+                        VEHICLE.ROLL_DOWN_WINDOW(vehicle, i)
+                    end
+                elseif WindowsTParts > 1 then
+                    VEHICLE.ROLL_DOWN_WINDOW(vehicle, WindowsTParts - 2)
+                end
+            end
+        end, function()
+            local vehicle = entities.get_user_vehicle_as_handle()
+            if vehicle ~= 0 then
+                if WindowsTParts == 1 then
+                    for i = 0, 7 do
+                        VEHICLE.ROLL_UP_WINDOW(vehicle, i)
+                    end
+                elseif WindowsTParts > 1 then
+                    VEHICLE.ROLL_UP_WINDOW(vehicle, WindowsTParts - 2)
+                end
+            end
+        end)
 
-       VehicleSettings:action("Repair Windows", {}, "", function()
-           local vehicle = entities.get_user_vehicle_as_handle()
-           if vehicle ~= 0 then
-               if WindowsTParts == 1 then
-                   for i = 0, 7 do
-                       VEHICLE.FIX_VEHICLE_WINDOW(vehicle, i)
-                   end
-               elseif WindowsTParts > 1 then
-                   VEHICLE.FIX_VEHICLE_WINDOW(vehicle, WindowsTParts - 2)
-               end
-           end
-       end)
+        VehicleSettings:action("Repair Windows", {}, "", function()
+            local vehicle = entities.get_user_vehicle_as_handle()
+            if vehicle ~= 0 then
+                if WindowsTParts == 1 then
+                    for i = 0, 7 do
+                        VEHICLE.FIX_VEHICLE_WINDOW(vehicle, i)
+                    end
+                elseif WindowsTParts > 1 then
+                    VEHICLE.FIX_VEHICLE_WINDOW(vehicle, WindowsTParts - 2)
+                end
+            end
+        end)
 
-       VehicleSettings:action("Break Windows", {}, "", function()
-           local vehicle = entities.get_user_vehicle_as_handle()
-           if vehicle ~= 0 then
-               if WindowsTParts == 1 then
-                   for i = 0, 7 do
-                       VEHICLE.SMASH_VEHICLE_WINDOW(vehicle, i)
-                   end
-               elseif WindowsTParts > 1 then
-                   VEHICLE.SMASH_VEHICLE_WINDOW(vehicle, WindowsTParts - 2)
-               end
-           end
-       end)
+        VehicleSettings:action("Break Windows", {}, "", function()
+            local vehicle = entities.get_user_vehicle_as_handle()
+            if vehicle ~= 0 then
+                if WindowsTParts == 1 then
+                    for i = 0, 7 do
+                        VEHICLE.SMASH_VEHICLE_WINDOW(vehicle, i)
+                    end
+                elseif WindowsTParts > 1 then
+                    VEHICLE.SMASH_VEHICLE_WINDOW(vehicle, WindowsTParts - 2)
+                end
+            end
+        end)
 
-       local DustCar = 0.0
-       VehicleSettings:click_slider("Dust Car Vehicle", {}, "Applies Dust Car Vehicle.", 0.0, 15.0, 0.0, 1.0, function(value)
-        DustCar = value
-           local vehicle = entities.get_user_vehicle_as_handle()
-           if vehicle ~= 0 then
-               VEHICLE.SET_VEHICLE_DIRT_LEVEL(vehicle, DustCar)
-           end
-       end)
+        local DustCar = 0.0
+        VehicleSettings:click_slider("Dust Car Vehicle", {}, "Applies Dust Car Vehicle.", 0.0, 15.0, 0.0, 1.0, function(value)
+            DustCar = value
+            local vehicle = entities.get_user_vehicle_as_handle()
+            if vehicle ~= 0 then
+                VEHICLE.SET_VEHICLE_DIRT_LEVEL(vehicle, DustCar)
+            end
+        end)
 
     ----========================================----
     ---           Spawning Tweaks Parts
@@ -609,3 +616,13 @@
             local MultipliedTime = value * 1000
             InterTAPSTimeout = MultipliedTime
         end)
+
+--[[
+
+███████ ███    ██ ██████       ██████  ███████     ████████ ██   ██ ███████     ██████   █████  ██████  ████████ 
+██      ████   ██ ██   ██     ██    ██ ██             ██    ██   ██ ██          ██   ██ ██   ██ ██   ██    ██    
+█████   ██ ██  ██ ██   ██     ██    ██ █████          ██    ███████ █████       ██████  ███████ ██████     ██    
+██      ██  ██ ██ ██   ██     ██    ██ ██             ██    ██   ██ ██          ██      ██   ██ ██   ██    ██    
+███████ ██   ████ ██████       ██████  ██             ██    ██   ██ ███████     ██      ██   ██ ██   ██    ██    
+                                                                                                                                                                                                                               
+]]--
