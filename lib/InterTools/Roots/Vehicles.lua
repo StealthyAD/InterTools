@@ -79,10 +79,13 @@
         end)
 
         VehicleParts:toggle_loop("Boost Heli Engine", {}, "Enable the feature will make helicopter faster than 1 second\nDisable the feature will able to stop engine and continue.", function()
-            if entities.get_user_vehicle_as_handle() ~= 0 then
-                VEHICLE.SET_HELI_BLADES_FULL_SPEED(entities.get_user_vehicle_as_handle())
+            local player = players.user_ped()
+            local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+            if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                VEHICLE.SET_HELI_BLADES_FULL_SPEED(playerVehicle)
             else
-                VEHICLE.SET_HELI_BLADES_SPEED(entities.get_user_vehicle_as_handle(), 0)
+                VEHICLE.SET_HELI_BLADES_SPEED(playerVehicle, 0)
             end
         end)
 
@@ -102,6 +105,7 @@
         end, function()
             AUDIO.SET_FRONTEND_RADIO_ACTIVE(true)
         end)
+
         VehicleParts:toggle_loop("Toggle Bypass Depth Submarine", {""}, "", function()
             local vehicle = PED.GET_VEHICLE_PED_IS_IN(players.user_ped(), false)
             local tables = {
