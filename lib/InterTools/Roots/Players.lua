@@ -9,8 +9,7 @@
                                                                                     
     Features:
     - Compatible All Stand Versions if deprecated versions too.
-    - Largest Lua Script ain't even written.
-    - Bigger and complete script.
+    - Complete script.
 
     Help with Lua?
     - GTAV Natives: https://nativedb.dotindustries.dev/natives/
@@ -31,7 +30,7 @@
             local InterName = players.get_name(pid)
             PlayerMenu:divider(InterMenu)
 
-            local function harass_specific_vehicle(hash, airVehicle, groundVehicle, heliVehicle)
+            local function harass_specific_vehicle(hash, airVehicle, groundVehicle)
                 if airVehicle then
                     if not players.is_in_interior(pid) then
                         local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
@@ -153,81 +152,6 @@
                         end
                     end
                 end
-                if heliVehicle then
-                    if not players.is_in_interior(pid) then
-                        local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                        local marine1 = util.joaat("s_m_y_marine_01")
-                        local marine2 = util.joaat("s_m_y_marine_03")
-                        request_model_load(hash)
-                        request_model_load(marine1)
-                        request_model_load(marine2)
-                        local altitude = 75
-                        local coords = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 15.0, altitude)
-                        local vehicle = entities.create_vehicle(hash, coords, ENTITY.GET_ENTITY_HEADING(ped))
-                        if not STREAMING.HAS_MODEL_LOADED(vehicle) then
-                            LoadingModel(vehicle)
-                        end
-                        if not ENTITY.DOES_ENTITY_EXIST(vehicle) then
-                            return
-                        end
-                        local outCoords = v3.new()
-                        for i=-1, VEHICLE.GET_VEHICLE_MAX_NUMBER_OF_PASSENGERS(vehicle) - 1 do
-                            local attackerFlag = entities.create_ped(2, marine1, outCoords, CAM.GET_GAMEPLAY_CAM_ROT(0).z)
-                            PED.SET_PED_INTO_VEHICLE(attackerFlag, vehicle, i)
-                            if i % 2 == 0 then
-                                WEAPON.GIVE_WEAPON_TO_PED(attackerFlag, 584646201 , 9999, false, true)
-                                PED.SET_PED_FIRING_PATTERN(attackerFlag, -957453492)
-                            else
-                                WEAPON.GIVE_WEAPON_TO_PED(attackerFlag, 584646201 , 9999, false, true)
-                                PED.SET_PED_FIRING_PATTERN(attackerFlag, -957453492)
-                            end
-                            ENTITY.SET_ENTITY_INVINCIBLE(vehicle, true)
-                            PED.SET_PED_AS_COP(attackerFlag, true)
-                            PED.SET_PED_CONFIG_FLAG(attackerFlag, 281, true)
-                            PED.SET_PED_CONFIG_FLAG(attackerFlag, 2, true)
-                            PED.SET_PED_CONFIG_FLAG(attackerFlag, 33, false)
-                            PED.SET_PED_COMBAT_ATTRIBUTES(attackerFlag, 5, true)
-                            PED.SET_PED_COMBAT_ATTRIBUTES(attackerFlag, 46, true)
-                            PED.SET_PED_ACCURACY(attackerFlag, 100.0)
-                            PED.SET_PED_HEARING_RANGE(attackerFlag, 99999)
-                            PED.SET_PED_RANDOM_COMPONENT_VARIATION(attackerFlag, 0)
-                            VEHICLE.CONTROL_LANDING_GEAR(vehicle, 3)
-                            VEHICLE.SET_VEHICLE_FORWARD_SPEED(vehicle, 120.0)
-                            VEHICLE.SET_VEHICLE_MAX_SPEED(vehicle, 1000.0)
-                            VEHICLE.SET_VEHICLE_DOORS_LOCKED(vehicle, 4)
-                            VEHICLE.SET_VEHICLE_EXPLODES_ON_HIGH_EXPLOSION_DAMAGE(vehicle, false)
-                            VEHICLE.MODIFY_VEHICLE_TOP_SPEED(vehicle, 300)
-                            PED.SET_PED_MAX_HEALTH(attackerFlag, 150)
-                            ENTITY.SET_ENTITY_PROOFS(ped, false, true, false, false, true, false, false, false)
-                            ENTITY.SET_ENTITY_HEALTH(attackerFlag, 150)
-                            PED.SET_PED_ARMOUR(attackerFlag, 100)
-                            PED.SET_PED_SHOOT_RATE(attackerFlag, 5)
-                            VEHICLE.SET_VEHICLE_MOD_KIT(vehicle, 0)
-                            VEHICLE.SET_VEHICLE_COLOURS(vehicle, 154, 154)
-                            VEHICLE.SET_VEHICLE_MOD_COLOR_1(vehicle, 3, 154, 0) --matte finish
-                            VEHICLE.SET_VEHICLE_MOD_COLOR_2(vehicle, 3, 154, 0)-- matte secondary
-                            PED.SET_PED_SUFFERS_CRITICAL_HITS(attackerFlag, false)
-                            VEHICLE.SET_VEHICLE_MOD(vehicle, 10, 0) --rear turret
-                            VEHICLE.SET_VEHICLE_EXTRA_COLOURS(vehicle, 0, 154) --wheel color
-                            VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT_INDEX(vehicle, 4) --plate type, 4 is SA EXEMPT which law enforcement and government vehicles use
-                            PED.SET_PED_COMBAT_ATTRIBUTES(attackerFlag, 3, false)
-                            ENTITY.SET_ENTITY_INVINCIBLE(vehicle, menu.get_value(HelisToggleGod))
-                            if i == -1 then
-                                TASK.TASK_VEHICLE_CHASE(attackerFlag, ped)
-                                WEAPON.GIVE_WEAPON_TO_PED(attackerFlag, 584646201 , 1000, false, true)
-                            else
-                                TASK.TASK_COMBAT_PED(attackerFlag, ped, 0, 16)
-                                WEAPON.GIVE_WEAPON_TO_PED(attackerFlag, 4208062921, 9999, false, true)
-                                WEAPON.GIVE_WEAPON_COMPONENT_TO_PED(attackerFlag, 4208062921, 0x8B3C480B)
-                                WEAPON.GIVE_WEAPON_COMPONENT_TO_PED(attackerFlag, 4208062921, 0x4DB62ABE)
-                                WEAPON.GIVE_WEAPON_COMPONENT_TO_PED(attackerFlag, 4208062921, 0x5DD5DBD5)
-                                WEAPON.GIVE_WEAPON_COMPONENT_TO_PED(attackerFlag, 4208062921, 0x9D65907A)
-                                WEAPON.GIVE_WEAPON_COMPONENT_TO_PED(attackerFlag, 4208062921, 0x420FD713)
-                                PED.SET_PED_FIRING_PATTERN(attackerFlag, -957453492)
-                            end
-                        end
-                    end
-                end
             end
 
         ----========================================----
@@ -245,23 +169,35 @@
             local TrollingOptions = InterTools:list("Trolling")
 
             InterSpec = {}
-            InterTools:toggle("Spectate", {"interspec"}, "", function(on)
+            toggleSpec = InterTools:toggle("Spectate", {"interspec"}, "", function(on)
                 if on then
+                    if pid == players.user() then
+                        InterNotify("You cannot spectate yourself.")
+                        menu.set_value(toggleSpec, false)
+                    end
                     if #InterSpec ~= 0 then
                         InterCmds("interspec"..InterSpec[1].." off")
                     end
-                        table.insert(InterSpec, InterName)
-                        InterCmds("spectate"..InterName.." on")
-                        InterNotify("You are currently spectating "..InterName)
+                    table.insert(InterSpec, InterName)
+                    if InterName == players.get_name(players.user()) then
+                        return
                     else
-                        if players.exists(pid) then
-                            InterCmds("spectate"..InterName.." off")
+                        InterNotify("You are currently spectating "..InterName)
+                    end
+                    InterCmds("spectate"..InterName.." on")
+                else
+                    if players.exists(pid) then
+                        if InterName == players.get_name(players.user()) then
+                            return
+                        else
                             InterNotify("You are stopping spectating "..InterName)
                         end
+                        InterCmds("spectate"..InterName.." off")
+                    end
                     table.remove(InterSpec, 1)
                 end
             end)
-
+            
             InterTools:action_slider("Kick Tools", {}, "Different types of Kick users:\n- AIO (All-in-One) - Faster kick\n- Blast\n- Boop\n- Array", {
                 "AIO (All-in-One)", 
                 "Blast", 
@@ -790,6 +726,7 @@
             local ExplosionPlayer = TrollingOptions:list("Explosions Parts")
             local TGodPresets = TrollingOptions:list("Godmode Settings")
             local SoundTrolling = TrollingOptions:list("Sound Trolling")
+            local VehicleTrolling = TrollingOptions:list("Vehicle Settings")
 
         ----========================================----
         ---      Troll Options (Attack Parts)
@@ -822,7 +759,7 @@
             end)
 
             AttackParts:action("Send Planes", {}, "Attack the player with any means.".."\n".."Harass quick "..InterName.." with some reason.", function()
-                harass_specific_vehicle(planesHashP, true, false, false)
+                harass_specific_vehicle(planesHashP, true, false)
             end)
 
             ----------------------------------------------------------------------
@@ -858,42 +795,8 @@
             end)
 
             AttackParts:action("Send Armored Vehicle", {}, "Attack the player with any means.".."\n".."Harass quick "..InterName.." with some reason.", function()
-                harass_specific_vehicle(tankHashesP, false, true, false)
+                harass_specific_vehicle(tankHashesP, false, true)
             end)
-
-            ----------------------------------------------------------------------
-            
-            AttackParts:divider("Real Attack (Helicopter)")
-            local helisModelsP = {
-                ["Annihilator"] = util.joaat("annihilator"),
-                ["Cargobob"] = util.joaat("cargobob"),
-                ["Annihilator Stealth"] = util.joaat("annihilator2"),
-                ["Buzzard Attack Chopper"] = util.joaat("buzzard"),
-                ["Savage"] = util.joaat("savage"),
-                ["Valkyrie"] = util.joaat("valkyrie"),
-                ["FH-1 Hunter"] = util.joaat("hunter"),
-                ["RF-1 Akula"] = util.joaat("akula"),
-            }
-            
-            local heliModelPName = {}
-            for name, _ in pairs(helisModelsP) do
-                table.insert(heliModelPName, name)
-            end
-    
-            table.sort(heliModelPName, function(a, b) return a[1] < b[1] end)
-            
-            local selectedHeliNameModelP = "Annihilator"
-            local heliHashP = helisModelsP[selectedHeliNameModelP]
-            
-            AttackParts:list_select("Types of Choppers", {"interphelis"}, "The entities that will add while sending air force helicopters.", heliModelPName, 1, function(index)
-                selectedHeliNameModelP = heliModelPName[index]
-                heliHashP = helisModelsP[selectedHeliNameModelP]
-            end)
-
-            AttackParts:action("Send Armored Chopper", {}, "Attack the player with any means.".."\n".."Harass quick "..InterName.." with some reason.", function()
-                harass_specific_vehicle(heliHashP, false, false, true)
-            end)
-
         ----========================================----
         ---      Troll Options (bounty options)
         ---     The part of specific player troll 
@@ -943,19 +846,11 @@
             end)
 
         ----========================================----
-        ---           Continue Options Troll
-        ---    The part of specific player troll 
+        ---      Troll Options (Vehicle Settings)
+        ---     The part of specific player troll 
         ----========================================----
 
-            TrollingOptions:toggle_loop("Camera Moving", {'intercam'}, "",function()
-                if AvailableSession() then
-                    if InterName then
-                        CameraMoving(pid, 99999)
-                    end
-                end
-            end)
-
-            DisableLock = TrollingOptions:toggle_loop("Lock Vehicle", {}, "", function()
+            DisableLock = VehicleTrolling:toggle_loop("Lock Vehicle", {}, "", function()
                 local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
                 local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
                 if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
@@ -968,7 +863,20 @@
                 VEHICLE.SET_VEHICLE_DOORS_LOCKED(PED.GET_VEHICLE_PED_IS_IN(PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid), true), 0)
             end)
 
-            TrollingOptions:action_slider("Vehicle Remove", {}, "Choose any solution by any means how to remove.\n- Explode\n- Remove", {"Explode", "Remove"}, function(elimSelect)
+            DisableEngine = VehicleTrolling:toggle_loop("Cut Engine", {}, "", function()
+                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                    VEHICLE.SET_VEHICLE_ENGINE_ON(playerVehicle, false, true, true)
+                else
+                    menu.set_value(DisableEngine, false)
+                end
+            end, function()
+                VEHICLE.SET_VEHICLE_ENGINE_ON(PED.GET_VEHICLE_PED_IS_IN(player, true), true, true, false)
+            end)
+
+            VehicleTrolling:action_slider("Vehicle Remove", {}, "Choose any solution by any means how to remove.\n- Explode (not easy while removing god and explode)\n- Remove (Better)", {"Explode", "Remove"}, function(elimSelect)
                 local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
                 local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
                 if elimSelect == 1 then
@@ -986,7 +894,20 @@
                 end
             end)
 
-            TrollingOptions:action_slider("Elimination Type", {}, "Different types of elimination:\n- Airstrike\n- Orbital Shot\n- Silent Shot\n- Passive Shot", {"Airstrike", "Orbital Shot", "Silent Shot", "Passive Shot"}, function(killselect)
+        ----========================================----
+        ---           Continue Options Troll
+        ---    The part of specific player troll 
+        ----========================================----
+
+            TrollingOptions:toggle_loop("Camera Moving", {'intercam'}, "",function()
+                if AvailableSession() then
+                    if InterName then
+                        CameraMoving(pid, 99999)
+                    end
+                end
+            end)
+
+            TrollingOptions:action_slider("Elimination Type", {}, "Different types of elimination:\n- Airstrike\n- Orbital Shot (Non-Personal)\n- Orbital Shot (Revealed)\n- Silent Shot\n- Passive Shot\n- Atomize Shot", {"Airstrike", "Orbital Shot (Non-Personal)", "Orbital Shot (Revealed)", "Silent Shot", "Passive Shot", "Atomize Shot"}, function(killselect)
                 if killselect == 1 then
                     local pidPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
                     local abovePed = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(pidPed, 0, 0, 8)
@@ -1008,13 +929,39 @@
                     GRAPHICS.USE_PARTICLE_FX_ASSET("scr_xm_orbital")
                     AUDIO.PLAY_SOUND_FROM_COORD(1, "DLC_XM_Explosions_Orbital_Cannon", pos.x, pos.y, pos.z, 0, true, 0, false)
                     GRAPHICS.START_NETWORKED_PARTICLE_FX_NON_LOOPED_AT_COORD("scr_xm_orbital_blast", pos.x, pos.y, pos.z + 1, 0, 180, 0, 1.0, true, true, true)
-                    for i = 1, 4 do
+                    for i = 1, 5 do
                         AUDIO.PLAY_SOUND_FROM_ENTITY(-1, "DLC_XM_Explosions_Orbital_Cannon", ped, 0, true, false)
                     end
                 elseif killselect == 3 then
+                    local pos = players.get_position(pid)
+                    local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                    OwnedOrbitalCannon(true)
+                    pos.z = pos.z - 1.0
+                    STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
+                    FIRE.ADD_OWNED_EXPLOSION(players.user_ped(), pos.x, pos.y, pos.z, 59, 1, true, false, 9.9, false)
+                    while not STREAMING.HAS_NAMED_PTFX_ASSET_LOADED("scr_xm_orbital") do
+                        STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
+                        InterWait(0)
+                    end
+                    GRAPHICS.USE_PARTICLE_FX_ASSET("scr_xm_orbital")
+                    AUDIO.PLAY_SOUND_FROM_COORD(1, "DLC_XM_Explosions_Orbital_Cannon", pos.x, pos.y, pos.z, 0, true, 0, false)
+                    GRAPHICS.START_NETWORKED_PARTICLE_FX_NON_LOOPED_AT_COORD("scr_xm_orbital_blast", pos.x, pos.y, pos.z + 1, 0, 180, 0, 1.0, true, true, true)
+                    for i = 1, 5 do
+                        AUDIO.PLAY_SOUND_FROM_ENTITY(-1, "DLC_XM_Explosions_Orbital_Cannon", ped, 0, true, false)
+                    end
+
+                    InterWait(1000)
+                    OwnedOrbitalCannon(false)
+                elseif killselect == 4 then
                     KillSilent(pid)
-                else
+                elseif killselect == 5 then
                     KillPassive(pid)
+                else
+                    for i = 1, 30 do
+                        local pos = players.get_position(pid)
+                        FIRE.ADD_EXPLOSION(pos.x + math.random(-2, 2), pos.y + math.random(-2, 2), pos.z + math.random(-2, 2), 70, 1, true, false, 0.2, false)
+                        util.yield(math.random(0, 1))
+                    end
                 end
             end)
 
@@ -1531,3 +1478,13 @@
 
     players.dispatch_on_join()
     players.on_leave(function()end)
+
+--[[
+
+███████ ███    ██ ██████       ██████  ███████     ████████ ██   ██ ███████     ██████   █████  ██████  ████████ 
+██      ████   ██ ██   ██     ██    ██ ██             ██    ██   ██ ██          ██   ██ ██   ██ ██   ██    ██    
+█████   ██ ██  ██ ██   ██     ██    ██ █████          ██    ███████ █████       ██████  ███████ ██████     ██    
+██      ██  ██ ██ ██   ██     ██    ██ ██             ██    ██   ██ ██          ██      ██   ██ ██   ██    ██    
+███████ ██   ████ ██████       ██████  ██             ██    ██   ██ ███████     ██      ██   ██ ██   ██    ██    
+                                                                                                                                                                                                                               
+]]--
