@@ -51,10 +51,9 @@
             FIRE.STOP_ENTITY_FIRE(PLAYER.PLAYER_PED_ID())
         end)
 
-        SelfParts:toggle("Partial Invisible", {}, "Turn partially invisible mode (Players will not able to see you), but you will see only yourself, includes vehicles.", function(toggle)
-            local state = toggle and "on" or "off"
+        SelfParts:toggle("Partial Invisible", {}, "Turn partially invisible mode (Players will not able to see you), but you will see only yourself, includes vehicles.\nNo one can see you in the minimap.", function(toggle)
             local remote = toggle and "remote" or "off"
-            InterCmds("otr " .. state)
+            EnhanceOTR(toggle)
             InterCmds("invisibility ".. remote)
             InterCmds("vehinvisibility " .. remote)
         end)
@@ -72,9 +71,7 @@
         end)
 
         SelfParts:toggle("Better OTR", {}, "No one can see you on your minimap.", function(state)
-            otr = otr ?? memory.script_global(2657589 + 1 + (players.user() * 466) + 321)
-            local v = memory.read_byte(otr)
-            memory.write_byte(otr, state ? (v | 0xA) : (v & ~0xA))
+            EnhanceOTR(state)
         end)
 
         local maxHealth <const> = 328
