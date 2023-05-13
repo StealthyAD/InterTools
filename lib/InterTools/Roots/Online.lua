@@ -22,8 +22,6 @@
 ]]--
 
         local int_max = 2147483647
-        local SND_ASYNC<const> = 0x0001
-        local SND_FILENAME<const> = 0x00020000
 
     ----========================================----
     ---              Exclude Functions
@@ -257,12 +255,6 @@
                 InterWait(50)
             end)
         end
-
-        ChatPresets:action("We need Ammunition", {}, "I want to announce you, fuck Russian Government.", function()
-            local sounds = script_resources .. '/Sounds'
-            chat.send_message("это через образцы и сыновья и тем, которые не дают нам боеприпасы, сука, будут в одну жаден потроха, пидарас, У нас нехватка боеприпасов семьдесят, Шойгу, Герасимов", false, true, true)
-            PlaySong(join_path(sounds, "Prigozhin.wav"), SND_FILENAME | SND_ASYNC)
-        end)
 
     ----========================================----
     ---              Detection Parts
@@ -616,7 +608,6 @@
                     et = et + 1
                 end
             end
-            PlaySong(join_path(script_resources, "stops.wav"), SND_FILENAME | SND_ASYNC) -- while Fortunate Son played
         end)
 
         delayAirForce = AerialRoots:slider("Delay Time", {"interdelayaf"}, "Recommended to not spam if you are in public session to avoid saturation of vehicle.\nRecommended: 3 seconds.\nApplies also for helicopters & Planes", 2, int_max, 3, 1, function()end)
