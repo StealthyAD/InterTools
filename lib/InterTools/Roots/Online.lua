@@ -9,8 +9,7 @@
                                                                                     
     Features:
     - Compatible All Stand Versions if deprecated versions too.
-    - Largest Lua Script ain't even written.
-    - Bigger and complete script.
+    - Complete script.
 
     Help with Lua?
     - GTAV Natives: https://nativedb.dotindustries.dev/natives/
@@ -22,8 +21,6 @@
 ]]--
 
         local int_max = 2147483647
-        local SND_ASYNC<const> = 0x0001
-        local SND_FILENAME<const> = 0x00020000
 
     ----========================================----
     ---              Exclude Functions
@@ -257,12 +254,6 @@
                 InterWait(50)
             end)
         end
-
-        ChatPresets:action("We need Ammunition", {}, "I want to announce you, fuck Russian Government.", function()
-            local sounds = script_resources .. '/Sounds'
-            chat.send_message("это через образцы и сыновья и тем, которые не дают нам боеприпасы, сука, будут в одну жаден потроха, пидарас, У нас нехватка боеприпасов семьдесят, Шойгу, Герасимов", false, true, true)
-            PlaySong(join_path(sounds, "Prigozhin.wav"), SND_FILENAME | SND_ASYNC)
-        end)
 
     ----========================================----
     ---              Detection Parts
@@ -616,7 +607,6 @@
                     et = et + 1
                 end
             end
-            PlaySong(join_path(script_resources, "stops.wav"), SND_FILENAME | SND_ASYNC) -- while Fortunate Son played
         end)
 
         delayAirForce = AerialRoots:slider("Delay Time", {"interdelayaf"}, "Recommended to not spam if you are in public session to avoid saturation of vehicle.\nRecommended: 3 seconds.\nApplies also for helicopters & Planes", 2, int_max, 3, 1, function()end)
@@ -628,22 +618,29 @@
     ---         The part of bounty online
     ----========================================----
 
+        BountyRoot:divider("Options for Bounty")
+        CustomBounty = BountyRoot:toggle_loop("Custom Bounty", {}, "", function()end)
+        BountyRoot:action("Set Bounty (Instantly)", {'intermanualbounty'}, "Alright, let's start a new war for everyone, you will be happy to see that.\nNOTE: Toggle Exclude features.",function()
+            if menu.get_value(CustomBounty) == true then
+                local inputValue = display_onscreen_keyboard()
+                for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                    if AvailableSession() and players.get_bounty(pid) ~= inputValue and players.get_name(pid) ~= "UndiscoveredPlayer" then
+                        InterCmds("bounty"..players.get_name(pid).." "..inputValue)
+                    end
+                    InterWait(50)
+                end
+                InterWait(500)
+            else
+                InterNotify("I'm sorry, you need to turn on \"Custom Bounty\" for this.")
+            end
+        end)
+        BountyRoot:divider("")
+
         BountyValue = BountyRoot:slider("Select Amount Bounty",  {'interbounty'}, "Select which amount it will automatically placed.",  0, 10000, 0, 1, function()end)
         BountyRoot:toggle_loop("Auto-Bounty Players", {'interautobounty'}, "Alright, let's start a new war for everyone, you will be happy to see that.\nNOTE: Toggle Exclude features.",function()
             for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
                 if AvailableSession() and players.get_bounty(pid) ~= menu.get_value(BountyValue) and players.get_name(pid) ~= "UndiscoveredPlayer" then
                     InterCmds("bounty"..players.get_name(pid).." "..menu.get_value(BountyValue))
-                end
-                InterWait(50)
-            end
-            InterWait(500)
-        end)
-
-        BountyRoot:action("Manual Bounty Player (Input)", {'intermanualbounty'}, "Alright, let's start a new war for everyone, you will be happy to see that.\nNOTE: Toggle Exclude features.",function()
-            local inputValue = display_onscreen_keyboard()
-            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                if AvailableSession() and players.get_bounty(pid) ~= inputValue and players.get_name(pid) ~= "UndiscoveredPlayer" then
-                    InterCmds("bounty"..players.get_name(pid).." "..inputValue)
                 end
                 InterWait(50)
             end
@@ -1070,14 +1067,14 @@
             local textInput = display_onscreen_keyboard()
             local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
             if EToggleSelf then
-                    for _, pid in ipairs(playerList) do
-                        if pid == players.user() and textInput == players.get_name(pid) then
-                            InterNotify("You cannot kill yourself.")
-                            return
-                        end
+                for _, pid in ipairs(playerList) do
+                    if pid == players.user() and textInput == players.get_name(pid) then
+                        InterNotify("You cannot kill yourself.")
+                        return
                     end
                 end
-            if textInput == nil then
+            end
+            if textInput == nil or textInput == "" then
                 InterNotify("Please enter a name before attempting to kill.")
             else
                 local isKilled = false
@@ -1159,7 +1156,7 @@
             end
         end)
 
-        SessionRoots:action_slider("Random Elimination", {}, "Different type of eliminations:\n- Explosive\n- Silent Mode\n- Gas Mode\n- Randomize\n- Gas Randomize\n- Silent Random", {"Explosive", "Silent Mode", "Gas Mode", "Randomize", "Gas Randomize", "Silent Random"}, function(randselect)
+        SessionRoots:action_slider("Random Elimination", {}, "Different type of eliminations:\n- Explosive\n- Silent Mode\n- Gas Mode\n- Randomize\n- Gas Randomize\n- Silent Random\n- Russian Roulette", {"Explosive", "Silent Mode", "Gas Mode", "Randomize", "Gas Randomize", "Silent Random", "Russian Roulette"}, function(randselect)
             if randselect == 1 then -- Explosive
                 local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
                 if #playerList > 0 then
@@ -1179,7 +1176,7 @@
                                 FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 34, 1, true, false, 0.0, false)
                             end
                         else
-                            InterNotify(playerName.." can't be eliminated.")
+                            return
                         end
                     end
                 else
@@ -1204,7 +1201,7 @@
                                 FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 34, 1, false, true, 0.0, false)
                             end
                         else
-                            InterNotify(playerName.." can't be eliminated.")
+                            return
                         end
                     end
                 else
@@ -1229,7 +1226,7 @@
                                 FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 48, 1, true, false, 0.0, false)
                             end
                         else
-                            InterNotify(playerName.." can't be eliminated.")
+                            return
                         end
                     end
                 else
@@ -1242,7 +1239,7 @@
                     local playerId = playerList[randomIndex]
                     local playerName = players.get_name(playerId)
                     if not PLAYER.IS_PLAYER_DEAD(playerId) then
-                        if AvailableSession() and not players.is_in_interior(playerId) and not players.is_godmode(playerId) and not players.is_marked_as_modder(playerId) then
+                        if AvailableSession() and not players.is_in_interior(playerId) and not players.is_godmode(playerId) then
                             local pos = players.get_position(playerId)
                             pos.z = pos.z - 1.0
                             local randomPlayerIndex = math.random(#playerList)
@@ -1263,7 +1260,7 @@
                                 FIRE.ADD_OWNED_EXPLOSION(RandomPed, pos.x, pos.y, pos.z, 34, 1, true, false, 0.0, false)
                             end
                         else
-                            InterNotify(playerName.." can't be eliminated.")
+                            return
                         end
                     end
                 else
@@ -1276,7 +1273,7 @@
                     local playerId = playerList[randomIndex]
                     local playerName = players.get_name(playerId)
                     if not PLAYER.IS_PLAYER_DEAD(playerId) then
-                        if AvailableSession() and not players.is_in_interior(playerId) and not players.is_godmode(playerId) and not players.is_marked_as_modder(playerId) then
+                        if AvailableSession() and not players.is_in_interior(playerId) and not players.is_godmode(playerId) then
                             local pos = players.get_position(playerId)
                             pos.z = pos.z - 1.0
                             local randomPlayerIndex = math.random(#playerList)
@@ -1297,13 +1294,13 @@
                                 FIRE.ADD_OWNED_EXPLOSION(RandomPed, pos.x, pos.y, pos.z, 48, 1, true, false, 0.0, false)
                             end
                         else
-                            InterNotify(playerName.." can't be eliminated.")
+                            return
                         end
                     end
                 else
                     InterNotify("No players are currently in the session.")
                 end
-            else -- Silent Kill Random
+            elseif randselect == 6 then -- Silent Kill Random
                 local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
                 if #playerList > 0 then
                     local randomIndex = math.random(#playerList)
@@ -1331,7 +1328,39 @@
                                 FIRE.ADD_OWNED_EXPLOSION(RandomPed, pos.x, pos.y, pos.z, 34, 1, false, true, 0.0, false)
                             end
                         else
-                            InterNotify(playerName.." can't be eliminated.")
+                            return
+                        end
+                    end
+                else
+                    InterNotify("No players are currently in the session.")
+                end
+            else
+                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                if #playerList > 0 then
+                    local randomIndex = math.random(#playerList)
+                    local playerId = playerList[randomIndex]
+                    if not PLAYER.IS_PLAYER_DEAD(playerId) and playerId ~= PLAYER.PLAYER_ID() then
+                        local playerName = players.get_name(playerId)
+                        -- Simulating the survival chance using a random number from 1 to 6
+                        local survivalChance = math.random(6)
+                        if not players.is_in_interior(playerId) and not players.is_godmode(playerId) then
+                            local pos = players.get_position(playerId)
+                            pos.z = pos.z - 1.0
+                            if survivalChance == 1 then
+                                InterNotify(playerName.." survived the Russian Roulette.")
+                            else
+                                InterNotify(playerName.." did not survive the Russian Roulette.")
+                                -- Triggering explosions to simulate elimination
+                                for i = 0, 5 do
+                                    FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 34, 1, false, true, 0.0, false)
+                                end
+                                InterWait(100)
+                                for i = 0, 10 do
+                                    FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 34, 1, false, true, 0.0, false)
+                                end
+                            end
+                        else
+                            return
                         end
                     end
                 else
@@ -1451,3 +1480,13 @@
         TogglePaintAll = VehicleRootsO:toggle_loop("Toggle Random Paint", {}, "", function()end)
         PlateIndexAll = VehicleRootsO:slider("Plate Color", {"interplc"}, "Choose Plate Color.", 0, 5, 0, 1, function()end)
         WindowTintAll = VehicleRootsO:slider("Window Tint", {"interwt"}, "Choose Window tint Color.", 0, 6, 0, 1, function()end)
+
+--[[
+
+███████ ███    ██ ██████       ██████  ███████     ████████ ██   ██ ███████     ██████   █████  ██████  ████████ 
+██      ████   ██ ██   ██     ██    ██ ██             ██    ██   ██ ██          ██   ██ ██   ██ ██   ██    ██    
+█████   ██ ██  ██ ██   ██     ██    ██ █████          ██    ███████ █████       ██████  ███████ ██████     ██    
+██      ██  ██ ██ ██   ██     ██    ██ ██             ██    ██   ██ ██          ██      ██   ██ ██   ██    ██    
+███████ ██   ████ ██████       ██████  ██             ██    ██   ██ ███████     ██      ██   ██ ██   ██    ██    
+                                                                                                                                                                                                                               
+]]--
