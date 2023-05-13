@@ -72,7 +72,7 @@
     --================================================================================--
 
         STAND_VERSION = menu.get_version().version
-        SCRIPT_VERSION = "1.7LN"
+        SCRIPT_VERSION = "1.71EX"
         InterMenu = "InterTools v"..SCRIPT_VERSION
         InterRoot = menu.my_root()
         local GTAO_VERSION = "1.66"
