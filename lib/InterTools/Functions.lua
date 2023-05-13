@@ -9,8 +9,7 @@
                                                                                     
     Features:
     - Compatible All Stand Versions if deprecated versions too.
-    - Largest Lua Script ain't even written.
-    - Bigger and complete script.
+    - Complete script.
 
     Help with Lua?
     - GTAV Natives: https://nativedb.dotindustries.dev/natives/
@@ -238,9 +237,24 @@
             local coords = ENTITY.GET_ENTITY_COORDS(entity, true)
             FIRE.ADD_EXPLOSION(coords['x'], coords['y'], coords['z'], 7, 0, false, true, force)
         end
+
+        function EnhanceOTR(toggled)
+            otr = otr ?? memory.script_global(2657589 + 1 + (players.user() * 466) + 321)
+            local v = memory.read_byte(otr)
+            memory.write_byte(otr, toggled ? (v | 0xA) : (v & ~0xA))
+        end
     
         function RandomGenerator(min, max)
             return math.random(min, max)
+        end
+
+        function OwnedOrbitalCannon(state)
+            local cannon = memory.script_global(2657589 + 1 + (0 * 466) + 427)
+            if state then
+                memory.write_int(cannon, memory.read_int(cannon) | (1 << 0))
+            else
+                memory.write_int(cannon, memory.read_int(cannon) & ~(1 << 0))
+            end
         end
 
         vehicleData = util.get_vehicles() -- Preset Cars
@@ -1359,3 +1373,13 @@
             [113] = {"Office Garage 2 (Maze Bank Tower)"},
             [114] = {"Office Garage 3 (Maze Bank Tower)"}
         }
+
+--[[
+
+███████ ███    ██ ██████       ██████  ███████     ████████ ██   ██ ███████     ██████   █████  ██████  ████████ 
+██      ████   ██ ██   ██     ██    ██ ██             ██    ██   ██ ██          ██   ██ ██   ██ ██   ██    ██    
+█████   ██ ██  ██ ██   ██     ██    ██ █████          ██    ███████ █████       ██████  ███████ ██████     ██    
+██      ██  ██ ██ ██   ██     ██    ██ ██             ██    ██   ██ ██          ██      ██   ██ ██   ██    ██    
+███████ ██   ████ ██████       ██████  ██             ██    ██   ██ ███████     ██      ██   ██ ██   ██    ██    
+                                                                                                                                                                                                                               
+]]--
