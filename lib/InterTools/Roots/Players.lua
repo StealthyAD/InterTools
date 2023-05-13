@@ -967,7 +967,7 @@
                 VEHICLE.SET_VEHICLE_DOORS_LOCKED(PED.GET_VEHICLE_PED_IS_IN(PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid), true), 0)
             end)
 
-            TrollingOptions:action_slider("Vehicle Remove", {}, "Choose any solution by any means how to remove.\n- Explode\n- Remove", {"Explode", "Remove"}, function(elimSelect)
+            TrollingOptions:action_slider("Vehicle Remove", {}, "Choose any solution by any means how to remove.\n- Explode (not easy while removing god and explode)\n- Remove (Better)", {"Explode", "Remove"}, function(elimSelect)
                 local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
                 local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
                 if elimSelect == 1 then
@@ -985,55 +985,59 @@
                 end
             end)
 
-            TrollingOptions:action_slider("Elimination Type", {}, "Different types of elimination:\n- Airstrike\n- Orbital Shot (Non-Personal)\n- Orbital Shot (Reveal)\n- Silent Shot\n- Passive Shot", {"Airstrike", "Orbital Shot (Non-Personal)", "Orbital Shot (Reveal)", "Silent Shot", "Passive Shot"}, function(killselect)
-                if killselect == 1 then
-                    local pidPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                    local abovePed = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(pidPed, 0, 0, 8)
-                    local missileCount = RandomGenerator(16, 24)
-                    for i = 1, missileCount do
-                        local missileOffset = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(pidPed, math.random(-5, 5), math.random(-5, 5), math.random(-5, 5))
-                        MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(abovePed.x, abovePed.y, abovePed.z, missileOffset.x, missileOffset.y, missileOffset.z, 100, true, 1752584910, 0, true, false, 250)
-                    end
-                elseif killselect == 2 then
-                    local pos = players.get_position(pid)
-                    local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                    pos.z = pos.z - 1.0
-                    STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
-                    FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 59, 1, true, false, 9.9, false)
-                    while not STREAMING.HAS_NAMED_PTFX_ASSET_LOADED("scr_xm_orbital") do
+            TrollingOptions:action_slider("Elimination Type", {}, "Different types of elimination:\n- Airstrike\n- Orbital Shot (Non-Personal)\n- Orbital Shot (Revealed)\n- Silent Shot\n- Passive Shot", {"Airstrike", "Orbital Shot (Non-Personal)", "Orbital Shot (Revealed)", "Silent Shot", "Passive Shot"}, function(killselect)
+                if not players.is_godmode(pid) then
+                    if killselect == 1 then
+                        local pidPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                        local abovePed = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(pidPed, 0, 0, 8)
+                        local missileCount = RandomGenerator(16, 24)
+                        for i = 1, missileCount do
+                            local missileOffset = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(pidPed, math.random(-5, 5), math.random(-5, 5), math.random(-5, 5))
+                            MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(abovePed.x, abovePed.y, abovePed.z, missileOffset.x, missileOffset.y, missileOffset.z, 100, true, 1752584910, 0, true, false, 250)
+                        end
+                    elseif killselect == 2 then
+                        local pos = players.get_position(pid)
+                        local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                        pos.z = pos.z - 1.0
                         STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
-                        InterWait(0)
-                    end
-                    GRAPHICS.USE_PARTICLE_FX_ASSET("scr_xm_orbital")
-                    AUDIO.PLAY_SOUND_FROM_COORD(1, "DLC_XM_Explosions_Orbital_Cannon", pos.x, pos.y, pos.z, 0, true, 0, false)
-                    GRAPHICS.START_NETWORKED_PARTICLE_FX_NON_LOOPED_AT_COORD("scr_xm_orbital_blast", pos.x, pos.y, pos.z + 1, 0, 180, 0, 1.0, true, true, true)
-                    for i = 1, 5 do
-                        AUDIO.PLAY_SOUND_FROM_ENTITY(-1, "DLC_XM_Explosions_Orbital_Cannon", ped, 0, true, false)
-                    end
-                elseif killselect == 3 then
-                    local pos = players.get_position(pid)
-                    local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                    OwnedOrbitalCannon(true)
-                    pos.z = pos.z - 1.0
-                    STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
-                    FIRE.ADD_OWNED_EXPLOSION(players.user_ped(), pos.x, pos.y, pos.z, 59, 1, true, false, 9.9, false)
-                    while not STREAMING.HAS_NAMED_PTFX_ASSET_LOADED("scr_xm_orbital") do
+                        FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 59, 1, true, false, 9.9, false)
+                        while not STREAMING.HAS_NAMED_PTFX_ASSET_LOADED("scr_xm_orbital") do
+                            STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
+                            InterWait(0)
+                        end
+                        GRAPHICS.USE_PARTICLE_FX_ASSET("scr_xm_orbital")
+                        AUDIO.PLAY_SOUND_FROM_COORD(1, "DLC_XM_Explosions_Orbital_Cannon", pos.x, pos.y, pos.z, 0, true, 0, false)
+                        GRAPHICS.START_NETWORKED_PARTICLE_FX_NON_LOOPED_AT_COORD("scr_xm_orbital_blast", pos.x, pos.y, pos.z + 1, 0, 180, 0, 1.0, true, true, true)
+                        for i = 1, 5 do
+                            AUDIO.PLAY_SOUND_FROM_ENTITY(-1, "DLC_XM_Explosions_Orbital_Cannon", ped, 0, true, false)
+                        end
+                    elseif killselect == 3 then
+                        local pos = players.get_position(pid)
+                        local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                        OwnedOrbitalCannon(true)
+                        pos.z = pos.z - 1.0
                         STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
-                        InterWait(0)
-                    end
-                    GRAPHICS.USE_PARTICLE_FX_ASSET("scr_xm_orbital")
-                    AUDIO.PLAY_SOUND_FROM_COORD(1, "DLC_XM_Explosions_Orbital_Cannon", pos.x, pos.y, pos.z, 0, true, 0, false)
-                    GRAPHICS.START_NETWORKED_PARTICLE_FX_NON_LOOPED_AT_COORD("scr_xm_orbital_blast", pos.x, pos.y, pos.z + 1, 0, 180, 0, 1.0, true, true, true)
-                    for i = 1, 5 do
-                        AUDIO.PLAY_SOUND_FROM_ENTITY(-1, "DLC_XM_Explosions_Orbital_Cannon", ped, 0, true, false)
-                    end
+                        FIRE.ADD_OWNED_EXPLOSION(players.user_ped(), pos.x, pos.y, pos.z, 59, 1, true, false, 9.9, false)
+                        while not STREAMING.HAS_NAMED_PTFX_ASSET_LOADED("scr_xm_orbital") do
+                            STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
+                            InterWait(0)
+                        end
+                        GRAPHICS.USE_PARTICLE_FX_ASSET("scr_xm_orbital")
+                        AUDIO.PLAY_SOUND_FROM_COORD(1, "DLC_XM_Explosions_Orbital_Cannon", pos.x, pos.y, pos.z, 0, true, 0, false)
+                        GRAPHICS.START_NETWORKED_PARTICLE_FX_NON_LOOPED_AT_COORD("scr_xm_orbital_blast", pos.x, pos.y, pos.z + 1, 0, 180, 0, 1.0, true, true, true)
+                        for i = 1, 5 do
+                            AUDIO.PLAY_SOUND_FROM_ENTITY(-1, "DLC_XM_Explosions_Orbital_Cannon", ped, 0, true, false)
+                        end
 
-                    InterWait(1000)
-                    OwnedOrbitalCannon(false)
-                elseif killselect == 4 then
-                    KillSilent(pid)
+                        InterWait(1000)
+                        OwnedOrbitalCannon(false)
+                    elseif killselect == 4 then
+                        KillSilent(pid)
+                    else
+                        KillPassive(pid)
+                    end
                 else
-                    KillPassive(pid)
+                    InterNotify("I'm sorry, you cannot kill "..InterName.." for many reasons:\n- Godmode Enabled\n- Ragdoll Event")
                 end
             end)
 
