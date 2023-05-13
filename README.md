@@ -1,6 +1,6 @@
 # InterTools / InterScript for Stand
 
-![Inter](https://user-images.githubusercontent.com/125747450/235377507-d04ac12b-ebf5-4540-9494-dd8ca0e12536.png)
+![Inter](https://github.com/StealthyAD/InterTools/assets/125747450/9f19585c-881d-4802-8ba1-a33db7557fec)
 
 How to reduce time of Display Logo?
 - Easy way, Stand/Lua Scripts/resources/Inter/Templates and find `DisplayDuration.txt` and choose any time (in seconds).
