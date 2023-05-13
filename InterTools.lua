@@ -69,15 +69,10 @@
             filesystem.mkdirs(script_resources)
         end
 
-        local interVersion = script_resources .. "/version.InterTools"
-        local fp = io.open(interVersion, 'r')
-        local selected_Version = fp:read('*a')
-        fp:close()
-
     --================================================================================--
 
         STAND_VERSION = menu.get_version().version
-        SCRIPT_VERSION = selected_Version
+        SCRIPT_VERSION = "1.7LN"
         InterMenu = "InterTools v"..SCRIPT_VERSION
         InterRoot = menu.my_root()
         local GTAO_VERSION = "1.66"
@@ -324,17 +319,7 @@
             }
         }
 
-        auto_update_config_ver = {
-            source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/version.InterTools",
-            script_relpath="resources/Inter/version.InterTools",
-            switch_to_branch=selected_branch,
-            verify_file_begins_with="--",
-            check_interval=86400,
-            silent_updates=true,
-        }
-
         auto_updater.run_auto_update(auto_update_config)
-        auto_updater.run_auto_update(auto_update_config_ver)
 
     ----========================================----
     ---              Root Parts
