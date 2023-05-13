@@ -29,7 +29,7 @@
         local SND_FILENAME<const> = 0x00020000
 
         STAND_VERSION = menu.get_version().version
-        SCRIPT_VERSION = "1.70EX"
+        SCRIPT_VERSION = "1.70LN"
         InterMenu = "InterTools v"..SCRIPT_VERSION
         InterRoot = menu.my_root()
         local GTAO_VERSION = "1.66"
