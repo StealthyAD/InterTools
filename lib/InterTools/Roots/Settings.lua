@@ -177,7 +177,7 @@
         SettingsParts:hyperlink("Github Page", "https://github.com/StealthyAD/InterTools")
         SettingsParts:action("Check for Updates", {}, "The script will automatically check for updates at most daily, but you can manually check using this option anytime.", function()
         auto_update_config.check_interval = 0
-            if auto_updater.run_auto_update(auto_update_config) or auto_updater.run_auto_update(auto_update_config_ver) then
+            if auto_updater.run_auto_update(auto_update_config) and auto_updater.run_auto_update(auto_update_config_ver) then
                 InterNotify("No updates found.")
             end
         end)
