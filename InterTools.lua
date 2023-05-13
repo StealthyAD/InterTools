@@ -28,18 +28,6 @@
         local SND_ASYNC<const> = 0x0001
         local SND_FILENAME<const> = 0x00020000
 
-        STAND_VERSION = menu.get_version().version
-        SCRIPT_VERSION = "1.70LN"
-        InterMenu = "InterTools v"..SCRIPT_VERSION
-        InterRoot = menu.my_root()
-        local GTAO_VERSION = "1.66"
-        local InterToast = util.toast
-        local InterMessage = "> InterTools v"..SCRIPT_VERSION
-
-        InterNotify = function(str) if ToggleNotify then if NotifMode == 2 then util.show_corner_help(InterMessage.."~s~~n~"..str ) else InterToast(InterMessage.."\n\n"..str) end end end
-        AWACSNotify = function(str) if ToggleNotify then if NotifMode == 2 then util.show_corner_help("AWACS Detection System".."~s~~n~"..str ) else InterToast("AWACS Detection System".."\n\n"..str) end end end
-        AvailableSession =  function() return util.is_session_started() and not util.is_session_transition_active() end
-
     ---==================================================================================================---
     -- ███████╗██╗██╗░░░░░███████╗  ██████╗░██╗██████╗░███████╗░█████╗░████████╗░█████╗░██████╗░██╗░░░██╗
     -- ██╔════╝██║██║░░░░░██╔════╝  ██╔══██╗██║██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██╔══██╗██╔══██╗╚██╗░██╔╝
@@ -54,11 +42,6 @@
             filesystem.mkdirs(script_store_songs)
         end
 
-        script_resources = filesystem.resources_dir() .. "Inter" -- Redirects to %appdata%\Stand\Lua Scripts\resources\Inter
-        if not filesystem.is_dir(script_resources) then
-            filesystem.mkdirs(script_resources)
-        end
-
         local ScriptDir <const> = filesystem.scripts_dir()
         local Required_Files <const> = {
             "lib\\InterTools\\Roots\\Self.lua",
@@ -69,7 +52,6 @@
             "lib\\InterTools\\Roots\\Music.lua",
             "lib\\InterTools\\Roots\\Settings.lua",
             "lib\\InterTools\\Roots\\Players.lua",
-
             "lib\\InterTools\\Functions.lua"
         }
         for _, file in pairs(Required_Files) do
@@ -81,6 +63,30 @@
         end
 
         require "InterTools.Functions"
+
+        script_resources = filesystem.resources_dir() .. "Inter" -- Redirects to %appdata%\Stand\Lua Scripts\resources\Inter
+        if not filesystem.is_dir(script_resources) then
+            filesystem.mkdirs(script_resources)
+        end
+
+        local interVersion = script_resources .. "/version.InterTools"
+        local fp = io.open(interVersion, 'r')
+        local selected_Version = fp:read('*a')
+        fp:close()
+
+    --================================================================================--
+
+        STAND_VERSION = menu.get_version().version
+        SCRIPT_VERSION = selected_Version
+        InterMenu = "InterTools v"..SCRIPT_VERSION
+        InterRoot = menu.my_root()
+        local GTAO_VERSION = "1.66"
+        local InterToast = util.toast
+        local InterMessage = "> InterTools v"..SCRIPT_VERSION
+
+        InterNotify = function(str) if ToggleNotify then if NotifMode == 2 then util.show_corner_help(InterMessage.."~s~~n~"..str ) else InterToast(InterMessage.."\n\n"..str) end end end
+        AWACSNotify = function(str) if ToggleNotify then if NotifMode == 2 then util.show_corner_help("AWACS Detection System".."~s~~n~"..str ) else InterToast("AWACS Detection System".."\n\n"..str) end end end
+        AvailableSession =  function() return util.is_session_started() and not util.is_session_transition_active() end
 
     ----========================================----
     ---           Shortcuts for Stand
@@ -133,6 +139,12 @@
                     name="Template",
                     source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/Template/Inter.png",
                     script_relpath="resources/Inter/Template/Inter.png",
+                    check_interval=default_check_interval,
+                },
+                {
+                    name="Version",
+                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/version.InterTools",
+                    script_relpath="resources/Inter/version.InterTools",
                     check_interval=default_check_interval,
                 },
                 {
