@@ -1,4 +1,4 @@
-# InterTools / InterScript for Stand
+# InterTools for Stand
 
 ![Inter](https://github.com/StealthyAD/InterTools/assets/125747450/9f19585c-881d-4802-8ba1-a33db7557fec)
 
