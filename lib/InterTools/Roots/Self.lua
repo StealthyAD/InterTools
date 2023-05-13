@@ -9,8 +9,7 @@
                                                                                     
     Features:
     - Compatible All Stand Versions if deprecated versions too.
-    - Largest Lua Script ain't even written.
-    - Bigger and complete script.
+    - Complete script.
 
     Help with Lua?
     - GTAV Natives: https://nativedb.dotindustries.dev/natives/
@@ -53,9 +52,8 @@
         end)
 
         SelfParts:toggle("Partial Invisible", {}, "Turn partially invisible mode (Players will not able to see you), but you will see only yourself, includes vehicles.", function(toggle)
-            local state = toggle and "on" or "off"
             local remote = toggle and "remote" or "off"
-            InterCmds("otr " .. state)
+            EnhanceOTR(toggle)
             InterCmds("invisibility ".. remote)
             InterCmds("vehinvisibility " .. remote)
         end)
@@ -73,9 +71,7 @@
         end)
 
         SelfParts:toggle("Better OTR", {}, "No one can see you on your minimap.", function(state)
-            otr = otr ?? memory.script_global(2657589 + 1 + (players.user() * 466) + 321)
-            local v = memory.read_byte(otr)
-            memory.write_byte(otr, state ? (v | 0xA) : (v & ~0xA))
+            EnhanceOTR(state)
         end)
 
         local maxHealth <const> = 328
@@ -351,7 +347,7 @@
             custom_pet = nil
         end)
 
-        AnimalsParts:toggle_loop("iShowSpeed Favorite Animal", {}, "Monkey Monkey Monkey Monkey\nMonkey Monkey Monkey Monkey\nMonkey Monkey Monkey Monkey", function()
+        AnimalsParts:toggle_loop("iShowSpeed Favorite Animal", {}, "", function()
             if not custom_pet or not ENTITY.DOES_ENTITY_EXIST(custom_pet) then
                 local pet = util.joaat("a_c_chimp")
                 RequestModel(pet)
@@ -366,3 +362,13 @@
             entities.delete_by_handle(custom_pet)
             custom_pet = nil
         end)
+
+--[[
+
+███████ ███    ██ ██████       ██████  ███████     ████████ ██   ██ ███████     ██████   █████  ██████  ████████ 
+██      ████   ██ ██   ██     ██    ██ ██             ██    ██   ██ ██          ██   ██ ██   ██ ██   ██    ██    
+█████   ██ ██  ██ ██   ██     ██    ██ █████          ██    ███████ █████       ██████  ███████ ██████     ██    
+██      ██  ██ ██ ██   ██     ██    ██ ██             ██    ██   ██ ██          ██      ██   ██ ██   ██    ██    
+███████ ██   ████ ██████       ██████  ██             ██    ██   ██ ███████     ██      ██   ██ ██   ██    ██    
+                                                                                                                                                                                                                               
+]]--
