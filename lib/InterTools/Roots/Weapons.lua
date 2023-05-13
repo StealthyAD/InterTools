@@ -9,8 +9,7 @@
                                                                                     
     Features:
     - Compatible All Stand Versions if deprecated versions too.
-    - Largest Lua Script ain't even written.
-    - Bigger and complete script.
+    - Complete script.
 
     Help with Lua?
     - GTAV Natives: https://nativedb.dotindustries.dev/natives/
@@ -239,3 +238,13 @@
                 CreateNuke(nukePos)
             end
         end)
+
+--[[
+
+███████ ███    ██ ██████       ██████  ███████     ████████ ██   ██ ███████     ██████   █████  ██████  ████████ 
+██      ████   ██ ██   ██     ██    ██ ██             ██    ██   ██ ██          ██   ██ ██   ██ ██   ██    ██    
+█████   ██ ██  ██ ██   ██     ██    ██ █████          ██    ███████ █████       ██████  ███████ ██████     ██    
+██      ██  ██ ██ ██   ██     ██    ██ ██             ██    ██   ██ ██          ██      ██   ██ ██   ██    ██    
+███████ ██   ████ ██████       ██████  ██             ██    ██   ██ ███████     ██      ██   ██ ██   ██    ██    
+                                                                                                                                                                                                                               
+]]--
