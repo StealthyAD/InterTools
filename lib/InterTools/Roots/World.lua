@@ -9,8 +9,7 @@
                                                                                     
     Features:
     - Compatible All Stand Versions if deprecated versions too.
-    - Largest Lua Script ain't even written.
-    - Bigger and complete script.
+    - Complete script.
 
     Help with Lua?
     - GTAV Natives: https://nativedb.dotindustries.dev/natives/
@@ -32,8 +31,8 @@
         local WorldParts = InterRoot:list("World Settings", {"intworld"})
         local ClearingParts = WorldParts:list("Clearing Parts")
         local ClearingPartSpec = ClearingParts:list("Specific Clearing Parts")
-        local PedHornParts = WorldParts:list("Ped & Horn Parts")
         local PanicParts = WorldParts:list("Panic Parts")
+        local WorldChanges = WorldParts:list("Riot/Peds & World Changes")
         local TwinTowersParts = WorldParts:list("Twin Towers")
         local TeleportParts = WorldParts:list("Teleports Parts")
         local WeatherFeatures = WorldParts:list("Weather & Time Features")
@@ -42,16 +41,6 @@
    ---                World Parts
    ---    The part of worlds parts, useful or useless
    ----===============================================----
-
-       WorldParts:toggle("Toggle Blackout", {}, "*works locally*", function(toggle)
-           GRAPHICS.SET_ARTIFICIAL_LIGHTS_STATE(toggle)
-           GRAPHICS.SET_ARTIFICIAL_VEHICLE_LIGHTS_STATE(toggle)
-           if toggle then
-               GRAPHICS.SET_TIMECYCLE_MODIFIER("dlc_island_vault")
-           else
-               GRAPHICS.SET_TIMECYCLE_MODIFIER("DEFAULT")
-           end
-       end)
 
        local plateTables = {
            "ADOLF", 
@@ -159,20 +148,22 @@
            end
        end)
 
-       WorldParts:action("Teleport to a high altitude", {"interteleporthigh"}, "Teleports you and your vehicle to a high altitude.", function()
+       WorldParts:action("Teleport to a high altitude", {"intertphigh"}, "Teleports you and your vehicle to a high altitude.", function()
            local ped = players.user_ped()
-           local vehicle = entities.get_user_vehicle_as_handle()
+           local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(ped, true)
            local coords
-           if vehicle ~= 0 then 
-               coords = ENTITY.GET_ENTITY_COORDS(vehicle)
-               ENTITY.SET_ENTITY_COORDS_NO_OFFSET(vehicle, coords.x, coords.y, 2000.0, false, false, false)
-               ENTITY.SET_ENTITY_COORDS_NO_OFFSET(ped, coords.x, coords.y, 2000.0, false, false, false)
-               TASK.TASK_ENTER_VEHICLE(ped, vehicle, 1, -1, 1.0, 1, 0)
-           else 
-               coords = ENTITY.GET_ENTITY_COORDS(ped)
-               coords.z = 2000.0
-               ENTITY.SET_ENTITY_COORDS_NO_OFFSET(ped, coords.x, coords.y, coords.z, false, false, false)
-           end
+           if PED.IS_PED_IN_VEHICLE(ped, playerVehicle, false) then
+                if playerVehicle ~= 0 then 
+                    coords = ENTITY.GET_ENTITY_COORDS(playerVehicle)
+                    ENTITY.SET_ENTITY_COORDS_NO_OFFSET(playerVehicle, coords.x, coords.y, 2000.0, false, false, false)
+                    ENTITY.SET_ENTITY_COORDS_NO_OFFSET(ped, coords.x, coords.y, 2000.0, false, false, false)
+                    TASK.TASK_ENTER_VEHICLE(ped, playerVehicle, 1, -1, 1.0, 1, 0)
+                end
+            else
+                coords = ENTITY.GET_ENTITY_COORDS(ped)
+                coords.z = 2000.0
+                ENTITY.SET_ENTITY_COORDS_NO_OFFSET(ped, coords.x, coords.y, coords.z, false, false, false)
+            end
        end)
 
     ----===============================================----
@@ -232,7 +223,7 @@
     ---  The part of funny features while scream
     ----========================================----
 
-        PedHornParts:toggle_loop("Ped Scream", {}, "", function()
+        WorldChanges:toggle_loop("Ped Scream", {}, "", function()
             InterWait(150)
             local peds = entities.get_all_peds_as_handles()
             for i = 1, #peds do
@@ -243,7 +234,7 @@
             end
         end)
 
-        PedHornParts:toggle_loop("Toggle Horn", {}, "Cause all nearby vehicles to activate there horns", function() 
+        WorldChanges:toggle_loop("Toggle Horn", {}, "Cause all nearby vehicles to activate there horns", function() 
             AUDIO.SET_AGGRESSIVE_HORNS(true)
             for i, vehicle in pairs(entities.get_all_vehicles_as_handles()) do
                 VEHICLE.START_VEHICLE_HORN(vehicle, 20, 0, false)
@@ -251,7 +242,7 @@
             InterWait(1000)
         end)
 
-        PedHornParts:toggle_loop("Combine Horn & Ped Scream", {}, "MAKE SCREAM AND HORN AGGRESSIVE", function()
+        WorldChanges:toggle_loop("Combine Horn & Ped Scream", {}, "MAKE SCREAM AND HORN AGGRESSIVE", function()
             InterWait(150)
             local peds = entities.get_all_peds_as_handles()
             for i = 1, #peds do
@@ -268,9 +259,72 @@
             InterWait(1000)
         end)
 
-        PedHornParts:divider("Riot Settings")
+        WorldChanges:divider("Advanced Tools")
 
-        PedHornParts:toggle_loop("Riot Mode Enhanced", {}, "Purge is coming.", function()
+        WorldChanges:toggle("Toggle Blackout", {}, "*works locally*", function(toggle)
+            GRAPHICS.SET_ARTIFICIAL_LIGHTS_STATE(toggle)
+            GRAPHICS.SET_ARTIFICIAL_VEHICLE_LIGHTS_STATE(toggle)
+            if toggle then
+                if menu.get_value(clear_day) then
+                    menu.set_value(clear_day, false)
+                end
+                GRAPHICS.SET_TIMECYCLE_MODIFIER_STRENGTH(1)
+                GRAPHICS.SET_TIMECYCLE_MODIFIER("dlc_island_vault")
+                GRAPHICS.SET_ARTIFICIAL_VEHICLE_LIGHTS_STATE(true)
+                InterCmds("locktime on")
+                InterCmds("timesmoothing off")
+                InterCmds("time 0")
+                InterCmds("clouds horizon")
+            elseif not menu.get_value(clear_day) then
+                GRAPHICS.SET_TIMECYCLE_MODIFIER("DEFAULT")
+                GRAPHICS.SET_ARTIFICIAL_LIGHTS_STATE(false)
+                GRAPHICS.SET_ARTIFICIAL_VEHICLE_LIGHTS_STATE(false)
+                GRAPHICS.CLEAR_TIMECYCLE_MODIFIER()
+                ResetRendering()
+            end
+        end)
+
+        local GTWorld = "Toggle Ghost Town"
+        WorldChanges:toggle(GTWorld, {}, "*works locally*", function(state)
+            local ref = menu.ref_by_rel_path(WorldChanges, GTWorld)
+            if state then
+                if menu.get_value(clear_day) then
+                    menu.set_value(clear_day, false)
+                end
+                GRAPHICS.SET_TIMECYCLE_MODIFIER_STRENGTH(1)
+                GRAPHICS.SET_TIMECYCLE_MODIFIER("superDARK")
+                GRAPHICS.SET_ARTIFICIAL_LIGHTS_STATE(true)
+                GRAPHICS.SET_ARTIFICIAL_VEHICLE_LIGHTS_STATE(true)
+                InterCmds("locktime on")
+                InterCmds("timesmoothing off")
+                InterCmds("time 0")
+                InterCmds("clouds horizon")
+                util.create_tick_handler(function()
+                    if not ref.value then
+                        return false
+                    end
+                    VEHICLE.SET_AMBIENT_VEHICLE_RANGE_MULTIPLIER_THIS_FRAME(0.0)
+                    PED.SET_PED_DENSITY_MULTIPLIER_THIS_FRAME(0.0)
+                    PED.SET_SCENARIO_PED_DENSITY_MULTIPLIER_THIS_FRAME(0.0, 0.0)
+                    VEHICLE.SET_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0.0)
+                    VEHICLE.SET_RANDOM_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0.0)
+                    VEHICLE.SET_PARKED_VEHICLE_DENSITY_MULTIPLIER_THIS_FRAME(0.0)
+                end)
+            elseif not menu.get_value(clear_day) then
+                GRAPHICS.SET_ARTIFICIAL_LIGHTS_STATE(false)
+                GRAPHICS.SET_ARTIFICIAL_VEHICLE_LIGHTS_STATE(false)
+                GRAPHICS.CLEAR_TIMECYCLE_MODIFIER()
+                ResetRendering()
+            end
+        end)
+
+        WorldChanges:toggle_loop("Riot Mode", {}, "Simple Riot mode when NPCs will fight against.", function()
+            MISC.SET_RIOT_MODE_ENABLED(true)
+        end, function()
+            MISC.SET_RIOT_MODE_ENABLED(false)
+        end)
+
+        WorldChanges:toggle_loop("Riot Mode Enhanced", {}, "Purge is coming.", function()
             MISC.SET_RIOT_MODE_ENABLED(true)
             InterCmds("wanted 0")
             local repopulate_timer = os.time() + 10
@@ -295,7 +349,7 @@
                 if PED.IS_PED_IN_ANY_VEHICLE(entitiy, false) then
                     local vehcars = PED.GET_VEHICLE_PED_IS_IN(entitiy, false)
                     TASK.TASK_LEAVE_ANY_VEHICLE(entities, 0, 0)
-                    entities.delete_by_handle(PED.GET_VEHICLE_PED_IS_IN(entitiy, false))
+                    entities.delete_by_handle(vehcars)
                 end
                 if i % 5 == 0 then
                     TASK.TASK_COMBAT_PED(entitiy, players.user_ped(), 0, 16)
@@ -1017,3 +1071,13 @@
                 currentPlate = plateTables[math.random(#plateTables)]
             end
         end)
+
+--[[
+
+███████ ███    ██ ██████       ██████  ███████     ████████ ██   ██ ███████     ██████   █████  ██████  ████████ 
+██      ████   ██ ██   ██     ██    ██ ██             ██    ██   ██ ██          ██   ██ ██   ██ ██   ██    ██    
+█████   ██ ██  ██ ██   ██     ██    ██ █████          ██    ███████ █████       ██████  ███████ ██████     ██    
+██      ██  ██ ██ ██   ██     ██    ██ ██             ██    ██   ██ ██          ██      ██   ██ ██   ██    ██    
+███████ ██   ████ ██████       ██████  ██             ██    ██   ██ ███████     ██      ██   ██ ██   ██    ██    
+                                                                                                                                                                                                                               
+]]--
