@@ -48,9 +48,9 @@
         local int_max = 2147483647
         local STAND_VERSION = menu.get_version().version
         local SCRIPT_VERSION = "1.72-AG"
-        local InterMenu = "InterTools Dev v"..SCRIPT_VERSION
+        local InterMenu = "InterTools v"..SCRIPT_VERSION
         local GTAO_VERSION = "1.66"
-        local InterMessage = "> InterTools Dev v"..SCRIPT_VERSION
+        local InterMessage = "> InterTools v"..SCRIPT_VERSION
         InterNotify = function(str) if ToggleNotify then if NotifMode == 2 then util.show_corner_help(InterMessage.."~s~~n~"..str ) else InterToast(InterMessage.."\n\n"..str) end end end
         AWACSNotify = function(str) if ToggleNotify then if NotifMode == 2 then util.show_corner_help("AWACS Detection System".."~s~~n~"..str ) else InterToast("AWACS Detection System".."\n\n"..str) end end end
         AvailableSession =  function() return util.is_session_started() and not util.is_session_transition_active() end
