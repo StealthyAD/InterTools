@@ -794,6 +794,20 @@
             PED.SET_CAN_ATTACK_FRIENDLY(players.user_ped(), toggle, false)
         end)
 
+        local invisibleFirearm = false
+        WeaponsParts:toggle("Invisible Firearm", {}, "", function(on)
+            invisibleFirearm = on
+            local curweap = WEAPON.GET_CURRENT_PED_WEAPON_ENTITY_INDEX(PLAYER.PLAYER_PED_ID())
+            ENTITY.SET_ENTITY_VISIBLE(curweap, not invisibleFirearm, false)
+            while true do
+                util.yield()
+                if invisibleFirearm then
+                    local curweap = WEAPON.GET_CURRENT_PED_WEAPON_ENTITY_INDEX(PLAYER.PLAYER_PED_ID())
+                    ENTITY.SET_ENTITY_VISIBLE(curweap, false, false)
+                end
+            end
+        end)
+
         WeaponsParts:toggle_loop("Fire Delete Entity Gun", {""}, "Shoot any entities to delete.", function()
             if PLAYER.IS_PLAYER_FREE_AIMING(players.user()) then
                 local zEntity = memory.alloc_int()
@@ -4632,6 +4646,18 @@
             InterWait(100)
         end)
 
+        InGameSettings:slider("Minimap Zoom", {"interminimap"}, "", 0, 100, 0, 1, function(value)
+            HUD.SET_RADAR_ZOOM_PRECISE(value)
+        end)
+
+        InGameSettings:action_slider("Change Visual Water", {}, "", {"Default", "Cayo Perico"}, function(waterSelect)
+            if waterSelect == 1 then
+                STREAMING.LOAD_GLOBAL_WATER_FILE(0)
+            else
+                STREAMING.LOAD_GLOBAL_WATER_FILE(1)
+            end
+        end)
+
         --====================================================================================================--
 
         local screens = {
@@ -5681,6 +5707,40 @@
                         entities.delete_by_handle(playerVehicle)
                     end
                 end
+            end)
+
+            DisableMoon = VehicleTrolling:toggle_loop("Send to the Moon", {}, "send him to the sky, cya.", function()
+                if menu.get_value(DisableGround) then
+                    menu.set_value(DisableGround, false)
+                end
+                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                    ENTITY.APPLY_FORCE_TO_ENTITY(playerVehicle, 1, 0, 0, 400.0, 0, 0, 0.5, 0, false, false, true)
+                else
+                    menu.set_value(DisableMoon, false)
+                end
+            end, function()
+                menu.set_value(DisableGround, false)
+            end)
+
+            DisableGround = VehicleTrolling:toggle_loop("Gravity on the ground", {}, 'in the ground right now.', function()
+                if menu.get_value(DisableMoon) then
+                    menu.set_value(DisableMoon, false)
+                end
+                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    if ENTITY.IS_ENTITY_IN_AIR(playerVehicle) then
+                        NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                        ENTITY.APPLY_FORCE_TO_ENTITY(playerVehicle, 1, 0, 0, -400.0, 0, 0, 0.5, 0, false, false, true)
+                    end
+                else
+                    menu.set_value(DisableGround, false)
+                end
+            end, function()
+                menu.set_value(DisableMoon, false)
             end)
 
             VehicleTrolling:divider("Advanced (Aircraft/Helicopters)")
