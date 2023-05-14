@@ -300,6 +300,7 @@
         local ExcludeRoot = OnlineParts:list("Exclude Parts", {}, "Exclude every features.\nIncludes: \n- Session Parts")
         local ChatParts = OnlineParts:list("Chat Parts")
         local DetectionRoots = OnlineParts:list("Detection Parts")
+        local HostRoots = OnlineParts:list("Host Parts")
         local LanguageRoots = OnlineParts:list("Language Parts")
         local SessionRoots = OnlineParts:list("Session Parts")
 
@@ -1731,6 +1732,192 @@
             end
         end)
 
+        local VehicleDetections = DetectionRoots:list("Vehicle Detection Parts")
+
+    ----========================================----
+    ---         Vehicle Detection Tools
+    ---     The part of vehicle detect parts
+    ----========================================----    
+
+        VehicleDetections:action("Plane System Detection", {"interradars"}, "Detect any players while using planes or jets who might be a suspect.", function()
+            local players_detected = 0
+            for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                if PED.IS_PED_IN_ANY_PLANE(playerPed) then
+                    players_detected = players_detected + 1
+                end
+            end
+            if players_detected > 0 then
+                local message = tostring(players_detected) .. " player"
+                if players_detected > 1 then
+                    message = message .. "s"
+                end
+                message = message .. " has been detected using planes or jets.\nRadar Status: Ready."
+                AWACSNotify(message)
+            else
+                AWACSNotify("No one is using a jet or a plane.\nTrying to verify. \nPlease wait for complete detection.")
+            end
+        end)
+
+        VehicleDetections:action("Oppressor Detection", {"interopp2"}, "Detect any players while using Oppressor MK II.", function()
+            local players_detected = 0
+            for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+				local vehicle = PED.GET_VEHICLE_PED_IS_IN(playerPed, false)
+                local hash = util.joaat("oppressor2")
+                if VEHICLE.IS_VEHICLE_MODEL(vehicle, hash) then
+                    players_detected = players_detected + 1
+                end
+            end
+            if players_detected > 0 then
+                local message = tostring(players_detected) .. " player"
+                if players_detected > 1 then
+                    message = message .. "s"
+                end
+                message = message .. " has been detected using Oppressor MK2.\nRadar Status: Ready."
+                AWACSNotify(message)
+            else
+                AWACSNotify("No one is using Oppressor MK2.\nTrying to verify. \nPlease wait for complete detection.")
+            end
+        end)
+
+        VehicleDetections:divider("Remove Parts")
+
+        VehicleDetections:toggle_loop("Remove Oppressor", {"interopdelete"}, "Kick any player while using Oppressor MK II", function()
+            for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+				local vehicle = PED.GET_VEHICLE_PED_IS_IN(playerPed, false)
+                local hash = util.joaat("oppressor2")
+                if VEHICLE.IS_VEHICLE_MODEL(vehicle, hash) then
+                    InterCmds("vehkick"..players.get_name(pid))
+                    VEHICLE.SET_VEHICLE_DOORS_LOCKED_FOR_ALL_PLAYERS(vehicle, true)
+                end
+            end
+        end)
+
+        VehicleDetections:toggle_loop("Remove Armored Vehicles", {"interarmoreddelete"}, "Kick any player while using armored vehicles (includes Planes)", function()
+            for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local vehicle = PED.GET_VEHICLE_PED_IS_IN(playerPed, false)
+
+                local tables = {
+                    "nightshark",
+                    "halftrack",
+                    "hauler2",
+                    "rhino",
+                    "khanjali",
+                    "avenger",
+                    "barrage",
+                    "apc"
+                }
+
+                for _, model in pairs(tables) do
+                    local hash = util.joaat(model)
+                    if VEHICLE.IS_VEHICLE_MODEL(vehicle, hash) then
+                        InterCmds("vehkick"..players.get_name(pid))
+                        VEHICLE.SET_VEHICLE_DOORS_LOCKED_FOR_ALL_PLAYERS(vehicle, true)
+                    end
+                end
+            end
+        end)
+
+        VehicleDetections:toggle_loop("Remove Surface-to-Air Missile", {"intersamdelete"}, "Kick any player while using Surface-to-Air Missile.", function()
+            for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local vehicle = PED.GET_VEHICLE_PED_IS_IN(playerPed, false)
+
+                local tables = {
+                    "chernobog", 
+                    "trailersmall2"
+                }
+
+                for _, model in pairs(tables) do
+                    local hash = util.joaat(model)
+                    if VEHICLE.IS_VEHICLE_MODEL(vehicle, hash) then
+                        InterCmds("vehkick"..players.get_name(pid))
+                        VEHICLE.SET_VEHICLE_DOORS_LOCKED_FOR_ALL_PLAYERS(vehicle, true)
+                    end
+                end
+            end
+        end)
+
+        VehicleDetections:toggle_loop("Remove Dogfight Planes", {"intertpdelete"}, "Remove any vehicle while using dogfight planes.", function()
+            for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local vehicle = PED.GET_VEHICLE_PED_IS_IN(playerPed, false)
+
+                local tables = {
+                    "hydra", 
+                    "lazer", 
+                    "strikeforce", 
+                    "starling", 
+                    "molotok", 
+                    "nokota", 
+                    "seabreeze", 
+                    "rogue"
+                }
+
+                for _, model in pairs(tables) do
+                    local hash = util.joaat(model)
+                    if VEHICLE.IS_VEHICLE_MODEL(vehicle, hash) then
+                        InterCmds("vehkick"..players.get_name(pid))
+                        VEHICLE.SET_VEHICLE_DOORS_LOCKED_FOR_ALL_PLAYERS(vehicle, true)
+                    end
+                end
+            end
+        end)
+
+    ----========================================----
+    ---                Host Parts
+    ---         The part of online parts
+    ----========================================----
+
+        HostRoots:click_slider("Max Players", {"intermaxplayers"}, "Set the max Players for the lobby\nOnly works as the Host.", 1, 32, 32, 1, function(value)
+            if players.get_host() == players.user() then
+                NETWORK.NETWORK_SESSION_SET_MATCHMAKING_GROUP_MAX(0, value)
+                InterNotify("Free Slots edited: ".. NETWORK.NETWORK_SESSION_GET_MATCHMAKING_GROUP_FREE(0))
+            else
+                InterNotify("You are not the Host.")
+            end
+        end)
+
+        HostRoots:click_slider("Max Players (Spectators)", {"intermaxsp"}, "Only works as the Host.", 0, 2, 0, 1, function(value)
+            if players.get_host() == players.user() then
+                NETWORK.NETWORK_SESSION_SET_MATCHMAKING_GROUP_MAX(4, value)
+                InterNotify("Free Slots edited: ".. NETWORK.NETWORK_SESSION_GET_MATCHMAKING_GROUP_FREE(4))
+            else
+                InterNotify("You are not the Host.")
+            end
+        end)
+
+        HostRoots:toggle("Block SH Migration", {}, "Only works as the Host.", function(toggle)
+            if util.is_session_started() and players.get_host() == players.user() then
+                NETWORK.NETWORK_PREVENT_SCRIPT_HOST_MIGRATION()
+            end
+        end)
+
+        BreakupForceHost = HostRoots:action("Breakup Host", {"interbreakup"}, "Breakup players position until become host.", function(type)
+            if AvailableSession() then
+                if players.get_host() ~= players.user() then
+                    local players_before_host = players.get_host_queue_position(players.user())
+                    menu.show_warning(BreakupForceHost, type, "DISCLAIMER: You are about to kick around".." "..players_before_host.." ".."players until you become host. Are you sure?", function()
+                        if AvailableSession() then
+                            while players.get_host() ~= players.user() do
+                                local host = players.get_host()
+                                if players.exists(host) then
+                                    InterCmds("breakup"..players.get_name(host))
+                                end
+                                InterWait(50)
+                            end
+                            InterNotify("You are host.")
+                        end
+                    end)
+                else
+                    InterNotify("You are already host.".."\n".."Please try later.")
+                end
+            end
+        end)
+
     ----========================================----
     ---              Language Roots
     ---         The part of session online
@@ -1854,11 +2041,11 @@
         local BountyRoot = SessionRoots:list("Bounty Parts")
         local ExplodeRoot = SessionRoots:list("Explode Parts")
         local GroundParts = SessionRoots:list("Ground Defense")
-        local HostRoots = SessionRoots:list("Host Parts")
+        
         local SoundRoots = SessionRoots:list("Sound Parts")
         local TeleportsRoots = SessionRoots:list("Teleport Parts")
         local VehicleRootsO = SessionRoots:list("Vehicle Parts")
-        local VehicleDetections = SessionRoots:list("Vehicle Detection Parts")
+        
 
     ----========================================----
     ---               Aerial Roots
@@ -1912,9 +2099,12 @@
                 while counter < max_iterations do
                     for _, pid in pairs(playerList) do
                         if AvailableSession() then
+                            for i = 0, 2 do
+                                AUDIO.PLAY_SOUND_FROM_COORD(-1, "Air_Defences_Activated", pos.x, pos.y, pos.z, "DLC_sum20_Business_Battle_AC_Sounds", true, 9999, false)
+                            end
                             local randomModel = planeModels[math.random(#planeModels)]
                             AggressivePlanes(pid, randomModel)
-                            InterWait(4000)
+                            InterWait(5000)
                         end
                     end
                     counter = counter + 1
@@ -1923,9 +2113,14 @@
                 local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
                 for _, pid in pairs(playerList) do
                     if AvailableSession() then
+                        local pos = players.get_position(pid)
+                        pos.z = pos.z - 1.0
+                        for i = 0, 2 do
+                            AUDIO.PLAY_SOUND_FROM_COORD(-1, "Air_Defences_Activated", pos.x, pos.y, pos.z, "DLC_sum20_Business_Battle_AC_Sounds", true, 9999, false)
+                        end
                         for i = 1, menu.get_value(PlaneCount) do
                             harass_vehicle(pid, planesHash, true, false)
-                            InterWait(2000)
+                            InterWait(5000)
                         end
                     end
                 end
@@ -2069,6 +2264,7 @@
                 InterNotify("I'm sorry, you need to turn on \"Custom Bounty\" for this.")
             end
         end)
+        
         BountyRoot:divider("")
 
         BountyValue = BountyRoot:slider("Select Amount Bounty",  {'interbounty'}, "Select which amount it will automatically placed.",  0, 10000, 0, 1, function()end)
@@ -2099,7 +2295,53 @@
                     end
                     InterWait(50)
                 end
-                InterWait(500)                
+                InterWait(500)     
+            end
+        end)
+
+        BountyRoot:divider("Advanced")
+        CustomBountyP = BountyRoot:toggle_loop("Custom Bounty (Player)", {}, "", function()end)
+
+        local bountyValue = 0
+        BountyRoot:text_input("Modify Bounty Value", {"interbountyvalue"}, "", function(valueInput)
+            if valueInput ~= "" then
+                bountyValue = tonumber(valueInput)
+            else
+                bountyValue = 0
+            end
+        end, bountyValue)
+
+        BountyRoot:action("Enter Name", {"interbountyuser"}, "", function()
+            if menu.get_value(CustomBountyP) == true then
+                local textInput = display_onscreen_keyboard()
+                local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                if EToggleSelf then
+                    for _, pid in ipairs(playerList) do
+                        if pid == players.user() and textInput == players.get_name(pid) then
+                            InterNotify("You cannot put bounty yourself.")
+                            return
+                        end
+                    end
+                end
+                if textInput == nil or textInput == "" then
+                    return
+                else
+                    local bountyPlaced = false
+                    for _, pid in ipairs(playerList) do
+                        local playerName = players.get_name(pid)
+                        if playerName == textInput then
+                            bountyPlaced = true
+                            InterNotify("Bounty sent to "..textInput.." with $"..bountyValue..".")
+                            InterCmds("bounty " ..playerName.. " " ..bountyValue)
+                            break
+                        end
+                    end
+                    if not bountyPlaced then
+                        InterNotify("We can't recognize who is "..textInput..".")
+                    end
+                end
+            else
+                InterNotify("I'm sorry, you need to turn on \"Custom Bounty (Player)\" to do the action.")
             end
         end)
 
@@ -2116,6 +2358,79 @@
             classifiedExplosion = value
         end)
         EShakeIntensity = ExplodeRoot:slider("Explosion Shake", {"intereshake"}, "Choose shake explosion intensity [0 - 10]", 0, 10, 1, 1, function()end)
+        ExplodeRoot:action_slider("Orbital Cannon Type", {}, "Say hi to the sky", {"Non-Personal", "Owned", "Randomize"}, function()
+            if orbSelect == 1 then
+                for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                    if not players.is_in_interior(pid) and not players.is_godmode(pid) then
+                        local pos = players.get_position(pid)
+                        local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                        pos.z = pos.z - 1.0
+                        STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
+                        FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 59, 1, true, false, 9.9, false)
+                        while not STREAMING.HAS_NAMED_PTFX_ASSET_LOADED("scr_xm_orbital") do
+                            STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
+                            InterWait(0)
+                        end
+                        GRAPHICS.USE_PARTICLE_FX_ASSET("scr_xm_orbital")
+                        AUDIO.PLAY_SOUND_FROM_COORD(1, "DLC_XM_Explosions_Orbital_Cannon", pos.x, pos.y, pos.z, 0, true, 0, false)
+                        GRAPHICS.START_NETWORKED_PARTICLE_FX_NON_LOOPED_AT_COORD("scr_xm_orbital_blast", pos.x, pos.y, pos.z + 1, 0, 180, 0, 1.0, true, true, true)
+                        for i = 1, 5 do
+                            AUDIO.PLAY_SOUND_FROM_ENTITY(-1, "DLC_XM_Explosions_Orbital_Cannon", ped, 0, true, false)
+                        end
+                    end
+                end
+            elseif orbSelect == 2 then
+                for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                    if not players.is_in_interior(pid) and not players.is_godmode(pid) then
+                        local pos = players.get_position(pid)
+                        local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                        OwnedOrbitalCannon(true)
+                        pos.z = pos.z - 1.0
+                        STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
+                        FIRE.ADD_OWNED_EXPLOSION(players.user_ped(), pos.x, pos.y, pos.z, 59, 1, true, false, 9.9, false)
+                        while not STREAMING.HAS_NAMED_PTFX_ASSET_LOADED("scr_xm_orbital") do
+                            STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
+                            InterWait(0)
+                        end
+                        GRAPHICS.USE_PARTICLE_FX_ASSET("scr_xm_orbital")
+                        AUDIO.PLAY_SOUND_FROM_COORD(1, "DLC_XM_Explosions_Orbital_Cannon", pos.x, pos.y, pos.z, 0, true, 0, false)
+                        GRAPHICS.START_NETWORKED_PARTICLE_FX_NON_LOOPED_AT_COORD("scr_xm_orbital_blast", pos.x, pos.y, pos.z + 1, 0, 180, 0, 1.0, true, true, true)
+                        for i = 1, 5 do
+                            AUDIO.PLAY_SOUND_FROM_ENTITY(-1, "DLC_XM_Explosions_Orbital_Cannon", ped, 0, true, false)
+                        end
+                        InterWait(1000)
+                        OwnedOrbitalCannon(false)
+                    end
+                end
+            else
+                for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                    if AvailableSession() and players.get_name(pid) ~= "UndiscoveredPlayer" then
+                        if not players.is_in_interior(pid) and not players.is_godmode(pid) then
+                            local pos = players.get_position(pid)
+                            pos.z = pos.z - 1.0
+                            local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                            local randomIndex = math.random(#playerList)
+                            local playerId = playerList[randomIndex]
+                            local Ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(playerId)
+                            STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
+                            FIRE.ADD_OWNED_EXPLOSION(Ped, pos.x, pos.y, pos.z, 59, 1, true, false, 9.9, false)
+                            InterWait(0)
+                            while not STREAMING.HAS_NAMED_PTFX_ASSET_LOADED("scr_xm_orbital") do
+                                STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
+                                InterWait(0)
+                            end
+                            GRAPHICS.USE_PARTICLE_FX_ASSET("scr_xm_orbital")
+                            AUDIO.PLAY_SOUND_FROM_COORD(1, "DLC_XM_Explosions_Orbital_Cannon", pos.x, pos.y, pos.z, 0, true, 0, false)
+                            GRAPHICS.START_NETWORKED_PARTICLE_FX_NON_LOOPED_AT_COORD("scr_xm_orbital_blast", pos.x, pos.y, pos.z + 1, 0, 180, 0, 1.0, true, true, true)
+                            for i = 1, 5 do
+                                AUDIO.PLAY_SOUND_FROM_ENTITY(-1, "DLC_XM_Explosions_Orbital_Cannon", ped, 0, true, false)
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+
         ExplodeRoot:divider("Explosion Type")
         ExplodeRoot:toggle_loop("Auto Explode Players", {'interautoexplode'}, "Alright, explode everyone.\nNOTE: Toggle Exclude features.\nToggle Reveal Kill will reveal who kill.\n\nDisable Toggle Audible/Visible Explosion will make you silent kill.", function()
             for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
@@ -2316,57 +2631,6 @@
         end)
 
     ----========================================----
-    ---                Host Parts
-    ---         The part of online parts
-    ----========================================----
-
-        HostRoots:click_slider("Max Players", {"intermaxplayers"}, "Set the max Players for the lobby\nOnly works as the Host.", 1, 32, 32, 1, function(value)
-            if players.get_host() == players.user() then
-                NETWORK.NETWORK_SESSION_SET_MATCHMAKING_GROUP_MAX(0, value)
-                InterNotify("Free Slots edited: ".. NETWORK.NETWORK_SESSION_GET_MATCHMAKING_GROUP_FREE(0))
-            else
-                InterNotify("You are not the Host.")
-            end
-        end)
-
-        HostRoots:click_slider("Max Players (Spectators)", {"intermaxsp"}, "Only works as the Host.", 0, 2, 0, 1, function(value)
-            if players.get_host() == players.user() then
-                NETWORK.NETWORK_SESSION_SET_MATCHMAKING_GROUP_MAX(4, value)
-                InterNotify("Free Slots edited: ".. NETWORK.NETWORK_SESSION_GET_MATCHMAKING_GROUP_FREE(4))
-            else
-                InterNotify("You are not the Host.")
-            end
-        end)
-
-        HostRoots:toggle("Block SH Migration", {}, "Only works as the Host.", function(toggle)
-            if util.is_session_started() and players.get_host() == players.user() then
-                NETWORK.NETWORK_PREVENT_SCRIPT_HOST_MIGRATION()
-            end
-        end)
-
-        BreakupForceHost = HostRoots:action("Breakup Host", {"interbreakup"}, "Breakup players position until become host.", function(type)
-            if AvailableSession() then
-                if players.get_host() ~= players.user() then
-                    local players_before_host = players.get_host_queue_position(players.user())
-                    menu.show_warning(BreakupForceHost, type, "DISCLAIMER: You are about to kick around".." "..players_before_host.." ".."players until you become host. Are you sure?", function()
-                        if AvailableSession() then
-                            while players.get_host() ~= players.user() do
-                                local host = players.get_host()
-                                if players.exists(host) then
-                                    InterCmds("breakup"..players.get_name(host))
-                                end
-                                InterWait(50)
-                            end
-                            InterNotify("You are host.")
-                        end
-                    end)
-                else
-                    InterNotify("You are already host.".."\n".."Please try later.")
-                end
-            end
-        end)
-
-    ----========================================----
     ---                SOUND Parts
     ---       PRESS HORN AND MORE AGGRESSIVE
     ----========================================----
@@ -2426,139 +2690,6 @@
         end
 
     ----========================================----
-    ---         Vehicle Detection Tools
-    ---     The part of vehicle detect parts
-    ----========================================----    
-
-        VehicleDetections:action("Plane System Detection", {"interradars"}, "Detect any players while using planes or jets who might be a suspect.", function()
-            local players_detected = 0
-            for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                if PED.IS_PED_IN_ANY_PLANE(playerPed) then
-                    players_detected = players_detected + 1
-                end
-            end
-            if players_detected > 0 then
-                local message = tostring(players_detected) .. " player"
-                if players_detected > 1 then
-                    message = message .. "s"
-                end
-                message = message .. " has been detected using planes or jets.\nRadar Status: Ready."
-                AWACSNotify(message)
-            else
-                AWACSNotify("No one is using a jet or a plane.\nTrying to verify. \nPlease wait for complete detection.")
-            end
-        end)
-
-        VehicleDetections:action("Oppressor Detection", {"interopp2"}, "Detect any players while using Oppressor MK II.", function()
-            local players_detected = 0
-            for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-				local vehicle = PED.GET_VEHICLE_PED_IS_IN(playerPed, false)
-                local hash = util.joaat("oppressor2")
-                if VEHICLE.IS_VEHICLE_MODEL(vehicle, hash) then
-                    players_detected = players_detected + 1
-                end
-            end
-            if players_detected > 0 then
-                local message = tostring(players_detected) .. " player"
-                if players_detected > 1 then
-                    message = message .. "s"
-                end
-                message = message .. " has been detected using Oppressor MK2.\nRadar Status: Ready."
-                AWACSNotify(message)
-            else
-                AWACSNotify("No one is using Oppressor MK2.\nTrying to verify. \nPlease wait for complete detection.")
-            end
-        end)
-
-        VehicleDetections:divider("Remove Parts")
-
-        VehicleDetections:toggle_loop("Remove Oppressor", {"interopdelete"}, "Kick any player while using Oppressor MK II", function()
-            for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-				local vehicle = PED.GET_VEHICLE_PED_IS_IN(playerPed, false)
-                local hash = util.joaat("oppressor2")
-                if VEHICLE.IS_VEHICLE_MODEL(vehicle, hash) then
-                    InterCmds("vehkick"..players.get_name(pid))
-                    VEHICLE.SET_VEHICLE_DOORS_LOCKED_FOR_ALL_PLAYERS(vehicle, true)
-                end
-            end
-        end)
-
-        VehicleDetections:toggle_loop("Remove Armored Vehicles", {"interarmoreddelete"}, "Kick any player while using armored vehicles (includes Planes)", function()
-            for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                local vehicle = PED.GET_VEHICLE_PED_IS_IN(playerPed, false)
-
-                local tables = {
-                    "nightshark",
-                    "halftrack",
-                    "hauler2",
-                    "rhino",
-                    "khanjali",
-                    "avenger",
-                    "barrage",
-                    "apc"
-                }
-
-                for _, model in pairs(tables) do
-                    local hash = util.joaat(model)
-                    if VEHICLE.IS_VEHICLE_MODEL(vehicle, hash) then
-                        InterCmds("vehkick"..players.get_name(pid))
-                        VEHICLE.SET_VEHICLE_DOORS_LOCKED_FOR_ALL_PLAYERS(vehicle, true)
-                    end
-                end
-            end
-        end)
-
-        VehicleDetections:toggle_loop("Remove Surface-to-Air Missile", {"intersamdelete"}, "Kick any player while using Surface-to-Air Missile.", function()
-            for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                local vehicle = PED.GET_VEHICLE_PED_IS_IN(playerPed, false)
-
-                local tables = {
-                    "chernobog", 
-                    "trailersmall2"
-                }
-
-                for _, model in pairs(tables) do
-                    local hash = util.joaat(model)
-                    if VEHICLE.IS_VEHICLE_MODEL(vehicle, hash) then
-                        InterCmds("vehkick"..players.get_name(pid))
-                        VEHICLE.SET_VEHICLE_DOORS_LOCKED_FOR_ALL_PLAYERS(vehicle, true)
-                    end
-                end
-            end
-        end)
-
-        VehicleDetections:toggle_loop("Remove Dogfight Planes", {"intertpdelete"}, "Remove any vehicle while using dogfight planes.", function()
-            for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                local vehicle = PED.GET_VEHICLE_PED_IS_IN(playerPed, false)
-
-                local tables = {
-                    "hydra", 
-                    "lazer", 
-                    "strikeforce", 
-                    "starling", 
-                    "molotok", 
-                    "nokota", 
-                    "seabreeze", 
-                    "rogue"
-                }
-
-                for _, model in pairs(tables) do
-                    local hash = util.joaat(model)
-                    if VEHICLE.IS_VEHICLE_MODEL(vehicle, hash) then
-                        InterCmds("vehkick"..players.get_name(pid))
-                        VEHICLE.SET_VEHICLE_DOORS_LOCKED_FOR_ALL_PLAYERS(vehicle, true)
-                    end
-                end
-            end
-        end)
-
-    ----========================================----
     ---              Teleports Parts
     ---     The part of teleport online parts
     ----========================================----
@@ -2610,59 +2741,64 @@
         TeleportsRoots:divider("Advanced")
 
         RandomTeleportCustom = TeleportsRoots:toggle_loop("Random Teleport", {}, "Without Random Teleport => Apartment Type\nWith Random Teleport => randomly generated between 1 and 114.", function()end)
+        TeleportCustom = TeleportsRoots:toggle_loop("Toggle Teleport User", {}, "", function()end)
         TeleportsRoots:action("Enter Name", {"interteleportuser"}, "", function()
-            local textInput = display_onscreen_keyboard()
-            local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-            if menu.get_value(RandomTeleportCustom) == true then
-                if EToggleSelf then
-                    for _, pid in ipairs(playerList) do
-                        if pid == players.user() and textInput == players.get_name(pid) then
-                            InterNotify("You cannot teleport yourself.")
-                            return
+            if menu.get_value(TeleportCustom) == true then
+                local textInput = display_onscreen_keyboard()
+                local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                if menu.get_value(RandomTeleportCustom) == true then
+                    if EToggleSelf then
+                        for _, pid in ipairs(playerList) do
+                            if pid == players.user() and textInput == players.get_name(pid) then
+                                InterNotify("You cannot teleport yourself.")
+                                return
+                            end
                         end
                     end
-                end
-                if textInput == nil or textInput == "" then return
+                    if textInput == nil or textInput == "" then return
+                    else
+                        local telported = false
+                        for _, pid in ipairs(playerList) do
+                            local playerName = players.get_name(pid)
+                            if playerName == textInput then
+                                telported = true
+                                InterNotify("Teleport sent to "..textInput.." randomly.")
+                                InterCmds("apt"..math.random(1, 114)..playerName)
+                                break
+                            end
+                        end
+                        if not telported then
+                            InterNotify("We cannot recognize "..textInput..".")
+                        end
+                    end
                 else
-                    local telported = false
-                    for _, pid in ipairs(playerList) do
-                        local playerName = players.get_name(pid)
-                        if playerName == textInput then
-                            telported = true
-                            InterNotify("Teleport sent to "..textInput.." randomly.")
-                            InterCmds("apt"..math.random(1, 114)..playerName)
-                            break
+                    if EToggleSelf then
+                        for _, pid in ipairs(playerList) do
+                            if pid == players.user() and textInput == players.get_name(pid) then
+                                InterNotify("You cannot teleport yourself.")
+                                return
+                            end
                         end
                     end
-                    if not telported then
-                        InterNotify("We cannot recognize "..textInput..".")
+                    if textInput == nil or textInput == "" then return
+                    else
+                        local telported = false
+                        for _, pid in ipairs(playerList) do
+                            local playerName = players.get_name(pid)
+                            if playerName == textInput then
+                                telported = true
+                                InterNotify("Teleport sent to "..textInput..".")
+                                InterCmds("apt"..appartType..playerName)
+                                break
+                            end
+                        end
+                        if not telported then
+                            InterNotify("We cannot recognize "..textInput..".")
+                        end
                     end
                 end
             else
-                if EToggleSelf then
-                    for _, pid in ipairs(playerList) do
-                        if pid == players.user() and textInput == players.get_name(pid) then
-                            InterNotify("You cannot teleport yourself.")
-                            return
-                        end
-                    end
-                end
-                if textInput == nil or textInput == "" then return
-                else
-                    local telported = false
-                    for _, pid in ipairs(playerList) do
-                        local playerName = players.get_name(pid)
-                        if playerName == textInput then
-                            telported = true
-                            InterNotify("Teleport sent to "..textInput..".")
-                            InterCmds("apt"..appartType..playerName)
-                            break
-                        end
-                    end
-                    if not telported then
-                        InterNotify("We cannot recognize "..textInput..".")
-                    end
-                end
+                InterNotify("I'm sorry, please enable 'Toggle Teleport User'.")
             end
         end)
 
@@ -2982,6 +3118,7 @@
     ---         The part of vehicle online
     ----========================================----
     
+        local AdvancedVehicles = VehicleRootsO:list("Advanced Settings", {}, "Applicable for all players but exceptions.")
         VehicleRootsO:list_action("Preset Cars", {}, "", vehicleData, function(index)
             local hash = util.joaat(vehicleData[index])
             local function upgrade_vehicle(vehicle)
@@ -3088,96 +3225,207 @@
         PlateIndexAll = VehicleRootsO:slider("Plate Color", {"interplc"}, "Choose Plate Color.", 0, 5, 0, 1, function()end)
         WindowTintAll = VehicleRootsO:slider("Window Tint", {"interwt"}, "Choose Window tint Color.", 0, 6, 0, 1, function()end)
 
-   ----===============================================----
-   ---                World Parts
-   ---    The part of worlds parts, useful or useless
-   ----===============================================----
+    ----========================================----
+    ---            Advance Vehicles Roots
+    ---         The part of vehicle online
+    ----========================================----
+        
+        AdvancedVehicles:action("Change Plate Name", {}, "Troll all players if they are in a vehicle. Name them to make proud of Austrian Painter.\n".."NOTE: Toggle Exclude features to avoid impacted.", function()
+            local name = display_onscreen_keyboard()
+            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    if name ~= "" or name == nil then
+                        VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(playerVehicle, name)
+                    else
+                        VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(playerVehicle, RandomPlate())
+                    end
+                end
+            end
+        end)
 
-       local plateTables = {
-           "ADOLF", 
-           "HITLER", 
-           "WAFFENSS",
-           "14",
-           "88",
-           "HIMMLER", 
-           "GOEBBELS",
-           "REICH",
-           "NIGGER",
-           "DICKLAND",
-           "39 45",
-           "1939",
-           "1945",
-           "DASREICH"
-       } 
+        AdvancedVehicles:toggle_loop("Lock Vehicle", {}, "Troll all players if they are in a vehicle.".."\n".."Proving they can't exit their car.\n".."NOTE: Toggle Exclude features to avoid impacted.", function()
+            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                    VEHICLE.SET_VEHICLE_DOORS_LOCKED(playerVehicle, 4)
+                end
+            end
+        end, function()
+            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                    VEHICLE.SET_VEHICLE_DOORS_LOCKED(playerVehicle, 0)
+                end
+            end
+        end)
 
-       local currentPlate = plateTables[math.random(#plateTables)]
+        AdvancedVehicles:toggle_loop("Pink Color", {}, "I love pink color, bcz we called it before Pink menu.\n".."NOTE: Toggle Exclude features to avoid impacted.", function()
+            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                    VEHICLE.SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(playerVehicle, 255, 0, 255)
+                    VEHICLE.SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(playerVehicle, 255, 0, 255)
+                    VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(playerVehicle, "STAND")
+                    VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT_INDEX(playerVehicle, 5)
+                    VEHICLE.SET_VEHICLE_WINDOW_TINT(playerVehicle, 1)
+                    for i = 0, 49 do
+                        local num = VEHICLE.GET_NUM_VEHICLE_MODS(playerVehicle, i)
+                        VEHICLE.SET_VEHICLE_MOD(playerVehicle, i, num - 1, true)
+                    end
+                end
+            end
+        end)
 
-       GColors = WorldParts:toggle_loop("Made in Germany", {}, "Pray for Austrian Painter", function()
-           if menu.get_value(RainColors) then
-               menu.set_value(RainColors, false)
-           end
-           for k, vehicle in pairs(entities.get_all_vehicles_as_handles()) do
-               for i = 0,49 do
-                   local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
-                   VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
-                   VEHICLE.SET_VEHICLE_WINDOW_TINT(vehicle, 2)
-                   VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT_INDEX(vehicle, 5)
-               end
-               VEHICLE.SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(vehicle, 188, 0, 0)
-               VEHICLE.SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(vehicle, 188, 0, 0)
-               VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(vehicle, currentPlate)
-           end
-       end,function()
-           menu.set_value(RainColors, false)
-       end)
+        AdvancedVehicles:toggle_loop("Cut Engine", {}, "cut completely engine for all players.\n".."NOTE: Toggle Exclude features to avoid impacted.", function()
+            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                    VEHICLE.SET_VEHICLE_ENGINE_ON(playerVehicle, false, true, true)
+                    VEHICLE.SET_VEHICLE_ENGINE_HEALTH(playerVehicle, -4000)
+                    VEHICLE.SET_VEHICLE_BODY_HEALTH(playerVehicle, -4000)
+                    VEHICLE.SET_VEHICLE_PETROL_TANK_HEALTH(playerVehicle, -4000)
+                    VEHICLE.SET_VEHICLE_UNDRIVEABLE(playerVehicle, true)
+                end
+            end
+        end, function()
+            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                    VEHICLE.SET_VEHICLE_ENGINE_ON(playerVehicle, true, true, false)
+                    VEHICLE.SET_VEHICLE_ENGINE_HEALTH(playerVehicle, 1000)
+                    VEHICLE.SET_VEHICLE_BODY_HEALTH(playerVehicle, 1000)
+                    VEHICLE.SET_VEHICLE_PETROL_TANK_HEALTH(playerVehicle, 1000)
+                    VEHICLE.SET_VEHICLE_UNDRIVEABLE(playerVehicle, false)
+                end
+            end
+        end)
 
-       RainColors = WorldParts:toggle_loop("Rainbow Cars", {}, "", function()
-           if menu.get_value(GColors) then
-               menu.set_value(GColors, false)
-           end
-           local primary_color = 0
-           local secondary_color = 0
-       
-           for k, veh in pairs(entities.get_all_vehicles_as_handles()) do
-               NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(veh)
-               VEHICLE.SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(veh, primary_color, math.random(0, 255), math.random(0, 255))
-               VEHICLE.SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(veh, secondary_color, math.random(0, 255), math.random(0, 255))
-               VEHICLE.SET_VEHICLE_XENON_LIGHT_COLOR_INDEX(veh, math.random(0, 255), math.random(0, 255), math.random(0, 255))
-               DECORATOR.DECOR_SET_INT(vehicle, "MPBitset", math.random(0, 50))
-               VEHICLE.TOGGLE_VEHICLE_MOD(vehicle, math.random(17, 22), true)
-               VEHICLE.SET_VEHICLE_MOD_KIT(vehicle, math.random(0, 49))
-               VEHICLE.SET_VEHICLE_WINDOW_TINT(veh, math.random(0, 6))
-               VEHICLE.SET_VEHICLE_WHEEL_TYPE(veh, math.random(0, 5))
-               VEHICLE.SET_VEHICLE_MOD(veh, math.random(0, 49))
-               VEHICLE.SET_VEHICLE_WINDOW_TINT(veh, 2)
-               VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT_INDEX(veh, 5)
-               VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(veh, RandomPlate())
-       
-               primary_color = primary_color + 10
-               if primary_color > 255 then
-                   primary_color = 0
-                   secondary_color = secondary_color + 10
-                   if secondary_color > 255 then
-                       secondary_color = 0
-                   end
-               end
-           end
-       end,function()
-           menu.set_value(GColors, false)
-       end)
+        AdvancedVehicles:action("Remove Player Vehicle", {}, "Remove instantly player's cars.\n".."NOTE: Toggle Exclude features to avoid impacted.", function()
+            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    entities.delete_by_handle(playerVehicle)
+                end
+            end
+        end)
 
-       WorldParts:toggle_loop("More Traffic City", {}, "", function()
-           local repopulate_timer = os.time() + 2.5
-           if os.time() > repopulate_timer then
-               InstantlyFillVehiclePopulation()
-               repopulate_timer = os.time() + 2.5
-           end
-       end)
+        local vehicleSpeedINT = 50.0
+        AdvancedVehicles:text_input("Modify Speed", {"intvehspeed"}, "", function(valueInput)
+            if valueInput ~= "" then
+                vehicleSpeedINT = tonumber(valueInput)
+            else
+                vehicleSpeedINT = 50.0
+            end
+        end)
 
-       local disable_peds = true
-       local disable_traffic = true
+        AdvancedVehicles:toggle_loop("Uncontrollable Vehicle", {}, "Boost faster to deform vehicle without any manner to control.\n".."NOTE: Toggle Exclude features to avoid impacted.", function()
+            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                    VEHICLE.SET_VEHICLE_FORWARD_SPEED(playerVehicle, vehicleSpeedINT)
+                end
+            end
+        end, function()
+            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                    VEHICLE.SET_VEHICLE_FORWARD_SPEED(playerVehicle, 0)
+                end
+            end
+        end)
 
-       WorldParts:toggle("Remove Traffic", {}, "", function(toggle)
+    ----===============================================----
+    ---                World Parts
+    ---    The part of worlds parts, useful or useless
+    ----===============================================----
+
+        local plateTables = {
+            "ADOLF", 
+            "HITLER", 
+            "WAFFENSS",
+            "14",
+            "88",
+            "HIMMLER", 
+            "GOEBBELS",
+            "REICH",
+            "NIGGER",
+            "DICKLAND",
+            "39 45",
+            "1939",
+            "1945",
+            "DASREICH"
+        } 
+
+        local currentPlate = plateTables[math.random(#plateTables)]
+
+        GColors = WorldParts:toggle_loop("Made in Germany", {}, "Pray for Austrian Painter", function()
+            if menu.get_value(PinkColors) then
+                menu.set_value(PinkColors, false)
+            end
+            for k, vehicle in pairs(entities.get_all_vehicles_as_handles()) do
+                for i = 0,49 do
+                    local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
+                    VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
+                    VEHICLE.SET_VEHICLE_WINDOW_TINT(vehicle, 2)
+                    VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT_INDEX(vehicle, 5)
+                end
+                VEHICLE.SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(vehicle, 188, 0, 0)
+                VEHICLE.SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(vehicle, 188, 0, 0)
+                VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(vehicle, currentPlate)
+            end
+        end,function()
+            menu.set_value(PinkColors, false)
+        end)
+
+        PinkColors = WorldParts:toggle_loop("Pink Color", {}, "Pray for Pink Menu", function()
+            if menu.get_value(GColors) then
+                menu.set_value(GColors, false)
+            end
+            for k, vehicle in pairs(entities.get_all_vehicles_as_handles()) do
+                for i = 0,49 do
+                    local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
+                    VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
+                    VEHICLE.SET_VEHICLE_WINDOW_TINT(vehicle, 2)
+                    VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT_INDEX(vehicle, 5)
+                end
+                VEHICLE.SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(vehicle, 255, 0, 255)
+                VEHICLE.SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(vehicle, 255, 0, 255)
+                VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(vehicle, "STAND")
+            end
+        end,function()
+            menu.set_value(GColors, false)
+        end)
+
+        WorldParts:toggle_loop("More Traffic City", {}, "", function()
+            local repopulate_timer = os.time() + 2.5
+            if os.time() > repopulate_timer then
+                InstantlyFillVehiclePopulation()
+                repopulate_timer = os.time() + 2.5
+            end
+        end)
+
+        local disable_peds = true
+        local disable_traffic = true
+
+        WorldParts:toggle("Remove Traffic", {}, "", function(toggle)
            local pop_multiplier_id
            if toggle then
                local ped_sphere, traffic_sphere
@@ -3190,7 +3438,7 @@
            end
        end)
 
-       WorldParts:action("Blow up nearby vehicles", {}, "It will guaranteed burning all vehicles Specific Personal Vehicles.\n\nNOTE: It will affect players while driving and can burn, die easily.", function()
+        WorldParts:action("Blow up nearby vehicles", {}, "It will guaranteed burning all vehicles Specific Personal Vehicles.\n\nNOTE: It will affect players while driving and can burn, die easily.", function()
            for _, vehicle in pairs(entities.get_all_vehicles_as_handles()) do
                if vehicle ~= entities.get_user_personal_vehicle_as_handle() then
                    RequestControl(vehicle)
@@ -3199,7 +3447,28 @@
            end
        end)
 
-       WorldParts:action("Teleport to a high altitude", {"intertphigh"}, "Teleports you and your vehicle to a high altitude.", function()
+        WorldParts:toggle_loop("Cut Engine nearby vehicles", {}, "It will guaranteed cut engine for all vehicle (nearby).\n\nNOTE: It will affect players while driving and can cut off.", function()
+            for _, vehicle in pairs(entities.get_all_vehicles_as_handles()) do
+                if vehicle ~= entities.get_user_personal_vehicle_as_handle() then
+                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(vehicle)
+                    VEHICLE.SET_VEHICLE_ENGINE_ON(vehicle, false, true, true)
+                end
+            end
+        end, function()
+            VEHICLE.SET_VEHICLE_ENGINE_ON(entities.get_all_vehicles_as_handles(), false, true, true)
+        end)
+
+        WorldParts:action("Change Plate for nearby vehicles", {}, "Fail or not? Hitler will be proud of this.", function()
+            local txt = display_onscreen_keyboard()
+            for _, vehicle in pairs(entities.get_all_vehicles_as_handles()) do
+                if vehicle ~= entities.get_user_personal_vehicle_as_handle() then
+                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(vehicle)
+                    VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(vehicle, txt)
+                end
+            end
+        end)
+
+        WorldParts:action("Teleport to a high altitude", {"intertphigh"}, "Teleports you and your vehicle to a high altitude.", function()
            local ped = players.user_ped()
            local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(ped, true)
            local coords
@@ -3215,7 +3484,7 @@
                 coords.z = 2000.0
                 ENTITY.SET_ENTITY_COORDS_NO_OFFSET(ped, coords.x, coords.y, coords.z, false, false, false)
             end
-       end)
+        end)
 
     ----===============================================----
     ---              World Parts (BOEING)
@@ -3415,7 +3684,6 @@
     ---             Panic Parts
     ---   The part of menyoo destroying world
     ----========================================----
-
 
         PanicParts:divider("Panic Mode")
                     
@@ -4244,66 +4512,6 @@
             end
         end)
 
-        SettingsParts:divider("Menu Settings")
-
-         --==========================================================================================--
-
-        SettingsParts:toggle("Toggle Transition Template while starting", {}, "Toggle (Enable/Disable) image while starting Lua Script InterTools.", function(templateBool)
-            local fp = io.open(script_resources .. '/Template/ToggleTemplate.txt', 'w')
-            fp:write(not templateBool and 'True' or 'False')
-            fp:close()
-        end, io.open(script_resources .. '/Template/ToggleTemplate.txt', 'r'):read('*all') == 'True')
-
-        SettingsParts:toggle("Toggle Transition Musics while starting", {}, "Toggle (Enable/Disable) Songs while starting Lua Script InterTools.", function(boolVerify)
-            local fp = io.open(script_resources .. '/Songs/SongToggle.txt', 'w')
-            fp:write(not boolVerify and 'True' or 'False')
-            fp:close()
-        end, io.open(script_resources .. '/Songs/SongToggle.txt', 'r'):read('*all') == 'True')
-
-        SettingsParts:toggle("Toggle Message while starting", {}, "Toggle (Enable/Disable) message while starting Lua Script InterTools.", function(msgVerify)
-            local fp = io.open(script_resources .. '/toggleMsg.txt', 'w')
-            fp:write(not msgVerify and 'True' or 'False')
-            fp:close()
-        end, io.open(script_resources .. '/toggleMsg.txt', 'r'):read('*all') == 'True')
-
-        --==========================================================================================--
-        
-        local fp = io.open(script_resources .. '/Template/DisplayDuration.txt', 'r')
-        local DisplayDurationTime = tonumber(fp:read('*all')) or 0
-        fp:close()
-
-        local fp = io.open(script_resources .. '/Songs/songName.txt', 'r')
-        local SongName = tonumber(fp:read('*all')) or 0
-        fp:close()
-
-        SettingsParts:action("Change Duration Time", {"intdurationtrans"}, "Change duration time template transition, in seconds, 1 second means the transition is very faster and disappear, choose your own way.", function(inputValue)
-            menu.show_command_box_click_based(inputValue, "intdurationtrans ")
-        end, function(arg)
-            DisplayDurationTime = tonumber(arg) or DisplayDurationTime
-            local fp = io.open(script_resources .. '/Template/DisplayDuration.txt', 'w')
-            fp:write(DisplayDurationTime)
-            fp:close()
-
-            InterNotify("The settings have been applied correctly. Make sure you need to restart the Lua Script.\n\nDuration time: "..arg.." seconds")
-        end)
-
-        SettingsParts:action("Rename Music Name", {"intercmn"}, "Change music name of your choice.\nRemember: No music name in your folder, no songs during restart, okay?\nWrite only name, don't add extension like .mp3/wav.", function(inputName)
-            menu.show_command_box_click_based(inputName, "intercmn ")
-        end, function(arg)
-            SongName = arg
-            local fp = io.open(script_resources .. '/Songs/songName.txt', 'w')
-            fp:write(SongName..".wav")
-            fp:close()
-            InterNotify("The settings have been applied correctly. Make sure you need to restart the Lua Script.\n\nName Music: "..SongName..".wav")
-        end)
-
-        --==========================================================================================--
-
-        SettingsParts:action("Open Folder", {}, "Edit the folder in your own way\nRemember: Don't delete folders.", function()
-            local script_resources_inter = filesystem.resources_dir() .. "Inter"
-            util.open_folder(script_resources_inter)
-        end)   
-
         SettingsParts:divider("Credits & Others")
         local Credits = SettingsParts:list("Credits")
 
@@ -4315,41 +4523,9 @@
         Credits:divider("And you are currently using the lua script")
         Credits:action(SOCIALCLUB.SC_ACCOUNT_INFO_GET_NICKNAME(), {}, "", function()end)
 
+        local MenuSettings = SettingsParts:list("Menu Settings")
         local MoneySettings = SettingsParts:list("Money Features")
-        SettingsParts:toggle("Block Phone Calls", {""}, "Blocks incoming phones calls", function(state)
-            local phone_calls = menu.ref_by_command_name("nophonespam")
-            phone_calls.value = state
-        end)
-
-        SettingsParts:toggle_loop("Auto Skip Conversation", {}, "Automatically skip all conversations.",function()
-            if AUDIO.IS_SCRIPTED_CONVERSATION_ONGOING() then
-                AUDIO.SKIP_TO_NEXT_SCRIPTED_CONVERSATION_LINE()
-            end
-            InterWait()
-        end)
-
-        SettingsParts:toggle_loop("Auto Skip Cutscene", {}, "Automatically skip all cutscenes.",function()
-            CUTSCENE.STOP_CUTSCENE_IMMEDIATELY()
-            InterWait(100)
-        end)
-
-        local screens = {
-            "You have been banned from Grand Theft Auto Online permanently.", -- Permanent Ban
-            "You're attempting to access GTA Online servers with an altered version of the game.", -- Altered Version
-            "There has been an error with this session.", -- Error Session
-            "You have been suspended from Grand Theft Auto Online Online until ".. os.date("%m/%d/%Y", os.time() + 2700000) ..". \nIn addition, your Grand Theft Auto Online characters(s) will be reset.", -- Suspended
-            "Failed to join due to incompatible assets." -- Incompatible Assets
-        }
-
-        SettingsParts:action_slider("Alert Message", {}, "", {
-            "Banned", 
-            "Altered Version", 
-            "Error Session", 
-            "Suspended", 
-            "Incompatible assets"
-        }, function(select)
-            show_custom_rockstar_alert(screens[select].."\nReturn to Grand Theft Auto V.")
-        end)
+        local InGameSettings = SettingsParts:list("Other Features")
 
         SettingsParts:divider("GitHub / Updates")
         SettingsParts:hyperlink("Github Page", "https://github.com/StealthyAD/InterTools")
@@ -4366,18 +4542,135 @@
         end)
 
     ----========================================----
+    ---             Menu Settings
+    ---         Settings for Lua Script
+    ----========================================----
+
+        MenuSettings:toggle("Toggle Transition Template while starting", {}, "Toggle (Enable/Disable) image while starting Lua Script InterTools.", function(templateBool)
+            local fp = io.open(script_resources .. '/Template/ToggleTemplate.txt', 'w')
+            fp:write(not templateBool and 'True' or 'False')
+            fp:close()
+        end, io.open(script_resources .. '/Template/ToggleTemplate.txt', 'r'):read('*all') == 'True')
+
+        MenuSettings:toggle("Toggle Transition Musics while starting", {}, "Toggle (Enable/Disable) Songs while starting Lua Script InterTools.", function(boolVerify)
+            local fp = io.open(script_resources .. '/Songs/SongToggle.txt', 'w')
+            fp:write(not boolVerify and 'True' or 'False')
+            fp:close()
+        end, io.open(script_resources .. '/Songs/SongToggle.txt', 'r'):read('*all') == 'True')
+
+        MenuSettings:toggle("Toggle Message while starting", {}, "Toggle (Enable/Disable) message while starting Lua Script InterTools.", function(msgVerify)
+            local fp = io.open(script_resources .. '/toggleMsg.txt', 'w')
+            fp:write(not msgVerify and 'True' or 'False')
+            fp:close()
+        end, io.open(script_resources .. '/toggleMsg.txt', 'r'):read('*all') == 'True')
+
+        --==========================================================================================--
+        
+        local fp = io.open(script_resources .. '/Template/DisplayDuration.txt', 'r')
+        local DisplayDurationTime = tonumber(fp:read('*all')) or 0
+        fp:close()
+
+        local fp = io.open(script_resources .. '/Songs/songName.txt', 'r')
+        local SongName = tonumber(fp:read('*all')) or 0
+        fp:close()
+
+        MenuSettings:action("Change Duration Time", {"intdurationtrans"}, "Change duration time template transition, in seconds, 1 second means the transition is very faster and disappear, choose your own way.", function(inputValue)
+            menu.show_command_box_click_based(inputValue, "intdurationtrans ")
+        end, function(arg)
+            DisplayDurationTime = tonumber(arg) or DisplayDurationTime
+            local fp = io.open(script_resources .. '/Template/DisplayDuration.txt', 'w')
+            fp:write(DisplayDurationTime)
+            fp:close()
+
+            InterNotify("The settings have been applied correctly. Make sure you need to restart the Lua Script.\n\nDuration time: "..arg.." seconds")
+        end)
+
+        MenuSettings:action("Rename Music Name", {"intercmn"}, "Change music name of your choice.\nRemember: No music name in your folder, no songs during restart, okay?\nWrite only name, don't add extension like .mp3/wav.", function(inputName)
+            menu.show_command_box_click_based(inputName, "intercmn ")
+        end, function(arg)
+            SongName = arg
+            local fp = io.open(script_resources .. '/Songs/songName.txt', 'w')
+            fp:write(SongName..".wav")
+            fp:close()
+            InterNotify("The settings have been applied correctly. Make sure you need to restart the Lua Script.\n\nName Music: "..SongName..".wav")
+        end)
+
+        --==========================================================================================--
+
+        MenuSettings:action("Open Folder", {}, "Edit the folder in your own way\nRemember: Don't delete folders.", function()
+            local script_resources_inter = filesystem.resources_dir() .. "Inter"
+            util.open_folder(script_resources_inter)
+        end)   
+
+    ----========================================----
+    ---              Other Parts
+    ---             Game Settings
+    ----========================================----
+
+        InGameSettings:toggle_loop("Toggle Radar/HUD", {}, "", function()
+            HUD.DISPLAY_RADAR(false)
+            HUD.DISPLAY_HUD(false)
+        end, function()
+            HUD.DISPLAY_RADAR(true)
+            HUD.DISPLAY_HUD(true)
+        end)
+        
+        InGameSettings:toggle("Block Phone Calls", {""}, "Blocks incoming phones calls", function(state)
+            local phone_calls = menu.ref_by_command_name("nophonespam")
+            phone_calls.value = state
+        end)
+
+        InGameSettings:toggle_loop("Auto Skip Conversation", {}, "Automatically skip all conversations.",function()
+            if AUDIO.IS_SCRIPTED_CONVERSATION_ONGOING() then
+                AUDIO.SKIP_TO_NEXT_SCRIPTED_CONVERSATION_LINE()
+            end
+            InterWait()
+        end)
+
+        InGameSettings:toggle_loop("Auto Skip Cutscene", {}, "Automatically skip all cutscenes.",function()
+            CUTSCENE.STOP_CUTSCENE_IMMEDIATELY()
+            InterWait(100)
+        end)
+
+        --====================================================================================================--
+
+        local screens = {
+            "You have been banned from Grand Theft Auto Online permanently.", -- Permanent Ban
+            "You're attempting to access GTA Online servers with an altered version of the game.", -- Altered Version
+            "There has been an error with this session.", -- Error Session
+            "You have been suspended from Grand Theft Auto Online Online until ".. os.date("%m/%d/%Y", os.time() + 2700000) ..". \nIn addition, your Grand Theft Auto Online characters(s) will be reset.", -- Suspended
+            "Failed to join due to incompatible assets." -- Incompatible Assets
+        }
+
+        InGameSettings:action_slider("Alert Message", {}, "", {
+            "Banned", 
+            "Altered Version", 
+            "Error Session", 
+            "Suspended", 
+            "Incompatible assets",
+            "Custom"
+        }, function(select)
+            if select == 6 then -- Si l'option "Custom" est sélectionnée
+                local text = display_onscreen_keyboard()
+                if text ~= "" or text == nil then
+                    show_custom_rockstar_alert(text)
+                end
+            else
+                show_custom_rockstar_alert(screens[select].."\nReturn to Grand Theft Auto V.")
+            end
+        end)
+
+    ----========================================----
     ---            Money Features Parts
     ---         The part of money F parts
     ----========================================----
 
-        MoneySettings:toggle("Display Money", {}, "", function(toggle)
-            if toggle then
-                HUD.SET_MULTIPLAYER_WALLET_CASH()
-                HUD.SET_MULTIPLAYER_BANK_CASH()
-            else
-                HUD.REMOVE_MULTIPLAYER_WALLET_CASH()
-                HUD.REMOVE_MULTIPLAYER_BANK_CASH()
-            end
+        MoneySettings:toggle_loop("Display Money", {}, "", function()
+            HUD.SET_MULTIPLAYER_WALLET_CASH()
+            HUD.SET_MULTIPLAYER_BANK_CASH()
+        end,function()
+            HUD.REMOVE_MULTIPLAYER_WALLET_CASH()
+            HUD.REMOVE_MULTIPLAYER_BANK_CASH()
         end)
 
         local money_delay = 1
@@ -4971,6 +5264,7 @@
                 if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
                     NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
                     VEHICLE.SET_VEHICLE_FIXED(playerVehicle)
+                    VEHICLE.SET_VEHICLE_DEFORMATION_FIXED(playerVehicle)
                 end
             end)
 
@@ -5018,7 +5312,8 @@
                 end
             end)
 
-            VehicleFriendly:text_input("Change Plate Name", {"intcplate"}, "Apply Plate Name if the player is in a vehicle.", function(name)
+            VehicleFriendly:action("Change Plate Name", {}, "Apply Plate Name if the player is in a vehicle.", function()
+                local name = display_onscreen_keyboard()
                 local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
                 local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
                 NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
@@ -5026,7 +5321,6 @@
                     if name ~= "" then
                         VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(playerVehicle, name)
                     else
-                        name = nil
                         VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(playerVehicle, RandomPlate())
                     end
                 end
@@ -5110,6 +5404,72 @@
                 local spoofToken = players.get_host_token_hex(pid)
                 local spoofType = tokenTypes[string.sub(spoofToken, 1, 4)] or "Unconfirmed"
                 InterNotify(InterName.." is".." "..(spoofType ~= "Unconfirmed" and "using "..spoofType.." " or "not using Spoof Host Token."))
+            end)
+
+            local ChatPartsN = NeutralOptions:list("Chat Parts")
+
+            ChatPartsN:action("Chat as "..InterName, {""}, "pretend the person who wrote this message.", function ()
+                local txt = display_onscreen_keyboard()
+                local playersList = players.list(true, true, true, true, true)
+                if not txt or string.len(txt) == 0 then return end
+                local from = pid
+                for k, v in pairs(playersList) do
+                    chat.send_targeted_message(v, from, txt, false)
+                end
+            end)
+
+
+            local SpamChatN = ChatPartsN:list("Spam Chat")
+            local PresetChatN = ChatPartsN  :list("Spoof Preset Chats")
+            local presetMessages = {
+                ["Austrian Painter"] = {text = "His name is Adolf Hitler. He's the greatest leader of the world during the era. Remember, he was an exceptional painter, he changed the world forever and changed world maps forever too."},
+                ["Propaganda Putin"] = {text = "I only fucked Ukraine, dick Ukrainians. I hope all those Ukronazis should die. I don't care if all those ukrainians are going to die, in my own way I didn't started the Invasion but Ukrainians started."},
+                ["Slava Ukraini"] = {text = "Слава Україні"},
+                ["Fuck Russia"] = {text = "I fuck the Russian government and terrorist who attack the poor Ukrainians. К черту российское правительство и террористические банды, которые нападают на бедных украинцев"},
+            }
+
+            local preset_orderN = {}
+            for name, preset in pairs(presetMessages) do
+                table.insert(preset_orderN, {name, preset})
+            end
+            table.sort(preset_orderN, function(a, b) return a[1] < b[1] end)
+
+            for _, preset in ipairs(preset_orderN) do
+                local name = preset[1]
+                local details = preset[2]
+                PresetChatN:action(name, {}, "", function()
+                    local from = pid
+                    for k,v in pairs(players.list(true, true, true)) do
+                        chat.send_targeted_message(v, from, details.text, false)
+                    end
+                end)
+            end
+
+            local message = "pog"
+            SpamChatN:text_input("Send Message", {"intermsgspam"}, "send to the chat", function(textInput)
+                if textInput ~= "" then
+                    message = textInput
+                else
+                    message = "pog"
+                end
+            end, message)
+
+            local delaySpam = 1
+            SpamChatN:text_input("Modify Delay", {"interdelayspamchat"}, "Delay mesured in seconds.", function(valueInput)
+                if valueInput ~= "" then
+                    delaySpam = tonumber(valueInput)
+                else
+                    delaySpam = 1
+                end
+            end, delaySpam)
+
+            SpamChatN:toggle_loop("Chat as "..InterName, {""}, "pretend the person who wrote this message.", function ()
+                local playersList = players.list(true, true, true, true, true)
+                local from = pid
+                for k, v in pairs(playersList) do
+                    chat.send_targeted_message(v, from, message, false)
+                end
+                InterWait(delaySpam * 1000)
             end)
 
         ----========================================----
@@ -5260,17 +5620,49 @@
                 VEHICLE.SET_VEHICLE_DOORS_LOCKED(PED.GET_VEHICLE_PED_IS_IN(PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid), true), 0)
             end)
 
+            local vehicleSpeed = 50.0
+            VehicleTrolling:text_input("Modify Speed", {"intervehspeed"}, "", function(valueInput)
+                if valueInput ~= "" then
+                    vehicleSpeed = tonumber(valueInput)
+                else
+                    vehicleSpeed = 50.0
+                end
+            end)
+
+            DisableUNCTRL = VehicleTrolling:toggle_loop("Uncontrollable Vehicle", {}, "Boost faster to deform vehicle without any manner to control.", function()
+                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                    VEHICLE.SET_VEHICLE_FORWARD_SPEED(playerVehicle, vehicleSpeed)
+                else
+                    menu.set_value(DisableUNCTRL, false)
+                end
+            end, function()
+                local vehicle = PED.GET_VEHICLE_PED_IS_IN(PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid), true)
+                VEHICLE.SET_VEHICLE_FORWARD_SPEED(vehicle, 0)
+            end)
+
             DisableEngine = VehicleTrolling:toggle_loop("Cut Engine", {}, "", function()
                 local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
                 local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
                 if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
                     NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
                     VEHICLE.SET_VEHICLE_ENGINE_ON(playerVehicle, false, true, true)
+                    VEHICLE.SET_VEHICLE_ENGINE_HEALTH(playerVehicle, -4000)
+                    VEHICLE.SET_VEHICLE_BODY_HEALTH(playerVehicle, -4000)
+                    VEHICLE.SET_VEHICLE_PETROL_TANK_HEALTH(playerVehicle, -4000)
+                    VEHICLE.SET_VEHICLE_UNDRIVEABLE(playerVehicle, true)
                 else
                     menu.set_value(DisableEngine, false)
                 end
             end, function()
-                VEHICLE.SET_VEHICLE_ENGINE_ON(PED.GET_VEHICLE_PED_IS_IN(player, true), true, true, false)
+                local vehicle = PED.GET_VEHICLE_PED_IS_IN(PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid), true)
+                VEHICLE.SET_VEHICLE_ENGINE_ON(vehicle, true, true, false)
+                VEHICLE.SET_VEHICLE_ENGINE_HEALTH(vehicle, 1000)
+                VEHICLE.SET_VEHICLE_BODY_HEALTH(vehicle, 1000)
+                VEHICLE.SET_VEHICLE_PETROL_TANK_HEALTH(vehicle, 1000)
+                VEHICLE.SET_VEHICLE_UNDRIVEABLE(vehicle, false)
             end)
 
             VehicleTrolling:action_slider("Vehicle Remove", {}, "Choose any solution by any means how to remove.\n- Explode (not easy while removing god and explode)\n- Remove (Better)", {"Explode", "Remove"}, function(elimSelect)
@@ -5288,6 +5680,56 @@
                         ENTITY.SET_ENTITY_INVINCIBLE(playerVehicle, false) -- add condition if the player is using godmode car
                         entities.delete_by_handle(playerVehicle)
                     end
+                end
+            end)
+
+            VehicleTrolling:divider("Advanced (Aircraft/Helicopters)")
+
+            DisableGear = VehicleTrolling:toggle_loop("Toggle Landing Gear", {}, "reduces speed of jets or helicopter", function()
+                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    if PED.IS_PED_IN_ANY_PLANE(player) or PED.IS_PED_IN_ANY_HELI(player) then
+                        NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                        VEHICLE.CONTROL_LANDING_GEAR(playerVehicle, 0)
+                    else
+                        menu.set_value(DisableGear, false)
+                    end
+                else
+                    menu.set_value(DisableGear, false)
+                end
+            end, function()
+                VEHICLE.CONTROL_LANDING_GEAR(PED.GET_VEHICLE_PED_IS_IN(PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid), true), 3)
+            end)
+
+            THeliBlades = VehicleTrolling:toggle_loop("Toggle Propeller", {}, "Enable: Propeller Helicopter\nDisable: Reverted to back",function()
+                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    if PED.IS_PED_IN_ANY_HELI(player) then
+                        NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                        VEHICLE.SET_HELI_BLADES_SPEED(playerVehicle, 0.0)
+                    else
+                        menu.set_value(THeliBlades, false)
+                    end
+                else
+                    menu.set_value(THeliBlades, false)
+                end
+            end)
+
+            ToggleRotor = VehicleTrolling:toggle_loop("Cut Rotor Helicopter", {}, "",function()
+                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    if PED.IS_PED_IN_ANY_HELI(player) then
+                        NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
+                        VEHICLE.SET_HELI_TAIL_ROTOR_HEALTH(playerVehicle, -100)
+                        VEHICLE.SET_HELI_MAIN_ROTOR_HEALTH(playerVehicle, -100)
+                    else
+                        menu.set_value(ToggleRotor, false)
+                    end
+                else
+                    menu.set_value(ToggleRotor, false)
                 end
             end)
 
