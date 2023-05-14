@@ -28,6 +28,32 @@
     ---         The part of essentials
     ----========================================----
 
+        EToggleSelf = true
+        EToggleFriend = true
+        EToggleStrangers = true
+        EToggleCrew = true
+        EToggleOrg = true
+        
+        function toggleSelfCallback(toggle)
+            EToggleSelf = not toggle
+        end
+        
+        function toggleFriendCallback(toggle)
+            EToggleFriend = not toggle
+        end
+
+        function toggleStrangersCallback(toggle)
+            EToggleStrangers = not toggle
+        end
+
+        function toggleCrewCallback(toggle)
+            EToggleCrew = not toggle
+        end
+
+        function toggleOrgCallback(toggle)
+            EToggleOrg = not toggle
+        end
+
         function QuickRespawn()
             local resp = memory.script_global(2672505 + 1685 + 756)
             if PED.IS_PED_DEAD_OR_DYING(players.user_ped()) then
@@ -444,7 +470,7 @@
                 VEHICLE.SET_VEHICLE_FORWARD_SPEED(vehicle, 320.0)
                 VEHICLE.SET_VEHICLE_MAX_SPEED(vehicle, 1000.0)
                 VEHICLE.SET_VEHICLE_DOORS_LOCKED(vehicle, 4)
-                ENTITY.SET_ENTITY_INVINCIBLE(vehicle, true)
+                ENTITY.SET_ENTITY_INVINCIBLE(vehicle, menu.get_value(PlaneToggleGod))
                 coords = ENTITY.GET_ENTITY_COORDS(ped, false)
                 coords.x = coords['x']
                 coords.y = coords['y']
@@ -503,6 +529,102 @@
                 PED.SET_PED_CONFIG_FLAG(attacker, 52, true)
                 local relHash = PED.GET_PED_RELATIONSHIP_GROUP_HASH(ped)
                 PED.SET_PED_RELATIONSHIP_GROUP_HASH(attacker, relHash)
+            end
+        end
+
+        function groundAttack(pid, hash, groundVehicle)
+            if groundVehicle then
+                if not players.is_in_interior(pid) then
+                    local player_ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                    local vehicleHash = util.joaat(hash)
+                    local hash_models = {
+                        util.joaat("s_m_y_blackops_01"),
+                        util.joaat("s_m_m_marine_01"),
+                        util.joaat("s_m_m_pilot_02"),
+                        util.joaat("s_m_y_pilot_01"),
+                        util.joaat("s_m_m_marine_02"),
+                        util.joaat("s_m_m_prisguard_01"),
+                        util.joaat("mp_g_m_pros_01"),
+                        util.joaat("mp_m_avongoon"),
+                        util.joaat("mp_m_boatstaff_01"),
+                        util.joaat("mp_m_bogdangoon"),
+                        util.joaat("mp_m_claude_01"),
+                        util.joaat("mp_m_cocaine_01"),
+                        util.joaat("mp_m_counterfeit_01"),
+                        util.joaat("mp_m_exarmy_01"),
+                        util.joaat("mp_m_fibsec_01")
+                    }
+                    local marine1 = hash_models[math.random(#hash_models)]
+                    request_model_load(vehicleHash)
+                    request_model_load(marine1)
+                    local targetPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                    local pos = ENTITY.GET_ENTITY_COORDS(targetPed)
+                    local vehicle = entities.create_vehicle(vehicleHash, pos, CAM.GET_GAMEPLAY_CAM_ROT(0).z)
+                    if not ENTITY.DOES_ENTITY_EXIST(vehicle) then
+                        return
+                    end
+                    local offset = getOffsetFromEntityGivenDistance(vehicle, 10)
+                    local outCoords = v3.new()
+                    local outHeading = memory.alloc()
+                
+                    if PATHFIND.GET_CLOSEST_VEHICLE_NODE_WITH_HEADING(offset.x, offset.y, offset.z, outCoords, outHeading, 1, 3.0, 0) then
+                        ENTITY.SET_ENTITY_COORDS(vehicle, v3.getX(outCoords), v3.getY(outCoords), v3.getZ(outCoords))
+                        ENTITY.SET_ENTITY_HEADING(vehicle, memory.read_float(outHeading))
+                        VEHICLE.SET_VEHICLE_ENGINE_ON(vehicle, true, true, true)
+                    end
+                    for i=-1, VEHICLE.GET_VEHICLE_MAX_NUMBER_OF_PASSENGERS(vehicle) - 1 do
+                        local attackerFlag = entities.create_ped(2, marine1, outCoords, CAM.GET_GAMEPLAY_CAM_ROT(0).z)
+                        PED.SET_PED_INTO_VEHICLE(attackerFlag, vehicle, i)
+                        if i % 2 == 0 then
+                            WEAPON.GIVE_WEAPON_TO_PED(attackerFlag, 584646201 , 9999, false, true)
+                            PED.SET_PED_FIRING_PATTERN(attackerFlag, -957453492)
+                        else
+                            WEAPON.GIVE_WEAPON_TO_PED(attackerFlag, 584646201 , 9999, false, true)
+                            PED.SET_PED_FIRING_PATTERN(attackerFlag, -957453492)
+                        end
+                        PED.SET_PED_AS_COP(attackerFlag, true)
+                        ENTITY.SET_ENTITY_INVINCIBLE(vehicle, menu.get_value(TankToggleGod))
+                        PED.SET_PED_CONFIG_FLAG(attackerFlag, 281, true)
+                        PED.SET_PED_CONFIG_FLAG(attackerFlag, 2, true)
+                        PED.SET_PED_CONFIG_FLAG(attackerFlag, 33, false)
+                        PED.SET_PED_COMBAT_ATTRIBUTES(attackerFlag, 5, true)
+                        PED.SET_PED_COMBAT_ATTRIBUTES(attackerFlag, 46, true)
+                        PED.SET_PED_ACCURACY(attackerFlag, 100.0)
+                        PED.SET_PED_HEARING_RANGE(attackerFlag, 99999)
+                        PED.SET_PED_RANDOM_COMPONENT_VARIATION(attackerFlag, 0)
+                        VEHICLE.SET_VEHICLE_DOORS_LOCKED(vehicle, 3)
+                        VEHICLE.SET_VEHICLE_EXPLODES_ON_HIGH_EXPLOSION_DAMAGE(vehicle, false)
+                        VEHICLE.MODIFY_VEHICLE_TOP_SPEED(vehicle, 50)
+                        PED.SET_PED_MAX_HEALTH(attackerFlag, 150)
+                        ENTITY.SET_ENTITY_PROOFS(ped, false, true, false, false, true, false, false, false)
+                        ENTITY.SET_ENTITY_HEALTH(attackerFlag, 150)
+                        PED.SET_PED_ARMOUR(attackerFlag, 100)
+                        PED.SET_PED_SHOOT_RATE(attackerFlag, 5)
+                        VEHICLE.SET_VEHICLE_MOD_KIT(vehicle, 0)
+                        VEHICLE.SET_VEHICLE_COLOURS(vehicle, 154, 154)
+                        VEHICLE.SET_VEHICLE_MOD_COLOR_1(vehicle, 3, 154, 0) --matte finish
+                        VEHICLE.SET_VEHICLE_MOD_COLOR_2(vehicle, 3, 154, 0)-- matte secondary
+                        PED.SET_PED_SUFFERS_CRITICAL_HITS(attackerFlag, false)
+                        VEHICLE.SET_VEHICLE_MOD(vehicle, 10, 0) --rear turret
+                        VEHICLE.SET_VEHICLE_EXTRA_COLOURS(vehicle, 0, 154) --wheel color
+                        VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT_INDEX(vehicle, 4) --plate type, 4 is SA EXEMPT which law enforcement and government vehicles use
+                        PED.SET_PED_COMBAT_ATTRIBUTES(attackerFlag, 3, false)
+                        ENTITY.SET_ENTITY_INVINCIBLE(vehicle, true)
+                        if i == -1 then
+                            TASK.TASK_VEHICLE_CHASE(attackerFlag, player_ped)
+                            WEAPON.GIVE_WEAPON_TO_PED(attackerFlag, 584646201 , 1000, false, true)
+                        else
+                            TASK.TASK_COMBAT_PED(attackerFlag, player_ped, 0, 16)
+                            WEAPON.GIVE_WEAPON_TO_PED(attackerFlag, 4208062921, 9999, false, true)
+                            WEAPON.GIVE_WEAPON_COMPONENT_TO_PED(attackerFlag, 4208062921, 0x8B3C480B)
+                            WEAPON.GIVE_WEAPON_COMPONENT_TO_PED(attackerFlag, 4208062921, 0x4DB62ABE)
+                            WEAPON.GIVE_WEAPON_COMPONENT_TO_PED(attackerFlag, 4208062921, 0x5DD5DBD5)
+                            WEAPON.GIVE_WEAPON_COMPONENT_TO_PED(attackerFlag, 4208062921, 0x9D65907A)
+                            WEAPON.GIVE_WEAPON_COMPONENT_TO_PED(attackerFlag, 4208062921, 0x420FD713)
+                            PED.SET_PED_FIRING_PATTERN(attackerFlag, -957453492)
+                        end
+                    end
+                end
             end
         end
     
