@@ -47,7 +47,7 @@
         local int_min = -2147483647
         local int_max = 2147483647
         local STAND_VERSION = menu.get_version().version
-        local SCRIPT_VERSION = "1.72-AG"
+        local SCRIPT_VERSION = "1.72-AX"
         local InterMenu = "InterTools v"..SCRIPT_VERSION
         local GTAO_VERSION = "1.66"
         local InterMessage = "> InterTools v"..SCRIPT_VERSION
@@ -5470,6 +5470,31 @@
                     end
                 end)
             end
+
+            PresetChatN:divider("Loop Spam Chat")
+
+            local delaySpamChat = 1
+            PresetChatN:text_input("Modify Delay", {"interdelayppchat"}, "Delay mesured in seconds.", function(valueInput)
+                if valueInput ~= "" then
+                    delaySpamChat = tonumber(valueInput)
+                else
+                    delaySpamChat = 1
+                end
+            end, delaySpamChat)
+
+            for _, preset in ipairs(preset_orderN) do
+                local name = preset[1]
+                local details = preset[2]
+                PresetChatN:toggle_loop(name, {}, "", function()
+                    local from = pid
+                    for k,v in pairs(players.list(true, true, true)) do
+                        chat.send_targeted_message(v, from, details.text, false)
+                        InterWait(delaySpamChat * 1000)
+                    end
+                end)
+            end
+
+            --=========================================================================--
 
             local message = "pog"
             SpamChatN:text_input("Send Message", {"intermsgspam"}, "send to the chat", function(textInput)
