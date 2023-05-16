@@ -47,7 +47,7 @@
         local int_min = -2147483647
         local int_max = 2147483647
         local STAND_VERSION = menu.get_version().version
-        local SCRIPT_VERSION = "1.72-AX"
+        local SCRIPT_VERSION = "1.72-AG"
         local InterMenu = "InterTools v"..SCRIPT_VERSION
         local GTAO_VERSION = "1.66"
         local InterMessage = "> InterTools v"..SCRIPT_VERSION
@@ -76,7 +76,8 @@
 
         local ScriptDir <const> = filesystem.scripts_dir()
         local Required_Files <const> = {
-            "lib\\InterTools\\Functions.lua"
+            "lib\\InterTools\\Functions.lua",
+            "lib\\InterTools\\math.lua"
         }
         for _, file in pairs(Required_Files) do
             local file_path = ScriptDir .. file
@@ -87,6 +88,7 @@
         end
 
         require "InterTools.Functions"
+        require "InterTools.math"
 
     ----========================================----
     ---              Update Parts
@@ -794,19 +796,29 @@
             PED.SET_CAN_ATTACK_FRIENDLY(players.user_ped(), toggle, false)
         end)
 
+        WeaponsParts:toggle_loop("Toggle Reticle", {}, "", function()
+            HUD.SHOW_HUD_COMPONENT_THIS_FRAME(14)
+        end,function()
+            HUD.HIDE_HUD_COMPONENT_THIS_FRAME(14)
+        end)
+
         local invisibleFirearm = false
-        WeaponsParts:toggle("Invisible Firearm", {}, "", function(on)
-            invisibleFirearm = on
-            local curweap = WEAPON.GET_CURRENT_PED_WEAPON_ENTITY_INDEX(PLAYER.PLAYER_PED_ID())
-            ENTITY.SET_ENTITY_VISIBLE(curweap, not invisibleFirearm, false)
+        WeaponsParts:toggle_loop("Invisible Firearm", {}, "", function()
+            invisibleFirearm = true
+            local current_fireArms = WEAPON.GET_CURRENT_PED_WEAPON_ENTITY_INDEX(PLAYER.PLAYER_PED_ID())
+            ENTITY.SET_ENTITY_VISIBLE(current_fireArms, not invisibleFirearm, false)
             while true do
                 util.yield()
                 if invisibleFirearm then
-                    local curweap = WEAPON.GET_CURRENT_PED_WEAPON_ENTITY_INDEX(PLAYER.PLAYER_PED_ID())
-                    ENTITY.SET_ENTITY_VISIBLE(curweap, false, false)
+                    local current_fireArms = WEAPON.GET_CURRENT_PED_WEAPON_ENTITY_INDEX(PLAYER.PLAYER_PED_ID())
+                    ENTITY.SET_ENTITY_VISIBLE(current_fireArms, false, false)
                 end
             end
-        end)
+        end,function()
+            local current_fireArms = WEAPON.GET_CURRENT_PED_WEAPON_ENTITY_INDEX(PLAYER.PLAYER_PED_ID())
+            ENTITY.SET_ENTITY_VISIBLE(current_fireArms, invisibleFirearm, false)
+            invisibleFirearm = false
+        end) 
 
         WeaponsParts:toggle_loop("Fire Delete Entity Gun", {""}, "Shoot any entities to delete.", function()
             if PLAYER.IS_PLAYER_FREE_AIMING(players.user()) then
@@ -921,7 +933,6 @@
             end
         end)
 
-        local seat_id = -1
         local moved_seat = VehicleParts:click_slider("Change Seat", {""}, "Switch seats by using the Slider. 1 is the Driver.", 1, 1, 1, 1, function(seat_id)
             TASK.TASK_WARP_PED_INTO_VEHICLE(players.user_ped(), entities.get_user_vehicle_as_handle(), seat_id - 2)
         end)
@@ -931,6 +942,19 @@
                 moved_seat.max_value = 0
             return end
             moved_seat.max_value = VEHICLE.GET_VEHICLE_MODEL_NUMBER_OF_SEATS(ENTITY.GET_ENTITY_MODEL(entities.get_user_vehicle_as_handle()))
+        end)
+
+        VehicleParts:toggle_loop("Toggle Nitro", {}, "Press X to turn nitro quick instant.", function()
+            local player = players.user_ped()
+            local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+            if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                if PAD.IS_CONTROL_JUST_PRESSED(357, 357) then
+                    STREAMING.REQUEST_NAMED_PTFX_ASSET('veh_xs_vehicle_mods')  
+                    VEHICLE.SET_OVERRIDE_NITROUS_LEVEL(playerVehicle, true, 100, 1, 99999999999, false)
+                    repeat util.yield() until PAD.IS_CONTROL_JUST_PRESSED(357, 357)
+                    VEHICLE.SET_OVERRIDE_NITROUS_LEVEL(playerVehicle, false, 0, 0, 0, false)
+                end
+            end
         end)
 
         VehicleParts:toggle_loop("Boost Heli Engine", {}, "Enable the feature will make helicopter faster than 1 second\nDisable the feature will able to stop engine and continue.", function()
@@ -2731,7 +2755,7 @@
                     end
                 end
             elseif tpSelect == 2 then
-                local APTRandT = RandomGenerator(1, 114)
+                local APTRandT = rand(1, 114)
                 for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
                     if AvailableSession() and players.get_name(pid) ~= "UndiscoveredPlayer" then
                         InterCmds("apt"..APTRandT..players.get_name(pid))
@@ -2743,7 +2767,7 @@
                     if AvailableSession() and players.get_name(pid) ~= "UndiscoveredPlayer" then
                         local APTRandom
                         repeat
-                            APTRandom = RandomGenerator(1, 114)
+                            APTRandom = rand(1, 114)
                         until not assignedApartments[APTRandom]
                         assignedApartments[APTRandom] = true
                         InterCmds("apt"..APTRandom..players.get_name(pid))
@@ -2867,7 +2891,7 @@
                 local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
                 if #playerList > 0 then
                     local randomIndex = math.random(#playerList)
-                    local RandAPT = RandomGenerator(0, 114)
+                    local RandAPT = rand(0, 114)
                     local playerName = players.get_name(playerList[randomIndex])
                     InterNotify("Player name targeted randomly teleported: "..playerName)
                     InterCmds("apt"..RandAPT..playerName)
@@ -4540,6 +4564,7 @@
         local MenuSettings = SettingsParts:list("Menu Settings")
         local MoneySettings = SettingsParts:list("Money Features")
         local InGameSettings = SettingsParts:list("Other Features")
+        local AdvancedSettings = SettingsParts:list("Advanced")
 
         SettingsParts:divider("GitHub / Updates")
         SettingsParts:hyperlink("Github Page", "https://github.com/StealthyAD/InterTools")
@@ -4658,6 +4683,9 @@
             end
         end)
 
+        InGameSettings:divider("Game Exit")
+
+
         --====================================================================================================--
 
         local screens = {
@@ -4678,12 +4706,32 @@
         }, function(select)
             if select == 6 then -- Si l'option "Custom" est sélectionnée
                 local text = display_onscreen_keyboard()
-                if text ~= "" or text == nil then
+                if text == "" or text == nil then
+                    return
+                else
                     show_custom_rockstar_alert(text)
                 end
             else
                 show_custom_rockstar_alert(screens[select].."\nReturn to Grand Theft Auto V.")
             end
+        end)
+
+    ----========================================----
+    ---           Advanced Settings
+    ---             Game Settings
+    ----========================================----
+
+        AdvancedSettings:action("Restart Script", {}, "Any problems for using the lua script, restart quickly.", function() util.restart_script() end)
+        WarningExit = AdvancedSettings:action("Leave Game", {}, "", function(click_type)
+            menu.show_warning(WarningExit, click_type, "DISCLAIMER: are you sure to leave the game?", function()
+                os.exit()
+            end)
+        end)
+
+        WarningExit2 = AdvancedSettings:action("Restart Game", {}, "", function(click_type)
+            menu.show_warning(WarningExit2, click_type, "DISCLAIMER: are you sure to leave the game?\nRestart the game will you need to re-inject Stand", function()
+                MISC.RESTART_GAME()
+            end)
         end)
 
     ----========================================----
@@ -4956,11 +5004,12 @@
                 end
             end)
 
-            InterTools:action_slider("Crash Tools", {}, "Different types of Crash Users:\n- AIO (All-in-One) - Faster Crash\n- Fragment\n- 5G Crash\n- Task Crash (AIO) - slower", {
+            InterTools:action_slider("Crash Tools", {}, "Different types of Crash Users:\n- AIO (All-in-One) - Faster Crash\n- Fragment\n- 5G Crash\n- Task Crash (AIO) - slower\n- Invalid Model", {
                 "AIO (All-in-One)", 
                 "Fragment",
                 "5G Crash",
-                "Task Crash (AIO)"
+                "Task Crash (AIO)",
+                "Invalid Model"
             }, function(crashType)
                 if crashType == 1 then
                     local cmd = {
@@ -5000,7 +5049,7 @@
                             InterWait()
                         end
                     end
-                else
+                elseif crashType == 4 then
                     BlockSyncs(pid, function()
                         local p = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
                         local c = ENTITY.GET_ENTITY_COORDS(p)
@@ -5128,6 +5177,29 @@
                         end
                         STREAMING.SET_MODEL_AS_NO_LONGER_NEEDED(mdl)
                         STREAMING.SET_MODEL_AS_NO_LONGER_NEEDED(veh_mdl)
+                    end)
+                else
+                    local mdl = util.joaat('a_c_poodle')
+                    BlockSyncs(pid, function()
+                        if RequestModel(mdl, 2) then
+                            local pos = players.get_position(pid)
+                            util.yield(100)
+                            local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                            ped1 = entities.create_ped(26, mdl, ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(PLAYER.GET_PLAYER_PED(csPID), 0, 3, 0), 0) 
+                            local coords = ENTITY.GET_ENTITY_COORDS(ped1, true)
+                            WEAPON.GIVE_WEAPON_TO_PED(ped1, util.joaat('WEAPON_HOMINGLAUNCHER'), 9999, true, true)
+                            local obj
+                            repeat
+                                obj = WEAPON.GET_CURRENT_PED_WEAPON_ENTITY_INDEX(ped1, 0)
+                            until obj ~= 0 or util.yield()
+                            ENTITY.DETACH_ENTITY(obj, true, true)
+                            util.yield(1500)
+                            FIRE.ADD_EXPLOSION(coords.x, coords.y, coords.z, 0, 1.0, false, true, 0.0, false)
+                            entities.delete_by_handle(ped1)
+                            util.yield(1000)
+                        else
+                            InterNotify("Failed to load model. :/")
+                        end
                     end)
                 end
             end)
@@ -5835,7 +5907,7 @@
                 if killselect == 1 then
                     local pidPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
                     local abovePed = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(pidPed, 0, 0, 8)
-                    local missileCount = RandomGenerator(16, 24)
+                    local missileCount = rand(16, 24)
                     for i = 1, missileCount do
                         local missileOffset = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(pidPed, math.random(-5, 5), math.random(-5, 5), math.random(-5, 5))
                         MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(abovePed.x, abovePed.y, abovePed.z, missileOffset.x, missileOffset.y, missileOffset.z, 100, true, 1752584910, 0, true, false, 250)
