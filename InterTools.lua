@@ -2441,7 +2441,7 @@
             InterNotify("I'm sorry, you need to upgrade the Basic to Regular Edition. This is reserved for Regular & Ultimate Edition.")
         end
         local spawnDLCS = {
-            ["Lockheed Martin F-16C Falcon"] = "lazer",
+            ["Lockheed Martin F-16C Falcon"] = "f16c",
             ["Lockheed Martin F-22A Raptor"] = "f22a",
             ["Lockheed Marin F-35C Lightning II"] = "f35c",
             ["Boeing F-15C Eagle"] = "f15c",
