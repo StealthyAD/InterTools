@@ -47,7 +47,7 @@
         local int_min = -2147483647
         local int_max = 2147483647
         local STAND_VERSION = menu.get_version().version
-        local SCRIPT_VERSION = "1.73"
+        local SCRIPT_VERSION = "1.73-AG"
         local InterMenu = "InterTools v"..SCRIPT_VERSION
         local GTAO_VERSION = "1.66"
         local InterMessage = "> InterTools v"..SCRIPT_VERSION
@@ -78,7 +78,7 @@
         local Required_Files <const> = {
             "lib\\InterTools\\Functions.lua",
             "lib\\InterTools\\math.lua",
-            "lib\\InterTools\\dlcModels.lua"
+            "lib\\InterTools\\models.lua"
         }
         for _, file in pairs(Required_Files) do
             local file_path = ScriptDir .. file
@@ -90,7 +90,7 @@
 
         require "InterTools.Functions"
         require "InterTools.math"
-        require "InterTools.dlcModels"
+        require "InterTools.models"
 
     ----========================================----
     ---              Update Parts
@@ -142,9 +142,15 @@
                     check_interval=default_check_interval,
                 },
                 {
-                    name="dlcModels",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/lib/InterTools/dlcModels.lua",
-                    script_relpath="lib/InterTools/dlcModels.lua",
+                    name="functions",
+                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/lib/InterTools/Functions.lua",
+                    script_relpath="lib/InterTools/Functions.lua",
+                    check_interval=default_check_interval,
+                },
+                {
+                    name="models",
+                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/lib/InterTools/models.lua",
+                    script_relpath="lib/InterTools/models.lua",
                     check_interval=default_check_interval,
                 },
                 {
@@ -2253,7 +2259,7 @@
 
         AerialRoots:divider("Advanced")
         CustomVehicleAdvanced = AerialRoots:toggle_loop("Custom Vehicle", {}, "", function()end)
-        CustomVehicleSongs = AerialRoots:toggle_loop("Toggle Song (DLC Customs)", {}, "If you want to add some vehicles for songs, find on: lib/InterTools", function()end)
+        CustomVehicleSongs = AerialRoots:toggle_loop("Toggle Song", {}, "If you want to add some vehicles for songs, find on: lib/InterTools", function()end)
         -- Send Air Force Custom
         AerialRoots:action("Send Air Force (Custom)", {"interusafcustom"}, "Sending America to war and intervene more custom planes.\nWARNING: The action is irreversible in the session if toggle godmode on.\nNOTE: Toggle Exclude features", function()
             local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
@@ -2281,7 +2287,7 @@
                 local textInput = display_onscreen_keyboard()
                 if textInput == "" or textInput == nil then return end
                 if menu.get_value(CustomVehicleSongs) == true then
-                    for _, model in pairs(dlcModel) do
+                    for _, model in pairs(models) do
                         if textInput == model then
                             local PresetMusicParts = script_resources .. "/PresetsMusics"
                             local songIndex = math.random(#randomSongs)
