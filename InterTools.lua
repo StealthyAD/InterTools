@@ -2432,12 +2432,17 @@
 
         CustomDLCs:divider("Preset Vehicles")
         CustomDLCs:action("READ BEFORE USING", {}, "", function()
-            InterNotify("Read before while using, you can't use if you don't have meet requirements, don't use if you don't have load required files.")
+            InterNotify("Read before while using, you can't use if you don't have meet requirements, don't use if you don't have load required files.\n\nRequired: Regular or Ultimate Edition.")
         end)
-        UnlockParts1 = CustomDLCs:toggle_loop("Unlock Usage of DLCs Customs", {}, "", function()end)
+        CustomDLCs:hyperlink("Download remains DLCs files", "https://drive.google.com/file/d/1IzC6AB5LGE5doDVKpUpJe1nPnXt08ZYt", "Download these files to unlock.")
+        if menu.get_edition() >= 2 then
+            UnlockParts1 = CustomDLCs:toggle_loop("Unlock Usage of DLCs Customs", {}, "", function()end)
+        else
+            InterNotify("I'm sorry, you need to upgrade the Basic to Regular Edition. This is reserved for Regular & Ultimate Edition.")
+        end
         local spawnDLCS = {
-            ["Lockheed F-16C Falcon"] = "lazer",
-            ["Lockheed Martin F-22 Raptor"] = "f22a",
+            ["Lockheed Martin F-16C Falcon"] = "lazer",
+            ["Lockheed Martin F-22A Raptor"] = "f22a",
             ["Lockheed Marin F-35C Lightning II"] = "f35c",
             ["Boeing F-15C Eagle"] = "f15c",
             ["Boeing F/A-18E Super Hornet"] = "fa18e",
@@ -2455,6 +2460,8 @@
         table.sort(tempSpawners, function(a, b)
             return a[1] < b[1]
         end)
+
+        CustomDLCs:divider("Preset Vehicles")
 
         for _, spawner in ipairs(tempSpawners) do
             local spawnerName = spawner[1]
