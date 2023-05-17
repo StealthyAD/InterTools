@@ -47,7 +47,7 @@
         local int_min = -2147483647
         local int_max = 2147483647
         local STAND_VERSION = menu.get_version().version
-        local SCRIPT_VERSION = "1.73-AG"
+        local SCRIPT_VERSION = "1.73-EX"
         local InterMenu = "InterTools v"..SCRIPT_VERSION
         local GTAO_VERSION = "1.66"
         local InterMessage = "> InterTools v"..SCRIPT_VERSION
@@ -2113,6 +2113,8 @@
         local AerialParts = AerialRoots:list("Aerial Defense")
         local HeliParts = AerialRoots:list("Aerial Defense (Helicopters)")
         local GroundParts = AerialRoots:list("Ground Defense")
+        AerialRoots:divider("Advanced")
+        local TaskForce = AerialRoots:list("Task Force")
 
         AerialParts:divider("Aerial Defense (US Air Force)")
         PlaneToggleGod = AerialParts:toggle_loop("Toggle Godmode Air Force", {}, "Toggle (Enable/Disable) Godmode Planes while using \"Send Air Force\".",  function()end)
@@ -2124,6 +2126,10 @@
             ["Western Rogue"] = "rogue",
             ["Pyro"] = "pyro",
             ["P-45 Nokota"] = "nokota",
+            ["LF-22 Starling"] = "starling",
+            ["Mogul"] = "mogul",
+            ["Seabreeze"] = "seabreeze",
+            ["B-11 Strikeforce"] = "strikeforce",
         }
         
         local planeModelNames = {}
@@ -2133,7 +2139,7 @@
 
         table.sort(planeModelNames, function(a, b) return a[1] < b[1] end)
         
-        local selectedPlaneModel = "Hydra"
+        local selectedPlaneModel = "B-11 Strikeforce"
         local planesHash = planeModels[selectedPlaneModel]
         
         AerialParts:list_select("Types of Planes", {"interplanes"}, "The entities that will add while sending air force planes.", planeModelNames, 1, function(index)
@@ -2181,13 +2187,23 @@
         end, nil, nil, COMMANDPERM_AGGRESSIVE)
 
         AerialParts:action("Send Air Force (Task Force)", {"interusaftf"}, "Sending company of skilled pilot from America.\nToggle Godmode = irreversible.", function()
-            local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-            chat.send_message("GOOD MORNING VIETNAM", false, true, true)
-            for _, pid in pairs(playerList) do
-                if AvailableSession() then
-                    escort_attack(pid, "lazer", true)
-                    InterWait(4000)
+            local player = PLAYER.PLAYER_PED_ID()
+            local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+            if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                if PED.IS_PED_IN_ANY_PLANE(player) then
+                    local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                    chat.send_message("US Air Force has sent a friend request.", false, true, true)
+                    for _, pid in pairs(playerList) do
+                        if AvailableSession() then
+                            escort_attack(pid, planesHash, true)
+                            InterWait(5000)
+                        end
+                    end
+                else
+                    InterNotify("To operate the action, you need to be in a plane to operate planes.")
                 end
+            else
+                InterNotify("Sit down in a fuckin vehicle.")
             end
         end, nil, nil, COMMANDPERM_AGGRESSIVE)
 
@@ -2233,76 +2249,95 @@
                 if AvailableSession() then
                     for i = 1, menu.get_value(HelisCount) do
                         harass_vehicle(pid, heliHash, false, true)
-                        InterWait(2000)
+                        InterWait(5000)
                     end
                 end
             end
         end, nil, nil, COMMANDPERM_AGGRESSIVE)
 
         -- Send Air Force (Task Force) Custom
-        HeliParts:action("Send Air Force (Task Force Chopper)", {"interusaftfh"}, "Sending company of skilled pilot from America.\nToggle Godmode = irreversible.", function()
-            local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-            for _, pid in pairs(playerList) do
-                if AvailableSession() then
-                    escort_attack(pid, heliHash, false)
-                    InterWait(4000)
+        HeliParts:action("Send Air Force (Task Force Chopper)", {"interusaftfh"}, "Sending company of skilled pilot from America.\nToggle Godmode = irreversible.\nRestriction: One ped for seat. (Don't use Valkyrie or some helis while not able to full seat passenger.)", function()
+            local player = PLAYER.PLAYER_PED_ID()
+            local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+            if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                if PED.IS_PED_IN_ANY_PLANE(player) then
+                    local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                    for _, pid in pairs(playerList) do
+                        if AvailableSession() then
+                            escort_attack(pid, heliHash, false)
+                            InterWait(5000)
+                        end
+                    end
+                else
+                    InterNotify("To operate the action, you need to be in a helicopter to operate choppers.")
                 end
+            else
+                InterNotify("Sit down in a fuckin vehicle.")
             end
         end, nil, nil, COMMANDPERM_AGGRESSIVE)
 
         HelisCount = HeliParts:slider("Number of Generation of Choppers", {"interafheli"}, "For purposes: limit atleast 5 helicopters if you are in Public session with 30 players.\nMore NPCs in a chopper = reducing spawning generation for choppers. 1 only need.", 1, 10, 1, 1, function()end)
 
     ----========================================----
-    ---           Aerial Roots (Advanced)
+    ---         Aerial Roots (Task Force)
     ---         The part of session online
     ----========================================----
 
-        AerialRoots:divider("Advanced")
-        CustomVehicleAdvanced = AerialRoots:toggle_loop("Custom Vehicle", {}, "", function()end)
-        CustomVehicleSongs = AerialRoots:toggle_loop("Toggle Song", {}, "If you want to add some vehicles for songs, find on: lib/InterTools", function()end)
-        -- Send Air Force Custom
-        AerialRoots:action("Send Air Force (Custom)", {"interusafcustom"}, "Sending America to war and intervene more custom planes.\nWARNING: The action is irreversible in the session if toggle godmode on.\nNOTE: Toggle Exclude features", function()
-            local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-            if menu.get_value(CustomVehicleAdvanced) == true then
-                local textInput = display_onscreen_keyboard()
-                if textInput == "" or textInput == nil then return end
-                for _, pid in pairs(playerList) do
-                    if AvailableSession() then
-                        for i = 1, menu.get_value(PlaneCount) do
-                            harass_vehicle(pid, textInput, true, false)
-                            InterWait(2000)
-                        end
-                    end
-                end
+        local specialMsg = "US Air Force has sent a friend request."
+        local PresetSpawningTF = TaskForce:list("Preset Spawner")
+        CustomVehicleAdvanced = TaskForce:toggle_loop("Custom Vehicle", {}, "", function()end)
+        CustomVehicleSongs = TaskForce:toggle_loop("Toggle Song", {}, "If you want to add some vehicles for songs, find on: lib/InterTools", function()end)
+        ShowMessages = TaskForce:toggle_loop("Show Messages", {}, "", function()end)
+        TaskForce:text_input("Send Message", {"interspecialmsg"}, "America has sent a friend request.", function(typeText)
+            if typeText ~= "" then
+                specialMsg = typeText
             else
-                InterNotify("I'm sorry, enable \"Custom Vehicle\" to use more advantages.")
+                specialMsg = "US Air Force has sent a friend request."
             end
-        end)
+        end, specialMsg)
+
+        local delaySpawning = 2
+        TaskForce:text_input("Delay Time", {"intertimerforce"}, "Do not abuse for spawning vehicle, do not go to lower for preventing for crash, mass entities.", function(typeText)
+            if typeText ~= "" then
+                delaySpawning = typeText
+            else
+                delaySpawning = 2
+            end
+        end, delaySpawning)
 
         -- Send Air Force (Task Force) Custom
-
-        AerialRoots:action("Send Air Force (Task Force) - Custom", {"interusafescustom"}, "Sending America to war and intervene more custom planes (Real Undetectable).\nWARNING: The action is irreversible in the session if toggle godmode on.", function()
+        TaskForce:action("Send Air Force (Task Force) - Custom", {"interusafescustom"}, "Sending America to war and intervene more custom planes (Real Undetectable).\nWARNING: The action is irreversible in the session bcz godmode permanent.\n\nSome peds can fall and attach you.", function()
             if menu.get_value(CustomVehicleAdvanced) == true then
-                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                local textInput = display_onscreen_keyboard()
-                if textInput == "" or textInput == nil then return end
-                if menu.get_value(CustomVehicleSongs) == true then
-                    for _, model in pairs(models) do
-                        if textInput == model then
-                            local PresetMusicParts = script_resources .. "/PresetsMusics"
-                            local songIndex = math.random(#randomSongs)
-                            local songName = randomSongs[songIndex]
-                            PlaySong(join_path(PresetMusicParts, songName..".wav"), SND_FILENAME | SND_ASYNC)
-                            break
+                local player = PLAYER.PLAYER_PED_ID()
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    if PED.IS_PED_IN_ANY_PLANE(player) then
+                        local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                        local textInput = display_onscreen_keyboard()
+                        if textInput == "" or textInput == nil then return end
+                        if menu.get_value(CustomVehicleSongs) == true then
+                            for _, model in pairs(models) do
+                                if textInput == model then
+                                    local PresetMusicParts = script_resources .. "/PresetsMusics"
+                                    local songIndex = math.random(#randomSongs)
+                                    local songName = randomSongs[songIndex]
+                                    PlaySong(join_path(PresetMusicParts, songName..".wav"), SND_FILENAME | SND_ASYNC)
+                                    break
+                                end
+                            end
                         end
+                        if menu.get_value(ShowMessages) == true then chat.send_message(specialMsg, false, true, true) end
+                        for _, pid in pairs(playerList) do
+                            if AvailableSession() then
+                                escort_attack(pid, textInput, true)
+                                InterWait(delaySpawning * 1000)
+                            end
+                        end
+                    else
+                        InterNotify("To operate the action, you need to be in a plane to operate planes.")
                     end
-                end
-
-                for _, pid in pairs(playerList) do
-                    if AvailableSession() then
-                        escort_attack(pid, textInput, true)
-                        InterWait(2000)
-                    end
+                else
+                    InterNotify("Sit down in a fuckin vehicle.")
                 end
             else
                 InterNotify("I'm sorry, enable \"Custom Vehicle\" to use more advantages.")
@@ -2311,21 +2346,144 @@
 
         -- Send Air Force (Task Force Chopper) Custom
 
-        AerialRoots:action("Send Air Force (Task Force Chopper) - Custom", {"interusafhescustom"}, "Sending America to war and intervene more custom helicopters (Real Undetectable).\nWARNING: The action is irreversible in the session if toggle godmode on.", function()
+        TaskForce:action("Send Air Force (Task Force Chopper) - Custom", {"interusafhescustom"}, "Sending America to war and intervene more custom helicopters (Real Undetectable).\nWARNING: The action is irreversible in the session bcz godmode permanent.\n\nSome peds can fall and attach you.", function()
             if menu.get_value(CustomVehicleAdvanced) == true then
-                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                local textInput = display_onscreen_keyboard()
-                if textInput == "" or textInput == nil then return end
-                for _, pid in pairs(playerList) do
-                    if AvailableSession() then
-                        escort_attack(pid, textInput, false)
-                        InterWait(2000)
+                local player = PLAYER.PLAYER_PED_ID()
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    if PED.IS_PED_IN_ANY_HELI(player) then
+                        local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                        local textInput = display_onscreen_keyboard()
+                        if textInput == "" or textInput == nil then return end
+                        if menu.get_value(ShowMessages) == true then chat.send_message(specialMsg, false, true, true) end
+                        for _, pid in pairs(playerList) do
+                            if AvailableSession() then
+                                escort_attack(pid, textInput, false)
+                                InterWait(delaySpawning * 1000)
+                            end
+                        end
+                    else
+                        InterNotify("To operate the action, you need to be in a helicopter to operate choppers.")
                     end
+                else
+                    InterNotify("Sit down in a fuckin vehicle.")
                 end
             else
                 InterNotify("I'm sorry, enable \"Custom Vehicle\" to use more advantages.")
             end
         end, nil, nil, COMMANDPERM_AGGRESSIVE)
+
+    ----========================================----
+    ---           Aerial Roots (Presets)
+    ---         The part of session online
+    ----========================================----
+
+        local CustomDLCs = PresetSpawningTF:list("Custom DLCs")
+        PresetSpawningTF:divider("Preset Vehicles")
+        local tableSpawners = {
+            ["Lazer"] = "lazer",
+            ["Molotok"] = "molotok",
+            ["Rogue"] = "rogue",
+            ["Pyro"] = "pyro",
+            ["Nokota"] = "nokota",
+            ["Starling"] = "starling",
+            ["Seabreeze"] = "seabreeze",
+            ["Strikeforce"] = "strikeforce",
+        }
+
+        local tempSpawners = {}
+        for spawnerName, spawnerModel in pairs(tableSpawners) do
+            table.insert(tempSpawners, {spawnerName, spawnerModel})
+        end
+
+        table.sort(tempSpawners, function(a, b)
+            return a[1] < b[1]
+        end)
+
+        for _, spawner in ipairs(tempSpawners) do
+            local spawnerName = spawner[1]
+            local spawnerModel = spawner[2]
+            PresetSpawningTF:action("Spawn " .. spawnerName, {}, "", function()
+                local player = PLAYER.PLAYER_PED_ID()
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    if PED.IS_PED_IN_ANY_PLANE(player) then
+                        local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                        if menu.get_value(ShowMessages) == true then chat.send_message(specialMsg, false, true, true) end
+                        for _, pid in pairs(playerList) do
+                            if AvailableSession() then
+                                escort_attack(pid, spawnerModel, false)
+                                InterWait(delaySpawning * 1000)
+                            end
+                        end
+                    else
+                        InterNotify("To operate the action, you need to be in a plane to operate plane.")
+                    end
+                else
+                    InterNotify("Please sit down in a vehicle.")
+                end
+            end)
+        end
+
+    ----========================================----
+    ---         Aerial Roots (DLCs Customs)
+    ---         The part of session online
+    ----========================================----
+
+        CustomDLCs:divider("Preset Vehicles")
+        CustomDLCs:action("READ BEFORE USING", {}, "", function()
+            InterNotify("Read before while using, you can't use if you don't have meet requirements, don't use if you don't have load required files.")
+        end)
+        UnlockParts1 = CustomDLCs:toggle_loop("Unlock Usage of DLCs Customs", {}, "", function()end)
+        local spawnDLCS = {
+            ["Lockheed F-16C Falcon"] = "lazer",
+            ["Lockheed Martin F-22 Raptor"] = "f22a",
+            ["Lockheed Marin F-35C Lightning II"] = "f35c",
+            ["Boeing F-15C Eagle"] = "f15c",
+            ["Boeing F/A-18E Super Hornet"] = "fa18e",
+            ["Dassault Mirage 2000-5"] = "mir2k",
+            ["Dassault Rafale B"] = "rafaleb",
+            ["Fairchild Republic A-10C Thunderbolt"] = "a10c",
+            ["Lockheed Martin F-117A Nighthawk"] = "f117a",
+        }
+
+        local tempSpawners = {}
+        for spawnerName, spawnerModel in pairs(spawnDLCS) do
+            table.insert(tempSpawners, {spawnerName, spawnerModel})
+        end
+
+        table.sort(tempSpawners, function(a, b)
+            return a[1] < b[1]
+        end)
+
+        for _, spawner in ipairs(tempSpawners) do
+            local spawnerName = spawner[1]
+            local spawnerModel = spawner[2]
+            CustomDLCs:action(spawnerName, {}, "", function()
+                if menu.get_value(UnlockParts1) == true then
+                    local player = PLAYER.PLAYER_PED_ID()
+                    local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                    if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                        if PED.IS_PED_IN_ANY_PLANE(player) then
+                            local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                            if menu.get_value(ShowMessages) == true then chat.send_message(specialMsg, false, true, true) end
+                            for _, pid in pairs(playerList) do
+                                if AvailableSession() then
+                                    escort_attack(pid, spawnerModel, false)
+                                    InterWait(delaySpawning * 1000)
+                                end
+                            end
+                        else
+                            InterNotify("To operate the action, you need to be in a plane to operate plane.")
+                        end
+                    else
+                        InterNotify("Please sit down in a vehicle.")
+                    end
+                else
+                    InterNotify("ERROR status: you need to enable \"Unlock Usage of DLCs Customs\".")
+                end
+            end)
+        end
 
     ----==========================================================----
     ---         Aerial Roots (Advanced) - delete models
@@ -4538,6 +4696,8 @@
             MISC.SET_WEATHER_TYPE_NOW_PERSIST(weather_types[index])
         end)
 
+        WeatherFeatures:toggle_loop("Remove Clouds", {}, "*works locally*", function() MISC.UNLOAD_ALL_CLOUD_HATS() end)
+
     ----========================================----
     ---              Music Parts
     ---         The part of music parts
@@ -5043,7 +5203,6 @@
                 InterNotify("Welcome to InterTools v"..SCRIPT_VERSION..", you are welcome and you know the principe, you are allowed to do anything in your laws. \n\nBe proud to be an american and destroy entire session. Take care about your own resposibility.")
             end)
             local InterTools = PlayerMenu:list("Inter Tools")
-            local InfoPlayers = InterTools:list("Informations")
             local FriendlyOptions = InterTools:list("Friendly")
             local NeutralOptions = InterTools:list("Neutral")
             local TrollingOptions = InterTools:list("Trolling")
@@ -5319,80 +5478,6 @@
                     end)
                 end
             end)
-
-        ----========================================----
-        ---           Information Players
-        ---  The part of specific player root infos
-        ----========================================----
-
-            local Controller = players.is_using_controller(pid) and "Confirmed" or "Unconfirmed" InterWait()
-            local ModderDetect = players.is_marked_as_modder(pid) and "Confirmed" or "Unconfirmed" InterWait()
-            local GodModeDetect = players.is_godmode(pid) and "Confirmed" or "Unconfirmed" InterWait()
-            local DetectVPN = players.is_using_vpn(pid) and "Confirmed" or "Unconfirmed" InterWait()
-            local OffRadar = players.is_otr(pid) and "Confirmed" or "Unconfirmed" InterWait()
-            local Interior = players.is_in_interior(pid) and "Interior" or "Exterior" InterWait()
-
-            local languageList = {
-                "English",
-                "French",
-                "German",
-                "Italian",
-                "Spanish",
-                "Portuguese",
-                "Polish",
-                "Russian",
-                "Korean",
-                "Chinese Traditional",
-                "Japanese",
-                "Mexican",
-                "Chinese Simplified"
-            }
-            local languageIndex = players.get_language(pid)
-            if languageIndex >= 0 and languageIndex <= 12 then
-                local tokenTypes = {
-                    ["FFFF"] = "Handicap", -- handicap mode
-                    ["0000"] = "Aggressive", -- aggressive mode
-                }
-                for i=16,37 do
-                    local hex = string.format("%04X", i)
-                    tokenTypes[hex] = "Sweet Spot" -- value between 0010 & 0025
-                end
-
-                local spoofToken = players.get_host_token_hex(pid)
-                local spoofType = tokenTypes[string.sub(spoofToken, 1, 4)] or "Unconfirmed"
-                local playerInfos = {
-                    {label = "Name", value = InterName},
-                    {label = "Language", value = languageList[languageIndex + 1]},
-                }
-
-                local sessionInfos = {
-                    {label = "Modder", value = ModderDetect},
-                    {label = "Host Token", value = spoofType},
-                    {label = "Godmode Status", value = tostring(GodModeDetect)},
-                    {label = "Off the Radar", value = OffRadar},
-                    {label = "Interior Status", value = Interior},
-                }
-
-                local otherInfos = {
-                    {label = "Controller Usage", value = Controller},
-                    {label = "VPN Usage", value = DetectVPN},
-                }
-
-                InfoPlayers:divider("Player Infos")
-                for i, info in ipairs(playerInfos) do
-                    InfoPlayers:readonly(info.label, info.value)
-                end
-
-                InfoPlayers:divider("Last Session Infos")
-                for i, info in ipairs(sessionInfos) do
-                    InfoPlayers:readonly(info.label, info.value)
-                end
-
-                InfoPlayers:divider("Others")
-                for i, info in ipairs(otherInfos) do
-                    InfoPlayers:readonly(info.label, info.value)
-                end
-            end
 
         ----========================================----
         ---           Friendly Options
