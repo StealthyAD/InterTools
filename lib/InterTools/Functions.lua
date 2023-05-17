@@ -311,12 +311,12 @@
                     local vehicleHash = util.joaat(hash)
                     local playerPed = PLAYER.PLAYER_PED_ID()
                     local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pedUser)
-                    local altitude = 50
+                    local altitude = 75
                     request_model_load(vehicleHash)
                     local playerPos = players.get_position(playerPed)
                     playerPos.z = playerPos.z + altitude
-                    local offsetX = math.random(-25, 25)
-                    local offsetY = math.random(-25, 25)
+                    local offsetX = math.random(-55, 55)
+                    local offsetY = math.random(-55, 55)
                     local coords = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(playerPed, offsetX, offsetY, playerPos.z)
                     local vehicle = entities.create_vehicle(vehicleHash, coords, ENTITY.GET_ENTITY_HEADING(playerPed))
                     if not STREAMING.HAS_MODEL_LOADED(vehicle) then
@@ -330,7 +330,7 @@
                     VEHICLE.SET_VEHICLE_FORWARD_SPEED(vehicle, 320.0)
                     VEHICLE.SET_VEHICLE_MAX_SPEED(vehicle, 540.0)
                     VEHICLE.SET_VEHICLE_DOORS_LOCKED(vehicle, 4)
-                    ENTITY.SET_ENTITY_INVINCIBLE(vehicle, menu.get_value(PlaneToggleGod))
+                    ENTITY.SET_ENTITY_INVINCIBLE(vehicle, true)
                     coords = ENTITY.GET_ENTITY_COORDS(playerPed, false)
                     coords.x = coords['x']
                     coords.y = coords['y']
@@ -368,7 +368,7 @@
                     PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 46, true)
                     PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 5, true)
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(attacker, true)
-                    ENTITY.SET_ENTITY_INVINCIBLE(attacker, menu.get_value(PlaneToggleGod))
+                    ENTITY.SET_ENTITY_INVINCIBLE(attacker, true)
                     PED.SET_PED_CONFIG_FLAG(attacker, 52, true)
                     local relHash = PED.GET_PED_RELATIONSHIP_GROUP_HASH(ped)
                     PED.SET_PED_RELATIONSHIP_GROUP_HASH(attacker, relHash)
@@ -394,12 +394,12 @@
                     local vehicleHash = util.joaat(hash)
                     local playerPed = PLAYER.PLAYER_PED_ID()
                     local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pedUser)
-                    local altitude = 50
+                    local altitude = 70
                     request_model_load(vehicleHash)
                     local playerPos = players.get_position(playerPed)
                     playerPos.z = playerPos.z + altitude
-                    local offsetX = math.random(-25, 25)
-                    local offsetY = math.random(-25, 25)
+                    local offsetX = math.random(-55, 55)
+                    local offsetY = math.random(-55, 55)
                     local coords = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(playerPed, offsetX, offsetY, playerPos.z)
                     local vehicle = entities.create_vehicle(vehicleHash, coords, ENTITY.GET_ENTITY_HEADING(playerPed))
                     if not STREAMING.HAS_MODEL_LOADED(vehicle) then
@@ -413,7 +413,7 @@
                     VEHICLE.SET_VEHICLE_FORWARD_SPEED(vehicle, 320.0)
                     VEHICLE.SET_VEHICLE_MAX_SPEED(vehicle, 540.0)
                     VEHICLE.SET_VEHICLE_DOORS_LOCKED(vehicle, 4)
-                    ENTITY.SET_ENTITY_INVINCIBLE(vehicle, menu.get_value(HelisToggleGod))
+                    ENTITY.SET_ENTITY_INVINCIBLE(vehicle, true)
                     coords = ENTITY.GET_ENTITY_COORDS(playerPed, false)
                     coords.x = coords['x']
                     coords.y = coords['y']
@@ -451,7 +451,7 @@
                     PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 46, true)
                     PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 5, true)
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(attacker, true)
-                    ENTITY.SET_ENTITY_INVINCIBLE(attacker, menu.get_value(HelisToggleGod))
+                    ENTITY.SET_ENTITY_INVINCIBLE(attacker, true)
                     PED.SET_PED_CONFIG_FLAG(attacker, 52, true)
                     local relHash = PED.GET_PED_RELATIONSHIP_GROUP_HASH(ped)
                     PED.SET_PED_RELATIONSHIP_GROUP_HASH(attacker, relHash)
