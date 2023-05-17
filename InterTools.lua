@@ -2378,7 +2378,6 @@
     ---         The part of session online
     ----========================================----
 
-        local CustomDLCs = PresetSpawningTF:list("Custom DLCs")
         PresetSpawningTF:divider("Preset Vehicles")
         local tableSpawners = {
             ["Lazer"] = "lazer",
@@ -2421,73 +2420,6 @@
                     end
                 else
                     InterNotify("Please sit down in a vehicle.")
-                end
-            end)
-        end
-
-    ----========================================----
-    ---         Aerial Roots (DLCs Customs)
-    ---         The part of session online
-    ----========================================----
-
-        CustomDLCs:divider("Preset Vehicles")
-        CustomDLCs:action("READ BEFORE USING", {}, "", function()
-            InterNotify("Read before while using, you can't use if you don't have meet requirements, don't use if you don't have load required files.\n\nRequired: Regular or Ultimate Edition.")
-        end)
-        CustomDLCs:hyperlink("Download remains DLCs files", "https://drive.google.com/file/d/1IzC6AB5LGE5doDVKpUpJe1nPnXt08ZYt", "Download these files to unlock.")
-        if menu.get_edition() >= 2 then
-            UnlockParts1 = CustomDLCs:toggle_loop("Unlock Usage of DLCs Customs", {}, "", function()end)
-        else
-            InterNotify("I'm sorry, you need to upgrade the Basic to Regular Edition. This is reserved for Regular & Ultimate Edition.")
-        end
-        local spawnDLCS = {
-            ["Lockheed Martin F-16C Falcon"] = "f16c",
-            ["Lockheed Martin F-22A Raptor"] = "f22a",
-            ["Lockheed Marin F-35C Lightning II"] = "f35c",
-            ["Boeing F-15C Eagle"] = "f15c",
-            ["Boeing F/A-18E Super Hornet"] = "fa18e",
-            ["Dassault Mirage 2000-5"] = "mir2k",
-            ["Dassault Rafale B"] = "rafaleb",
-            ["Fairchild Republic A-10C Thunderbolt"] = "a10c",
-            ["Lockheed Martin F-117A Nighthawk"] = "f117a",
-        }
-
-        local tempSpawners = {}
-        for spawnerName, spawnerModel in pairs(spawnDLCS) do
-            table.insert(tempSpawners, {spawnerName, spawnerModel})
-        end
-
-        table.sort(tempSpawners, function(a, b)
-            return a[1] < b[1]
-        end)
-
-        CustomDLCs:divider("Preset Vehicles")
-
-        for _, spawner in ipairs(tempSpawners) do
-            local spawnerName = spawner[1]
-            local spawnerModel = spawner[2]
-            CustomDLCs:action(spawnerName, {}, "", function()
-                if menu.get_value(UnlockParts1) == true then
-                    local player = PLAYER.PLAYER_PED_ID()
-                    local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
-                    if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                        if PED.IS_PED_IN_ANY_PLANE(player) then
-                            local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                            if menu.get_value(ShowMessages) == true then chat.send_message(specialMsg, false, true, true) end
-                            for _, pid in pairs(playerList) do
-                                if AvailableSession() then
-                                    escort_attack(pid, spawnerModel, false)
-                                    InterWait(delaySpawning * 1000)
-                                end
-                            end
-                        else
-                            InterNotify("To operate the action, you need to be in a plane to operate plane.")
-                        end
-                    else
-                        InterNotify("Please sit down in a vehicle.")
-                    end
-                else
-                    InterNotify("ERROR status: you need to enable \"Unlock Usage of DLCs Customs\".")
                 end
             end)
         end
