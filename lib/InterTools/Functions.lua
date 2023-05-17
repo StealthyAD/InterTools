@@ -418,7 +418,24 @@
                     coords.x = coords['x']
                     coords.y = coords['y']
                     coords.z = coords['z']
-                    local hash_model = util.joaat("s_m_y_pilot_01")
+                    local hash_models = {
+                        util.joaat("s_m_y_blackops_01"),
+                        util.joaat("s_m_m_marine_01"),
+                        util.joaat("s_m_m_pilot_02"),
+                        util.joaat("s_m_y_pilot_01"),
+                        util.joaat("s_m_m_marine_02"),
+                        util.joaat("s_m_m_prisguard_01"),
+                        util.joaat("mp_g_m_pros_01"),
+                        util.joaat("mp_m_avongoon"),
+                        util.joaat("mp_m_boatstaff_01"),
+                        util.joaat("mp_m_bogdangoon"),
+                        util.joaat("mp_m_claude_01"),
+                        util.joaat("mp_m_cocaine_01"),
+                        util.joaat("mp_m_counterfeit_01"),
+                        util.joaat("mp_m_exarmy_01"),
+                        util.joaat("mp_m_fibsec_01")
+                    }
+                    local hash_model = hash_models[math.random(#hash_models)]
                     request_model_load(hash_model)
                     local attacker = entities.create_ped(28, hash_model, coords, math.random(0, 270))
                     PED.SET_PED_AS_COP(attacker, true)
