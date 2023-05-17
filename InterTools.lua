@@ -2114,8 +2114,7 @@
         local HeliParts = AerialRoots:list("Aerial Defense (Helicopters)")
         local GroundParts = AerialRoots:list("Ground Defense")
         AerialRoots:divider("Advanced")
-        local TaskForce = AerialRoots:list("Task Force")
-
+        local TaskForce = AerialRoots:list("Task Force", {"intertaskforce"}, "Undetectable by modders, take the opportunity to invade the session with aggressive means.".."\n\n".."The \"Task Force\" doctrine consists of flooding the session with aircraft for which the host acts as an escort and lets the aircraft appear and act autonomously as a killer AI.")
         AerialParts:divider("Aerial Defense (US Air Force)")
         PlaneToggleGod = AerialParts:toggle_loop("Toggle Godmode Air Force", {}, "Toggle (Enable/Disable) Godmode Planes while using \"Send Air Force\".",  function()end)
         RandomizePlane = AerialParts:toggle_loop("Toggle Random Plane", {}, "", function()end)
