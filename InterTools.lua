@@ -47,7 +47,7 @@
         local int_min = -2147483647
         local int_max = 2147483647
         local STAND_VERSION = menu.get_version().version
-        local SCRIPT_VERSION = "1.72-AG"
+        local SCRIPT_VERSION = "1.73"
         local InterMenu = "InterTools v"..SCRIPT_VERSION
         local GTAO_VERSION = "1.66"
         local InterMessage = "> InterTools v"..SCRIPT_VERSION
@@ -77,7 +77,8 @@
         local ScriptDir <const> = filesystem.scripts_dir()
         local Required_Files <const> = {
             "lib\\InterTools\\Functions.lua",
-            "lib\\InterTools\\math.lua"
+            "lib\\InterTools\\math.lua",
+            "lib\\InterTools\\dlcModels.lua"
         }
         for _, file in pairs(Required_Files) do
             local file_path = ScriptDir .. file
@@ -89,6 +90,7 @@
 
         require "InterTools.Functions"
         require "InterTools.math"
+        require "InterTools.dlcModels"
 
     ----========================================----
     ---              Update Parts
@@ -131,6 +133,18 @@
                     name="Template",
                     source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/Template/Inter.png",
                     script_relpath="resources/Inter/Template/Inter.png",
+                    check_interval=default_check_interval,
+                },
+                {
+                    name="math",
+                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/lib/InterTools/math.lua",
+                    script_relpath="lib/InterTools/math.lua",
+                    check_interval=default_check_interval,
+                },
+                {
+                    name="dlcModels",
+                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/lib/InterTools/dlcModels.lua",
+                    script_relpath="lib/InterTools/dlcModels.lua",
                     check_interval=default_check_interval,
                 },
                 {
@@ -1337,7 +1351,7 @@
                         util.yield(300)
                     end
 
-                    for i = 0, 6, 2 do
+                    for i = 0, 10 do
                         local targetP6 = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), -4, -2.0, 0)
                         local target4 = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), -10, -10.0, -1)
                         MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(targetP6['x'], targetP6['y'], targetP6['z'], target4['x'], target4['y'], target4['z'], 100.0, true, 1198879012, players.user_ped(), true, false, 25.0)
@@ -2075,10 +2089,9 @@
     ---         The part of session online
     ----========================================----
 
-        local AerialRoots = SessionRoots:list("Aerial Defense")
+        local AerialRoots = SessionRoots:list("Aerial & Ground Defense")
         local BountyRoot = SessionRoots:list("Bounty Parts")
         local ExplodeRoot = SessionRoots:list("Explode Parts")
-        local GroundParts = SessionRoots:list("Ground Defense")
         
         local SoundRoots = SessionRoots:list("Sound Parts")
         local TeleportsRoots = SessionRoots:list("Teleport Parts")
@@ -2091,16 +2104,20 @@
     ---             Defending the skies
     ----========================================----
 
-        AerialRoots:divider("Aerial Defense (US Air Force)")
-        PlaneToggleGod = AerialRoots:toggle_loop("Toggle Godmode Air Force", {}, "Toggle (Enable/Disable) Godmode Planes while using \"Send Air Force\".",  function()end)
-        RandomizePlane = AerialRoots:toggle_loop("Toggle Random Plane", {}, "", function()end)
+        local AerialParts = AerialRoots:list("Aerial Defense")
+        local HeliParts = AerialRoots:list("Aerial Defense (Helicopters)")
+        local GroundParts = AerialRoots:list("Ground Defense")
+
+        AerialParts:divider("Aerial Defense (US Air Force)")
+        PlaneToggleGod = AerialParts:toggle_loop("Toggle Godmode Air Force", {}, "Toggle (Enable/Disable) Godmode Planes while using \"Send Air Force\".",  function()end)
+        RandomizePlane = AerialParts:toggle_loop("Toggle Random Plane", {}, "", function()end)
         local planeModels = {
-            ["Lazer"] = util.joaat("lazer"),
-            ["Hydra"] = util.joaat("hydra"),
-            ["V-65 Molotok"] = util.joaat("molotok"),
-            ["Western Rogue"] = util.joaat("rogue"),
-            ["Pyro"] = util.joaat("pyro"),
-            ["P-45 Nokota"] = util.joaat("nokota"),
+            ["Lazer"] = "lazer",
+            ["Hydra"] = "hydra",
+            ["V-65 Molotok"] = "molotok",
+            ["Western Rogue"] = "rogue",
+            ["Pyro"] = "pyro",
+            ["P-45 Nokota"] = "nokota",
         }
         
         local planeModelNames = {}
@@ -2113,12 +2130,12 @@
         local selectedPlaneModel = "Hydra"
         local planesHash = planeModels[selectedPlaneModel]
         
-        AerialRoots:list_select("Types of Planes", {"interplanes"}, "The entities that will add while sending air force planes.", planeModelNames, 1, function(index)
+        AerialParts:list_select("Types of Planes", {"interplanes"}, "The entities that will add while sending air force planes.", planeModelNames, 1, function(index)
             selectedPlaneModel = planeModelNames[index]
             planesHash = planeModels[selectedPlaneModel]
         end)
 
-        local planeModels = {
+        local planeModels1 = {
             "molotok",
             "rogue",
             "pyro",
@@ -2129,18 +2146,15 @@
             "strikeforce",
         }
 
-        AerialRoots:action("Send Air Force", {"interusaf"}, "Sending America to war and intervene more planes (Real Undetectable).\nWARNING: The action is irreversible in the session if toggle godmode on.\nNOTE: Toggle Exclude features.", function()
+        AerialParts:action("Send Air Force", {"interusaf"}, "Sending America to war and intervene more planes (Real Undetectable).\nWARNING: The action is irreversible in the session if toggle godmode on.\nNOTE: Toggle Exclude features.", function()
             if menu.get_value(RandomizePlane) == true then
-                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                local playerList = players.list(true, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
                 local counter = 0
                 local max_iterations = 5 -- change this to adjust the number of iterations
                 while counter < max_iterations do
                     for _, pid in pairs(playerList) do
                         if AvailableSession() then
-                            for i = 0, 2 do
-                                AUDIO.PLAY_SOUND_FROM_COORD(-1, "Air_Defences_Activated", pos.x, pos.y, pos.z, "DLC_sum20_Business_Battle_AC_Sounds", true, 9999, false)
-                            end
-                            local randomModel = planeModels[math.random(#planeModels)]
+                            local randomModel = planeModels1[math.random(#planeModels1)]
                             AggressivePlanes(pid, randomModel)
                             InterWait(5000)
                         end
@@ -2151,11 +2165,6 @@
                 local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
                 for _, pid in pairs(playerList) do
                     if AvailableSession() then
-                        local pos = players.get_position(pid)
-                        pos.z = pos.z - 1.0
-                        for i = 0, 2 do
-                            AUDIO.PLAY_SOUND_FROM_COORD(-1, "Air_Defences_Activated", pos.x, pos.y, pos.z, "DLC_sum20_Business_Battle_AC_Sounds", true, 9999, false)
-                        end
                         for i = 1, menu.get_value(PlaneCount) do
                             harass_vehicle(pid, planesHash, true, false)
                             InterWait(5000)
@@ -2164,7 +2173,19 @@
                 end
             end
         end, nil, nil, COMMANDPERM_AGGRESSIVE)
-        PlaneCount = AerialRoots:slider("Number of Generation of Planes", {"interaf"}, "For purposes: limit atleast 5 planes if you are in Public session with 30 players.".."\n\nFor recommendation:".."\n".."- for Hydra: 1 or 2 planes per session while using to avoid instance.\n- Lazer: 3 or 5 more.", 1, 10, 1, 1, function()end)
+
+        AerialParts:action("Send Air Force (Task Force)", {"interusaftf"}, "Sending company of skilled pilot from America.\nToggle Godmode = irreversible.", function()
+            local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+            chat.send_message("GOOD MORNING VIETNAM", false, true, true)
+            for _, pid in pairs(playerList) do
+                if AvailableSession() then
+                    escort_attack(pid, "lazer", true)
+                    InterWait(4000)
+                end
+            end
+        end, nil, nil, COMMANDPERM_AGGRESSIVE)
+
+        PlaneCount = AerialParts:slider("Number of Generation of Planes", {"interaf"}, "For purposes: limit atleast 5 planes if you are in Public session with 30 players.".."\n\nFor recommendation:".."\n".."- for Hydra: 1 or 2 planes per session while using to avoid instance.\n- Lazer: 3 or 5 more.", 1, 10, 1, 1, function()end)
 
     ----========================================----
     ---           Aerial Roots (Choppers)
@@ -2172,18 +2193,18 @@
     ---           Defending the skies
     ----========================================----
 
-        AerialRoots:divider("Aerial Defense - Choppers (US Air Force)")
-        HelisToggleGod = AerialRoots:toggle_loop("Toggle Godmode Air Force (Helis)", {}, "Toggle (Enable/Disable) Godmode helicopters while using \"Send Air Force (Helicopters)\".",  function()end)
+        HeliParts:divider("Aerial Defense - Choppers (US Air Force)")
+        HelisToggleGod = HeliParts:toggle_loop("Toggle Godmode Air Force (Helis)", {}, "Toggle (Enable/Disable) Godmode helicopters while using \"Send Air Force (Helicopters)\".",  function()end)
 
         local helisModels = {
-            ["Annihilator"] = util.joaat("annihilator"),
-            ["Cargobob"] = util.joaat("cargobob"),
-            ["Annihilator Stealth"] = util.joaat("annihilator2"),
-            ["Buzzard Attack Chopper"] = util.joaat("buzzard"),
-            ["Savage"] = util.joaat("savage"),
-            ["Valkyrie"] = util.joaat("valkyrie"),
-            ["FH-1 Hunter"] = util.joaat("hunter"),
-            ["RF-1 Akula"] = util.joaat("akula"),
+            ["Annihilator"] = "annihilator",
+            ["Cargobob"] = "cargobob",
+            ["Annihilator Stealth"] = "annihilator2",
+            ["Buzzard Attack Chopper"] = "buzzard",
+            ["Savage"] = "savage",
+            ["Valkyrie"] = "valkyrie",
+            ["FH-1 Hunter"] = "hunter",
+            ["RF-1 Akula"] = "akula",
         }
 
         local heliModelName = {}
@@ -2193,13 +2214,14 @@
         table.sort(heliModelName, function(a, b) return a[1] < b[1] end)
 
         local selectedHeliNameModel = "Annihilator"
-        local heliHash = helisModels[selectedHeliNameModel] 
-        AerialRoots:list_select("Types of Choppers", {"interhelis"}, "The entities that will add while sending air force helicopters.", heliModelName, 1, function(index)
+        local heliHash = helisModels[selectedHeliNameModel]
+        -- Types of Choppers
+        HeliParts:list_select("Types of Choppers", {"interhelis"}, "The entities that will add while sending air force helicopters.", heliModelName, 1, function(index)
             selectedHeliNameModel = heliModelName[index]
             heliHash = helisModels[selectedHeliNameModel]
         end)
-
-        AerialRoots:action("Send Air Force (Helicopters)", {"interusafh"}, "Sending America to war and intervene more helicopters.\nWARNING: The action is irreversible in the session if toggle godmode on.\nNOTE: Toggle Exclude features", function()
+        -- Send Air Force (Helicopters)
+        HeliParts:action("Send Air Force (Helicopters)", {"interusafh"}, "Sending America to war and intervene more helicopters.\nWARNING: The action is irreversible in the session if toggle godmode on.\nNOTE: Toggle Exclude features", function()
             local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
             for _, pid in pairs(playerList) do
                 if AvailableSession() then
@@ -2210,20 +2232,38 @@
                 end
             end
         end, nil, nil, COMMANDPERM_AGGRESSIVE)
-        HelisCount = AerialRoots:slider("Number of Generation of Choppers", {"interafheli"}, "For purposes: limit atleast 5 helicopters if you are in Public session with 30 players.\nMore NPCs in a chopper = reducing spawning generation for choppers. 1 only need.", 1, 10, 1, 1, function()end)
+
+        -- Send Air Force (Task Force) Custom
+        HeliParts:action("Send Air Force (Task Force Chopper)", {"interusaftfh"}, "Sending company of skilled pilot from America.\nToggle Godmode = irreversible.", function()
+            local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+            for _, pid in pairs(playerList) do
+                if AvailableSession() then
+                    escort_attack(pid, heliHash, false)
+                    InterWait(4000)
+                end
+            end
+        end, nil, nil, COMMANDPERM_AGGRESSIVE)
+
+        HelisCount = HeliParts:slider("Number of Generation of Choppers", {"interafheli"}, "For purposes: limit atleast 5 helicopters if you are in Public session with 30 players.\nMore NPCs in a chopper = reducing spawning generation for choppers. 1 only need.", 1, 10, 1, 1, function()end)
+
+    ----========================================----
+    ---           Aerial Roots (Advanced)
+    ---         The part of session online
+    ----========================================----
 
         AerialRoots:divider("Advanced")
-
-        CustomVehicleUSAF = AerialRoots:toggle_loop("Custom Vehicle", {}, "", function()end)
+        CustomVehicleAdvanced = AerialRoots:toggle_loop("Custom Vehicle", {}, "", function()end)
+        CustomVehicleSongs = AerialRoots:toggle_loop("Toggle Song (DLC Customs)", {}, "If you want to add some vehicles for songs, find on: lib/InterTools", function()end)
+        -- Send Air Force Custom
         AerialRoots:action("Send Air Force (Custom)", {"interusafcustom"}, "Sending America to war and intervene more custom planes.\nWARNING: The action is irreversible in the session if toggle godmode on.\nNOTE: Toggle Exclude features", function()
             local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-            if menu.get_value(CustomVehicleUSAF) == true then
+            if menu.get_value(CustomVehicleAdvanced) == true then
                 local textInput = display_onscreen_keyboard()
                 if textInput == "" or textInput == nil then return end
                 for _, pid in pairs(playerList) do
                     if AvailableSession() then
                         for i = 1, menu.get_value(PlaneCount) do
-                            harass_vehicle(pid, util.joaat(textInput), true, false)
+                            harass_vehicle(pid, textInput, true, false)
                             InterWait(2000)
                         end
                     end
@@ -2232,6 +2272,59 @@
                 InterNotify("I'm sorry, enable \"Custom Vehicle\" to use more advantages.")
             end
         end)
+
+        -- Send Air Force (Task Force) Custom
+
+        AerialRoots:action("Send Air Force (Task Force) - Custom", {"interusafescustom"}, "Sending America to war and intervene more custom planes (Real Undetectable).\nWARNING: The action is irreversible in the session if toggle godmode on.", function()
+            if menu.get_value(CustomVehicleAdvanced) == true then
+                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                local textInput = display_onscreen_keyboard()
+                if textInput == "" or textInput == nil then return end
+                if menu.get_value(CustomVehicleSongs) == true then
+                    for _, model in pairs(dlcModel) do
+                        if textInput == model then
+                            local PresetMusicParts = script_resources .. "/PresetsMusics"
+                            local songIndex = math.random(#randomSongs)
+                            local songName = randomSongs[songIndex]
+                            PlaySong(join_path(PresetMusicParts, songName..".wav"), SND_FILENAME | SND_ASYNC)
+                            break
+                        end
+                    end
+                end
+
+                for _, pid in pairs(playerList) do
+                    if AvailableSession() then
+                        escort_attack(pid, textInput, true)
+                        InterWait(2000)
+                    end
+                end
+            else
+                InterNotify("I'm sorry, enable \"Custom Vehicle\" to use more advantages.")
+            end
+        end, nil, nil, COMMANDPERM_AGGRESSIVE)
+
+        -- Send Air Force (Task Force Chopper) Custom
+
+        AerialRoots:action("Send Air Force (Task Force Chopper) - Custom", {"interusafhescustom"}, "Sending America to war and intervene more custom helicopters (Real Undetectable).\nWARNING: The action is irreversible in the session if toggle godmode on.", function()
+            if menu.get_value(CustomVehicleAdvanced) == true then
+                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                local textInput = display_onscreen_keyboard()
+                if textInput == "" or textInput == nil then return end
+                for _, pid in pairs(playerList) do
+                    if AvailableSession() then
+                        escort_attack(pid, textInput, false)
+                        InterWait(2000)
+                    end
+                end
+            else
+                InterNotify("I'm sorry, enable \"Custom Vehicle\" to use more advantages.")
+            end
+        end, nil, nil, COMMANDPERM_AGGRESSIVE)
+
+    ----==========================================================----
+    ---         Aerial Roots (Advanced) - delete models
+    ---          Deleting ununsual model for saturation
+    ----==========================================================----
 
         local vehicleModelsToDelete = {
             util.joaat("lazer"),
@@ -2249,13 +2342,29 @@
             util.joaat("annihilator"),
             util.joaat("annihilator2"),
             util.joaat("cargobob"),
+            util.joaat("starling"),
+            util.joaat("mogul"),
+            util.joaat("seabreeze"),
         }
 
         local modelToDelete = {
+            util.joaat("s_m_y_marine_01"),
+            util.joaat("s_m_y_marine_03"),
+            util.joaat("s_m_y_pilot_01"),
             util.joaat("s_m_y_blackops_01"),
             util.joaat("s_m_m_marine_01"),
             util.joaat("s_m_m_pilot_02"),
-            util.joaat("s_m_y_pilot_01")
+            util.joaat("s_m_m_marine_02"),
+            util.joaat("s_m_m_prisguard_01"),
+            util.joaat("mp_g_m_pros_01"),
+            util.joaat("mp_m_avongoon"),
+            util.joaat("mp_m_boatstaff_01"),
+            util.joaat("mp_m_bogdangoon"),
+            util.joaat("mp_m_claude_01"),
+            util.joaat("mp_m_cocaine_01"),
+            util.joaat("mp_m_counterfeit_01"),
+            util.joaat("mp_m_exarmy_01"),
+            util.joaat("mp_m_fibsec_01")
         }
         
         AerialRoots:action("Cleanup Air Force", {}, "Includes helicopters also too.", function()
@@ -2278,6 +2387,120 @@
                     entities.delete_by_handle(entity)
                     et = et + 1
                 end
+            end
+        end)
+
+        local vehicleModelsToDeleteP = {
+            util.joaat("rhino"),
+            util.joaat("halftrack"),
+            util.joaat("khanjali"),
+            util.joaat("nightshark"),
+            util.joaat("barrage"),
+            util.joaat("apc"),
+            util.joaat("insurgent3"),
+            util.joaat("limo2"),
+            util.joaat("tampa3"),
+            util.joaat("menacer"),
+            util.joaat("boxville5"),
+            util.joaat("insurgent2"),
+        }
+
+        local modelToDeleteP = {
+            util.joaat("s_m_y_blackops_01"),
+            util.joaat("s_m_m_marine_01"),
+            util.joaat("s_m_y_marine_03"),
+            util.joaat("s_m_y_pilot_01")
+        }
+        
+        AerialRoots:action("Cleanup Ground Forces", {}, "", function()
+            local ct = 0
+            local vehicles = entities.get_all_vehicles_as_handles()
+            for k, veh in pairs(vehicles) do
+                local model = ENTITY.GET_ENTITY_MODEL(veh)
+                if table.contains(vehicleModelsToDeleteP, model) then
+                    entities.delete_by_handle(veh)
+                    ct = ct + 1
+                end
+            end
+            InterNotify("Successfully Deleted "..ct.." ground vehicles.")
+
+            local et = 0
+            local monkeys = entities.get_all_peds_as_handles()
+            for k, entity in pairs(monkeys) do
+                local model = ENTITY.GET_ENTITY_MODEL(entity)
+                if table.contains(modelToDeleteP, model) then
+                    entities.delete_by_handle(entity)
+                    et = et + 1
+                end
+            end
+        end)
+
+    ----========================================----
+    ---             Ground Defense Roots
+    ---         The part of session online
+    ---             Defending the ground
+    ----========================================----
+
+        GroundParts:divider("Ground Defense (US Army)")
+        TankToggleGod = GroundParts:toggle_loop("Toggle Godmode Vehicle", {}, "Toggle (Enable/Disable) Godmode Armored Vehicles while using ground vehicles.",  function()end)
+
+        local armoredModel = {
+            ["Rhino Tank"] = "rhino",
+            ["Half-Track"] = "halftrack",
+            ["TM-02 Khanjali"] = "khanjali",
+            ["Nightshark"] = "nightshark",
+            ["Barrage"] = "barrage",
+            ["APC"] = "apc",
+            ["Insurgent Pick-Up Custom"] = "insurgent3",
+            ["Turreted Limo"] = "limo2",
+            ["Weaponized Tampa"] = "tampa3",
+            ["Menacer"] = "menacer",
+            ["Armored Boxville"] = "boxville5",
+            ["Insurgent Pick-Up"] = "insurgent2",
+        }
+        
+        local armoredName = {}
+        for name, _ in pairs(armoredModel) do
+            table.insert(armoredName, name)
+        end
+
+        table.sort(armoredName, function(a, b) return a[1] < b[1] end)
+        
+        local selectedArmoredV = "APC"
+        local armoredHash = armoredModel[selectedArmoredV]
+        
+        GroundParts:list_select("Types of Armored Cars", {"interarmored"}, "The entities that will add while sending air force helicopters.", armoredName, 1, function(index)
+            selectedArmoredV = armoredName[index]
+            armoredHash = armoredModel[selectedArmoredV]
+        end)
+        
+        GroundParts:action("Send Ground Army", {"interusarmy"}, "Sending America to war and intervene more ground vehicles.\nWARNING: The action is irreversible in the session if toggle godmode on.\nNOTE: Toggle Exclude features", function()
+            local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+            for _, pid in pairs(playerList) do
+                if AvailableSession() then
+                    for i = 1, 2 do
+                        groundAttack(pid, armoredHash, false)
+                        InterWait(10000)
+                    end
+                end
+            end
+        end, nil, nil, COMMANDPERM_AGGRESSIVE)
+
+        GroundParts:divider("Advanced")
+        CustomVehicle = GroundParts:toggle_loop("Custom Vehicle", {}, "", function()end)
+        GroundParts:action("Send Ground Army (Custom)", {"interusarmycustom"}, "Sending America to war and intervene more ground vehicles.\nWARNING: The action is irreversible in the session if toggle godmode on.\nNOTE: Toggle Exclude features", function()
+            local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+            if menu.get_value(CustomVehicle) == true then
+                local textInput = display_onscreen_keyboard()
+                if textInput == "" or textInput == nil then return end
+                for _, pid in pairs(playerList) do
+                    if AvailableSession() then
+                        groundAttack(pid, textInput, true)
+                        InterWait(10000)
+                    end
+                end
+            else
+                InterNotify("I'm sorry, enable \"Custom Vehicle\" to use more advantages.")
             end
         end)
 
@@ -2396,7 +2619,7 @@
             classifiedExplosion = value
         end)
         EShakeIntensity = ExplodeRoot:slider("Explosion Shake", {"intereshake"}, "Choose shake explosion intensity [0 - 10]", 0, 10, 1, 1, function()end)
-        ExplodeRoot:action_slider("Orbital Cannon Type", {}, "Say hi to the sky", {"Non-Personal", "Owned", "Randomize"}, function()
+        ExplodeRoot:action_slider("Orbital Cannon Type", {}, "Say hi to the sky", {"Non-Personal", "Owned", "Randomize"}, function(orbSelect)
             if orbSelect == 1 then
                 for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
                     if not players.is_in_interior(pid) and not players.is_godmode(pid) then
@@ -2555,120 +2778,6 @@
         end)
 
     ----========================================----
-    ---             Ground Defense Roots
-    ---         The part of session online
-    ---             Defending the ground
-    ----========================================----
-
-        GroundParts:divider("Ground Defense (US Army)")
-        TankToggleGod = GroundParts:toggle_loop("Toggle Godmode Vehicle", {}, "Toggle (Enable/Disable) Godmode Armored Vehicles while using ground vehicles.",  function()end)
-
-        local armoredModel = {
-            ["Rhino Tank"] = "rhino",
-            ["Half-Track"] = "halftrack",
-            ["TM-02 Khanjali"] = "khanjali",
-            ["Nightshark"] = "nightshark",
-            ["Barrage"] = "barrage",
-            ["APC"] = "apc",
-            ["Insurgent Pick-Up Custom"] = "insurgent3",
-            ["Turreted Limo"] = "limo2",
-            ["Weaponized Tampa"] = "tampa3",
-            ["Menacer"] = "menacer",
-            ["Armored Boxville"] = "boxville5",
-            ["Insurgent Pick-Up"] = "insurgent2",
-        }
-        
-        local armoredName = {}
-        for name, _ in pairs(armoredModel) do
-            table.insert(armoredName, name)
-        end
-
-        table.sort(armoredName, function(a, b) return a[1] < b[1] end)
-        
-        local selectedArmoredV = "APC"
-        local armoredHash = armoredModel[selectedArmoredV]
-        
-        GroundParts:list_select("Types of Armored Cars", {"interarmored"}, "The entities that will add while sending air force helicopters.", armoredName, 1, function(index)
-            selectedArmoredV = armoredName[index]
-            armoredHash = armoredModel[selectedArmoredV]
-        end)
-        
-        GroundParts:action("Send Ground Army", {"interusarmy"}, "Sending America to war and intervene more ground vehicles.\nWARNING: The action is irreversible in the session if toggle godmode on.\nNOTE: Toggle Exclude features", function()
-            local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-            for _, pid in pairs(playerList) do
-                if AvailableSession() then
-                    for i = 1, 2 do
-                        groundAttack(pid, armoredHash, true)
-                        InterWait(10000)
-                    end
-                end
-            end
-        end, nil, nil, COMMANDPERM_AGGRESSIVE)
-
-        GroundParts:divider("Advanced")
-        CustomVehicle = GroundParts:toggle_loop("Custom Vehicle", {}, "", function()end)
-        GroundParts:action("Send Ground Army (Custom)", {"interusarmycustom"}, "Sending America to war and intervene more ground vehicles.\nWARNING: The action is irreversible in the session if toggle godmode on.\nNOTE: Toggle Exclude features", function()
-            local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-            if menu.get_value(CustomVehicle) == true then
-                local textInput = display_onscreen_keyboard()
-                if textInput == "" or textInput == nil then return end
-                for _, pid in pairs(playerList) do
-                    if AvailableSession() then
-                        groundAttack(pid, textInput, true)
-                        InterWait(10000)
-                    end
-                end
-            else
-                InterNotify("I'm sorry, enable \"Custom Vehicle\" to use more advantages.")
-            end
-        end)
-
-        local vehicleModelsToDeleteP = {
-            util.joaat("rhino"),
-            util.joaat("halftrack"),
-            util.joaat("khanjali"),
-            util.joaat("nightshark"),
-            util.joaat("barrage"),
-            util.joaat("apc"),
-            util.joaat("insurgent3"),
-            util.joaat("limo2"),
-            util.joaat("tampa3"),
-            util.joaat("menacer"),
-            util.joaat("boxville5"),
-            util.joaat("insurgent2"),
-        }
-
-        local modelToDeleteP = {
-            util.joaat("s_m_y_blackops_01"),
-            util.joaat("s_m_m_marine_01"),
-            util.joaat("s_m_y_marine_03"),
-            util.joaat("s_m_y_pilot_01")
-        }
-        
-        GroundParts:action("Cleanup Ground Forces", {}, "", function()
-            local ct = 0
-            local vehicles = entities.get_all_vehicles_as_handles()
-            for k, veh in pairs(vehicles) do
-                local model = ENTITY.GET_ENTITY_MODEL(veh)
-                if table.contains(vehicleModelsToDeleteP, model) then
-                    entities.delete_by_handle(veh)
-                    ct = ct + 1
-                end
-            end
-            InterNotify("Successfully Deleted "..ct.." ground vehicles.")
-
-            local et = 0
-            local monkeys = entities.get_all_peds_as_handles()
-            for k, entity in pairs(monkeys) do
-                local model = ENTITY.GET_ENTITY_MODEL(entity)
-                if table.contains(modelToDeleteP, model) then
-                    entities.delete_by_handle(entity)
-                    et = et + 1
-                end
-            end
-        end)
-
-    ----========================================----
     ---                SOUND Parts
     ---       PRESS HORN AND MORE AGGRESSIVE
     ----========================================----
@@ -2739,7 +2848,8 @@
 
         TeleportWarning = TeleportsRoots:action("Teleport Apartment Location", {"interapt"}, "Teleport the entire session?\nAlternative to Stand Features but may not karma you.\n\nToggle 'Exclude Self' to avoid using these functions.",function(type)
             menu.show_warning(TeleportWarning, type, "Do you really want to teleport the entire session to the death?\nNOTE: Teleporting all players will cost a fight against players.", function()
-                for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                local playerList = players.list(false, false, EToggleStrangers, EToggleCrew, EToggleOrg)
+                for _, pid in pairs(playerList) do
                     if AvailableSession() and players.get_name(pid) ~= "UndiscoveredPlayer" then
                         InterCmds("apt"..appartType..players.get_name(pid))
                     end
