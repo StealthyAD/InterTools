@@ -311,12 +311,12 @@
                     local vehicleHash = util.joaat(hash)
                     local playerPed = PLAYER.PLAYER_PED_ID()
                     local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pedUser)
-                    local altitude = 75
+                    local altitude = 85
                     request_model_load(vehicleHash)
                     local playerPos = players.get_position(playerPed)
                     playerPos.z = playerPos.z + altitude
                     local offsetX = math.random(-55, 55)
-                    local offsetY = math.random(-55, 55)
+                    local offsetY = math.random(-100, 5)
                     local coords = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(playerPed, offsetX, offsetY, playerPos.z)
                     local vehicle = entities.create_vehicle(vehicleHash, coords, ENTITY.GET_ENTITY_HEADING(playerPed))
                     if not STREAMING.HAS_MODEL_LOADED(vehicle) then
@@ -399,7 +399,7 @@
                     local playerPos = players.get_position(playerPed)
                     playerPos.z = playerPos.z + altitude
                     local offsetX = math.random(-55, 55)
-                    local offsetY = math.random(-55, 55)
+                    local offsetY = math.random(-100, 5)
                     local coords = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(playerPed, offsetX, offsetY, playerPos.z)
                     local vehicle = entities.create_vehicle(vehicleHash, coords, ENTITY.GET_ENTITY_HEADING(playerPed))
                     if not STREAMING.HAS_MODEL_LOADED(vehicle) then
