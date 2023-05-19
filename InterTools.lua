@@ -2505,7 +2505,7 @@
                 if delay and delay > 0 then
                     delaySpawningPresets = delay
                 else
-                    AirFleetNotify("Invalid delay value. Please enter a positive number greater than 0.")
+                    InterNotify("Invalid delay value. Please enter a positive number greater than 0.")
                     delaySpawningPresets = 1
                 end
             else
