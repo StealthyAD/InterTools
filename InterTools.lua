@@ -2172,14 +2172,12 @@
     ---         The part of session online
     ----========================================----
 
-        local AerialRoots = SessionRoots:list("Aerial & Ground Defense")
+        local AerialRoots = SessionRoots:list("Aerial Fleets & Ground Defense")
         local BountyRoot = SessionRoots:list("Bounty Parts")
         local ExplodeRoot = SessionRoots:list("Explode Parts")
-        
         local SoundRoots = SessionRoots:list("Sound Parts")
         local TeleportsRoots = SessionRoots:list("Teleport Parts")
         local VehicleRootsO = SessionRoots:list("Vehicle Parts")
-        
 
     ----========================================----
     ---               Aerial Roots
@@ -2363,8 +2361,7 @@
         local CustomVehicleTF = TaskForce:list("Custom Parts")
         CustomVehicleAdvanced = CustomVehicleTF:toggle_loop("Custom Vehicle", {}, "", function()end)
         ShowMessages = CustomVehicleTF:toggle_loop("Show Messages", {}, "", function()end)
-        ToggleSongsCU = CustomVehicleTF:toggle_loop("Toggle Music", {}, "", function()end)
-        CustomVehicleTF:text_input("Send Message", {"aftaskforcemsg"}, "America has sent a friend request.", function(typeText)
+        CustomVehicleTF:text_input("Send Message", {"intertfmsgs"}, "America has sent a friend request.", function(typeText)
             if typeText ~= "" then
                 specialMsg = typeText
             else
@@ -2387,95 +2384,95 @@
             end
         end, delaySpawning)
 
+        local delayCountdown = 2
+        CustomVehicleTF:text_input("Delay Countdown", {"intercountdowntf"}, "Countdown for messages.\nMeasured in seconds.", function(typeText)
+            if typeText ~= "" then
+                local delay = tonumber(typeText)
+                if delay and delay > 1 then
+                    delayCountdown = delay
+                else
+                    InterNotify("Invalid delay value. Please enter a positive number greater than 1.")
+                    delayCountdown = 2
+                end
+            else
+                delayCountdown = 2
+            end
+        end, delayCountdown)
+
         CustomVehicleTF:divider("Sending Planes")
+        -- Send Air Force (Task Force) - Surface
+        CustomVehicleTF:action("Send Air Force (Task Force) - Custom Surface", {}, "Sending America to war and intervene more custom planes (Real Undetectable).\nWARNING: The action is irreversible in the session bcz godmode permanent.\n\nSome peds can fall and attach you.", function()
+            if menu.get_value(CustomVehicleAdvanced) ~= true then InterNotify("I'm sorry, enable \"Custom Vehicle\" to use more advantages.") return end
+            local player = PLAYER.PLAYER_PED_ID()
+            local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+            if not PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then InterNotify("Sit down in a vehicle.") return end
+            local vehicleClass = VEHICLE.GET_VEHICLE_CLASS(playerVehicle)
+            if vehicleClass ~= 19 then InterNotify("To operate the action, you need to be in a military vehicle.") return end
+            local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+            local textInput = display_onscreen_keyboard()
+            if textInput == "" or textInput == nil then return end
+            local modelHash = util.joaat(textInput)
+            if not (STREAMING.IS_MODEL_VALID(modelHash) and STREAMING.IS_MODEL_A_VEHICLE(modelHash)) then
+                InterNotify("I'm sorry, we cannot send the plane named: " .. textInput)
+                return
+            end
+            if menu.get_value(ShowMessages) == true then
+                for i = delayCountdown, 1, -1 do
+                    InterNotify("Ready in "..i.." seconds.")
+                    util.yield(1000)
+                end
+                chat.send_message(specialMsg, false, true, true)
+            end
+            local vehicleClass = VEHICLE.GET_VEHICLE_CLASS_FROM_NAME(modelHash)
+            if vehicleClass ~= 15 and vehicleClass ~= 16 then
+                InterNotify("Invalid vehicle model: " .. textInput .. ". Only aerial vehicles planes or helicopters are allowed.")
+                return
+            end
+            for _, pid in pairs(playerList) do
+                if AvailableSession() and not players.is_in_interior(pid) then
+                    escort_attack(pid, textInput, true)
+                    util.yield(delaySpawning * 1000)
+                end
+            end
+        end)
+
         -- Send Air Force (Task Force) Custom
-        CustomVehicleTF:action("Send Air Force (Task Force) - Custom", {"interusafcustomtf"}, "Sending America to war and intervene more custom planes (Real Undetectable).\nWARNING: The action is irreversible in the session bcz godmode permanent.\n\nSome peds can fall and attach you.", function()
-            if menu.get_value(CustomVehicleAdvanced) == true then
-                local player = PLAYER.PLAYER_PED_ID()
-                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
-                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                    if PED.IS_PED_IN_ANY_PLANE(player) then
-                        local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                        local textInput = display_onscreen_keyboard()
-                        if textInput == "" or textInput == nil then return end
-                        local modelHash = util.joaat(textInput)
-                        if menu.get_value(ToggleSongsCU) == true then
-                            for _, model in pairs(models) do
-                                if textInput == model then
-                                    local PresetMusicParts = script_resources .. "/PresetsMusics"
-                                    local songIndex = math.random(#randomSongs)
-                                    local songName = randomSongs[songIndex]
-                                    PlaySong(join_path(PresetMusicParts, songName), SND_FILENAME | SND_ASYNC)
-                                    break
-                                end
-                            end
-                        end
-
-                        if STREAMING.IS_MODEL_VALID(modelHash) and STREAMING.IS_MODEL_A_VEHICLE(modelHash) then
-                            local vehicleClass = VEHICLE.GET_VEHICLE_CLASS_FROM_NAME(modelHash)
-                            if vehicleClass == 16 then
-                                if menu.get_value(ShowMessages) == true then chat.send_message(specialMsg, false, true, true) end
-                                for _, pid in pairs(playerList) do
-                                    if AvailableSession() then
-                                        escort_attack(pid, textInput, true)
-                                        util.yield(delaySpawning * 1000)
-                                    end
-                                end
-                            else
-                                InterNotify("Invalid vehicle model: " .. textInput .. ". Only aerial vehicles planes are allowed.")
-                            end
-                        else
-                            InterNotify("I'm sorry, we cannot send the plane named: " .. textInput)
-                        end
-                    else
-                        InterNotify("To operate the action, you need to be in a plane to operate planes.")
-                    end
-                else
-                    InterNotify("Sit down in a fuckin vehicle.")
-                end
-            else
-                InterNotify("I'm sorry, enable \"Custom Vehicle\" to use more advantages.")
+        CustomVehicleTF:action("Send Air Force (Task Force) - Custom Aerial", {}, "Sending America to war and intervene more custom planes (Real Undetectable).\nWARNING: The action is irreversible in the session bcz godmode permanent.\n\nSome peds can fall and attach you.", function()
+            if menu.get_value(CustomVehicleAdvanced) ~= true then InterNotify("I'm sorry, enable \"Custom Vehicle\" to use more advantages.") return end
+            local player = PLAYER.PLAYER_PED_ID()
+            local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+            if not PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then InterNotify("Sit down in a vehicle.") return end
+            if not (PED.IS_PED_IN_ANY_PLANE(player) or PED.IS_PED_IN_ANY_HELI(player)) then
+                InterNotify("To operate the action, you need to be in a plane to operate planes.")
+                return
             end
-        end, nil, nil, COMMANDPERM_AGGRESSIVE)
-
-        -- Send Air Force (Task Force Chopper) Custom
-
-        CustomVehicleTF:action("Send Air Force (Task Force Chopper) - Custom", {"intertfcustomheli"}, "Sending America to war and intervene more custom helicopters (Real Undetectable).\nWARNING: The action is irreversible in the session bcz godmode permanent.\n\nSome peds can fall and attach you.", function()
-            if menu.get_value(CustomVehicleAdvanced) == true then
-                local player = PLAYER.PLAYER_PED_ID()
-                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
-                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                    if PED.IS_PED_IN_ANY_HELI(player) then
-                        local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                        local textInput = display_onscreen_keyboard()
-                        if textInput == "" or textInput == nil then return end
-                        local modelHash = util.joaat(textInput)
-                        if STREAMING.IS_MODEL_VALID(modelHash) and STREAMING.IS_MODEL_A_VEHICLE(modelHash) then
-                            local vehicleClass = VEHICLE.GET_VEHICLE_CLASS_FROM_NAME(modelHash)
-                            if vehicleClass == 15 then
-                                if menu.get_value(ShowMessages) == true then chat.send_message(specialMsg, false, true, true) end
-                                for _, pid in pairs(playerList) do
-                                    if AvailableSession() then
-                                        escort_attack(pid, textInput, false)
-                                        util.yield(delaySpawning * 1000)
-                                    end
-                                end
-                            else
-                                InterNotify("Invalid vehicle model: " .. textInput .. ". Only aerial vehicles Helicopters are allowed.")
-                            end
-                        else
-                            InterNotify("I'm sorry, we cannot send those helicopters named: "..textInput)
-                        end
-                    else
-                        InterNotify("To operate the action, you need to be in a helicopter to operate choppers.")
-                    end
-                else
-                    InterNotify("Sit down in a fuckin vehicle.")
-                end
-            else
-                InterNotify("I'm sorry, enable \"Custom Vehicle\" to use more advantages.")
+            local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+            local textInput = display_onscreen_keyboard()
+            if textInput == "" or textInput == nil then return end
+            local modelHash = util.joaat(textInput)
+            if not (STREAMING.IS_MODEL_VALID(modelHash) and STREAMING.IS_MODEL_A_VEHICLE(modelHash)) then
+                InterNotify("I'm sorry, we cannot send the plane named: " .. textInput)
+                return
             end
-        end, nil, nil, COMMANDPERM_AGGRESSIVE)
+            if menu.get_value(ShowMessages) == true then
+                for i = delayCountdown, 1, -1 do
+                    InterNotify("Ready in "..i.." seconds.")
+                    util.yield(1000)
+                end
+                chat.send_message(specialMsg, false, true, true)
+            end
+            local vehicleClass = VEHICLE.GET_VEHICLE_CLASS_FROM_NAME(modelHash)
+            if vehicleClass ~= 15 and vehicleClass ~= 16 then
+                InterNotify("Invalid vehicle model: " .. textInput .. ". Only aerial vehicles planes are allowed.")
+                return
+            end
+            for _, pid in pairs(playerList) do
+                if AvailableSession() and not players.is_in_interior(pid) then
+                    escort_attack(pid, textInput, false)
+                    util.yield(delaySpawning * 1000)
+                end
+            end
+        end)
 
     ----========================================----
     ---           Task Force (Advanced)
@@ -2484,7 +2481,7 @@
 
         TaskForce:divider("Target Players (Sending Planes)")
         local modelVehicle = "lazer"
-        TaskForce:text_input("Model Vehicle", {"intermodelvehtf"}, "Choose specific model existing on GTAV. Recommended to use combat fighters planes", function(txtModel)
+        TaskForce:text_input("Model Vehicle", {"intermodelveh"}, "Choose specific model existing on GTAV or existing DLC Customs Aerial Vehicles. Recommended to use combat fighters planes", function(txtModel)
             if txtModel ~= "" then
                 local modelHash = util.joaat(txtModel)
                 if STREAMING.IS_MODEL_A_VEHICLE(modelHash) then
@@ -2492,7 +2489,7 @@
                     if vehicleClass == 15 or vehicleClass == 16 then
                         modelVehicle = txtModel
                     else
-                        InterNotify("Invalid Model: "..txtModel..".\nOnly accepts aircraft & helicopters.")
+                        InterNotify("Invalid vehicle model: " .. txtModel .. ". Only aerial vehicles (planes and helicopters) are allowed.")
                         modelVehicle = "lazer"
                     end
                 else
@@ -2504,61 +2501,95 @@
             end
         end, tostring(modelVehicle))
 
-        ToggleRandom = TaskForce:toggle_loop("Random Player", {}, "Select random players in the session and target.", function()end)
-        TaskForce:action("Target Player", {"intertftarget"}, "We need more communication and more precise for informations.\nTarget player is the priority objective for your choice if the player is in the session.", function()
-            if menu.get_value(ToggleRandom) == true then
-                local player = PLAYER.PLAYER_PED_ID()
-                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
-                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                    local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                    if #playerList > 0 then
-                        local randomIndex = math.random(#playerList)
-                        local playerId = playerList[randomIndex]
-                        local playerName = players.get_name(playerId)
-                        if not players.is_in_interior(playerId) then
-                            escort_attack(playerId, modelVehicle, true)
-                            InterNotify("Confirmed target player: "..playerName..".".."\nReady to target, roger that. Thanks for the information.")
-                        end
-                    else
-                        InterNotify("No players are currently in the session.")
-                    end
-                else
-                    InterNotify("To operate the action, you need to be in a plane to operate plane.")
+        ToggleRandom = TaskForce:toggle_loop("Random Player", {}, "Choose randomly players in the session and target automatically.", function()end)
+        ToggleSurfaceTASK = TaskForce:toggle_loop("Toggle Surface Task Force", {}, "Send the air force to ground control.\n- It is more efficient to be on the ground to make surgical strikes with such perfect accuracy.\n- In the air, you will be very efficient and in groups unlike on the ground where the planes will hit different areas.", function()end)
+        TaskForce:action("Target Player", {"intertarget"}, "We need more communication and more precise for informations.\nTarget player is the priority objective for your choice if the player is in the session.", function()
+            local isSurfaceTask = menu.get_value(ToggleSurfaceTASK) == true
+            local isRandomToggle = menu.get_value(ToggleRandom) == true
+            local player = PLAYER.PLAYER_PED_ID()
+            local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+            if not PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then InterNotify("To operate the action, you need to be in a vehicle.") return end
+            local vehicleClass = VEHICLE.GET_VEHICLE_CLASS(playerVehicle)
+            if isSurfaceTask then if vehicleClass ~= 19 then
+                    InterNotify("To operate the action, you need to be in a military vehicle.")
+                    return
                 end
             else
-                local player = PLAYER.PLAYER_PED_ID()
-                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
-                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                    local textInput = display_onscreen_keyboard()
-                    local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                    if EToggleSelf then
-                        for _, pid in ipairs(playerList) do
-                            if pid == players.user() and textInput == players.get_name(pid) then
-                                InterNotify("You cannot send escort to kill yourself.")
-                                return
-                            end
-                        end
+                if not (PED.IS_PED_IN_ANY_PLANE(player) or PED.IS_PED_IN_ANY_HELI(player)) then
+                    InterNotify("To operate the action, you need to be in a plane or helicopter.")
+                    return
+                end
+            end
+            local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+            if #playerList == 0 then
+                InterNotify("No players are currently in the session.")
+                return
+            end
+            if isRandomToggle then
+                local randomIndex = math.random(#playerList)
+                local playerId = playerList[randomIndex]
+                local playerName = players.get_name(playerId)
+                if not AvailableSession() then
+                    InterNotify("Unable to target player due to session availability.")
+                    return
+                end
+                local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(playerId)
+                local vehicle = PED.GET_VEHICLE_PED_IS_IN(playerPed, false)
+                local vehicleClass = VEHICLE.GET_VEHICLE_CLASS(vehicle)
+                if PED.IS_PED_IN_VEHICLE(playerPed, vehicle, false) then
+                    if vehicleClass == 15 or vehicleClass == 16 then
+                        menu.trigger_commands("vehkick"..players.get_name(playerId))
+                        TASK.TASK_LEAVE_VEHICLE(playerId, vehicle, math.random(0, 1))
+                        VEHICLE.SET_VEHICLE_DOORS_LOCKED_FOR_ALL_PLAYERS(vehicle, true)
+                        VEHICLE.SET_VEHICLE_DOORS_LOCKED(playerPed, 4)
+                        TASK.TASK_LEAVE_ANY_VEHICLE(playerPed, 0, 0)
                     end
-                    if textInput == nil or textInput == "" then return
-                    else
-                        local isKilled = false
-                        for _, pid in ipairs(playerList) do
-                            local playerName = players.get_name(pid)
-                            if not players.is_in_interior(pid) then
-                                if playerName == textInput then
-                                    isKilled = true
-                                    InterNotify("Confirmed target player: "..textInput..".".."\nReady to target, roger that. Thanks for the information.")
-                                    escort_attack(pid, modelVehicle, true)
-                                    break
-                                end
-                            end
-                        end
-                        if not isKilled then
-                            InterNotify("Error STATUS: The US Air Force cannot recognize the user named "..textInput)
-                        end
-                    end
+                end
+                if not players.is_in_interior(playerId) then
+                    escort_attack(playerId, modelVehicle, isSurfaceTask)
+                    InterNotify("Confirmed target player: "..playerName..".".."\nReady to target, roger that. Thanks for the information.")
                 else
-                    InterNotify("To operate the action, you need to be in a plane to operate plane.")
+                    InterNotify("I'm sorry, you cannot target "..playerName.." while staying on the base. But I have an idea to force. Let's US Army do something.")
+                    for i = 1, 5 do
+                        menu.trigger_commands("apt"..math.random(1, 114)..playerName)
+                    end
+                end
+            else
+                local textInput = display_onscreen_keyboard()
+                if textInput == nil or textInput == "" then
+                    return
+                end
+                local isUserFound = false
+                for _, pid in ipairs(playerList) do
+                    local playerName = players.get_name(pid)
+                    if playerName == textInput then
+                        isUserFound = true
+                        local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                        local vehicle = PED.GET_VEHICLE_PED_IS_IN(playerPed, false)
+                        local vehicleClass = VEHICLE.GET_VEHICLE_CLASS(vehicle)
+                        if PED.IS_PED_IN_VEHICLE(playerPed, vehicle, false) then
+                            if vehicleClass == 15 or vehicleClass == 16 then
+                                menu.trigger_commands("vehkick"..players.get_name(pid))
+                                TASK.TASK_LEAVE_VEHICLE(pid, vehicle, math.random(0, 1))
+                                VEHICLE.SET_VEHICLE_DOORS_LOCKED_FOR_ALL_PLAYERS(vehicle, true)
+                                VEHICLE.SET_VEHICLE_DOORS_LOCKED(playerPed, 4)
+                                TASK.TASK_LEAVE_ANY_VEHICLE(playerPed, 0, 0)
+                            end
+                        end
+                        if not players.is_in_interior(pid) then
+                            InterNotify("Confirmed target player: "..textInput..".".."\nReady to target, roger that. Thanks for the information.")
+                            escort_attack(pid, modelVehicle, isSurfaceTask)
+                            break
+                        else
+                            InterNotify("I'm sorry, you cannot target "..textInput.." while staying on the base. But I have an idea to force. Let's US Army do something.")
+                            for i = 1, 5 do
+                                menu.trigger_commands("apt"..math.random(1, 114)..textInput)
+                            end
+                        end
+                    end
+                end
+                if not isUserFound then
+                    InterNotify("Error STATUS: The US Air Force cannot recognize the user named "..textInput)
                 end
             end
         end)
@@ -2589,23 +2620,8 @@
             return a[1] < b[1]
         end)
 
-        local delaySpawningPresets = 1
-        PresetSpawningTF:text_input("Delay Time", {"intertimertfpresets"}, "Do not abuse for spawning vehicle, do not go to lower for preventing for crash, mass entities.\n\nMeasured in seconds.", function(typeText)
-            if typeText ~= "" then
-                local delay = tonumber(typeText)
-                if delay and delay > 0 then
-                    delaySpawningPresets = delay
-                else
-                    InterNotify("Invalid delay value. Please enter a positive number greater than 0.")
-                    delaySpawningPresets = 1
-                end
-            else
-                delaySpawningPresets = 1
-            end
-        end, delaySpawningPresets)
-
         local msgPresets = "US Air Force has sent a friend request."
-        PresetSpawningTF:text_input("Send Message", {"intertaskforcemsgpr"}, "America has sent a friend request.", function(typeText)
+        PresetSpawningTF:text_input("Send Message", {"intermsgpf"}, "America has sent a friend request.", function(typeText)
             if typeText ~= "" then
                 msgPresets = typeText
             else
@@ -2613,35 +2629,83 @@
             end
         end, msgPresets)
 
+        local delayCountdownTF = 2
+        PresetSpawningTF:text_input("Delay Countdown", {"intercountdownpf"}, "Countdown for notification.\nMeasured in seconds.", function(typeText)
+            if typeText ~= "" then
+                local delay = tonumber(typeText)
+                if delay and delay > 1 then
+                    delayCountdownTF = delay
+                else
+                    AerialFleetsNotify("Invalid delay value. Please enter a positive number greater than 1.")
+                    delayCountdownTF = 2
+                end
+            else
+                delayCountdownTF = 2
+            end
+        end, delayCountdownTF)
+
+        local delaySpawningPresets = 1
+        PresetSpawningTF:text_input("Delay Time", {"intertimepf"}, "Do not abuse for spawning vehicle, do not go to lower for preventing for crash, mass entities.\n\nMeasured in seconds.", function(typeText)
+            if typeText ~= "" then
+                local delay = tonumber(typeText)
+                if delay and delay > 0 then
+                    delaySpawningPresets = delay
+                else
+                    AerialFleetsNotify("Invalid delay value. Please enter a positive number greater than 0.")
+                    delaySpawningPresets = 1
+                end
+            else
+                delaySpawningPresets = 1
+            end
+        end, delaySpawningPresets)
+
         ShowingMSGS = PresetSpawningTF:toggle_loop("Show Messages", {}, "", function()end)
         CustomPresets = PresetSpawningTF:toggle_loop("Toggle Preset Vehicle", {}, "", function()end)
+        ToggleSurfaceTF = PresetSpawningTF:toggle_loop("Toggle Surface Task Force", {}, "Send the air force to ground control.\n- It is more efficient to be on the ground to make surgical strikes with such perfect accuracy.\n- In the air, you will be very efficient and in groups unlike on the ground where the planes will hit different areas.", function()end)
         PresetSpawningTF:divider("Presets Vehicles")
-
         for _, spawner in ipairs(tempSpawners) do
             local spawnerName = spawner[1]
             local spawnerModel = spawner[2]
-            PresetSpawningTF:action("Spawn " .. spawnerName, {"intertf"..spawnerModel}, "", function()
+            PresetSpawningTF:action("Spawn " .. spawnerName, {"intertask"..spawnerModel}, "", function()
+                local player = PLAYER.PLAYER_PED_ID()
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                local isSurfaceTF = menu.get_value(ToggleSurfaceTF) == true
+                local vehicleClass = VEHICLE.GET_VEHICLE_CLASS(playerVehicle)
+                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                local showingMsgs = menu.get_value(ShowingMSGS) == true
                 if menu.get_value(CustomPresets) == true then
-                    local player = PLAYER.PLAYER_PED_ID()
-                    local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
-                    if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                        if PED.IS_PED_IN_ANY_PLANE(player) then
-                            local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                            if menu.get_value(ShowingMSGS) == true then chat.send_message(msgPresets, false, true, true) end
-                            for _, pid in pairs(playerList) do
-                                if AvailableSession() then
-                                    escort_attack(pid, spawnerModel, false)
-                                    InterWait(delaySpawningPresets * 1000)
-                                end
-                            end
-                        else
-                            InterNotify("To operate the action, you need to be in a plane to operate plane.")
+                    if isSurfaceTF then
+                        if vehicleClass ~= 19 then
+                            AerialFleetsNotify("To operate the action, you need to be in a military vehicle.")
+                            return
                         end
-                    else
-                        InterNotify("Please sit down in a vehicle.")
+                    elseif not PED.IS_PED_IN_ANY_PLANE(player) then
+                        AerialFleetsNotify("To operate the action, you need to be in a plane.")
+                        return
                     end
                 else
-                    InterNotify("I'm sorry, you need to enable \"Toggle Preset Vehicle\"")
+                    AerialFleetsNotify("Please enable \"Toggle Preset Vehicle\" to work for "..spawnerName)
+                    return
+                end
+                if not PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    AerialFleetsNotify("Please sit down in a vehicle.")
+                    return
+                end
+                if showingMsgs then
+                    local countdown = isSurfaceTF and 3 or delayCountdownTF
+                    for i = countdown, 1, -1 do
+                        AerialFleetsNotify("Ready in "..i.." seconds.")
+                        util.yield(1000)
+                    end
+                    chat.send_message(msgPresets, false, true, true)
+                end
+                for _, pid in pairs(playerList) do
+                    if AvailableSession() then
+                        if not players.is_in_interior(pid) and players.get_name(pid) ~= "UndiscoveredPlayer" then
+                            escort_attack(pid, spawnerModel, isSurfaceTF)
+                            util.yield(delaySpawningPresets * 1000)
+                        end
+                    end
                 end
             end)
         end
