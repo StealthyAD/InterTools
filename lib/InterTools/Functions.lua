@@ -305,175 +305,90 @@
             native_invoker.end_call('7A6535691B477C48')
         end
 
-        function escort_attack(pedUser, hash, aerialCar)
-            if aerialCar then
-                if not players.is_in_interior(pedUser) then
-                    local vehicleHash = util.joaat(hash)
-                    local playerPed = PLAYER.PLAYER_PED_ID()
-                    local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pedUser)
-                    local altitude = 85
-                    request_model_load(vehicleHash)
-                    local playerPos = players.get_position(playerPed)
-                    playerPos.z = playerPos.z + altitude
-                    local offsetX = math.random(-55, 55)
-                    local offsetY = math.random(-100, 5)
-                    local coords = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(playerPed, offsetX, offsetY, playerPos.z)
-                    local vehicle = entities.create_vehicle(vehicleHash, coords, ENTITY.GET_ENTITY_HEADING(playerPed))
-                    if not STREAMING.HAS_MODEL_LOADED(vehicle) then
-                        LoadingModel(vehicle)
-                    end
-                    for i = 0,49 do
-                        local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
-                        VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
-                    end
-                    VEHICLE.CONTROL_LANDING_GEAR(vehicle, 3)
-                    VEHICLE.SET_VEHICLE_FORWARD_SPEED(vehicle, 320.0)
-                    VEHICLE.SET_VEHICLE_MAX_SPEED(vehicle, 540.0)
-                    VEHICLE.SET_VEHICLE_DOORS_LOCKED(vehicle, 4)
-                    ENTITY.SET_ENTITY_INVINCIBLE(vehicle, true)
-                    coords = ENTITY.GET_ENTITY_COORDS(playerPed, false)
-                    coords.x = coords['x']
-                    coords.y = coords['y']
-                    coords.z = coords['z']
-                    local hash_models = {
-                        util.joaat("s_m_y_blackops_01"),
-                        util.joaat("s_m_m_marine_01"),
-                        util.joaat("s_m_m_pilot_02"),
-                        util.joaat("s_m_y_pilot_01"),
-                        util.joaat("s_m_m_marine_02"),
-                        util.joaat("s_m_m_prisguard_01"),
-                        util.joaat("mp_g_m_pros_01"),
-                        util.joaat("mp_m_avongoon"),
-                        util.joaat("mp_m_boatstaff_01"),
-                        util.joaat("mp_m_bogdangoon"),
-                        util.joaat("mp_m_claude_01"),
-                        util.joaat("mp_m_cocaine_01"),
-                        util.joaat("mp_m_counterfeit_01"),
-                        util.joaat("mp_m_exarmy_01"),
-                        util.joaat("mp_m_fibsec_01")
-                    }
-                    local hash_model = hash_models[math.random(#hash_models)]
-                    request_model_load(hash_model)
-                    local attacker = entities.create_ped(28, hash_model, coords, math.random(0, 270))
-                    PED.SET_PED_AS_COP(attacker, true)
-                    PED.SET_PED_CONFIG_FLAG(attacker, 281, true)
-                    PED.SET_PED_CONFIG_FLAG(attacker, 2, true)
-                    PED.SET_PED_CONFIG_FLAG(attacker, 33, false)
-                    PED.SET_PED_HEARING_RANGE(attacker, 99999)
-                    PED.SET_PED_RANDOM_COMPONENT_VARIATION(attacker, 0)
-                    PED.SET_PED_SHOOT_RATE(attacker, 5)
-                    PED.SET_PED_ACCURACY(attacker, 100.0)
-                    PED.SET_PED_COMBAT_ABILITY(attacker, 2, true)
-                    PED.SET_PED_FLEE_ATTRIBUTES(attacker, 0, false)
-                    PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 46, true)
-                    PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 5, true)
-                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(attacker, true)
-                    ENTITY.SET_ENTITY_INVINCIBLE(attacker, true)
-                    PED.SET_PED_CONFIG_FLAG(attacker, 52, true)
-                    local relHash = PED.GET_PED_RELATIONSHIP_GROUP_HASH(ped)
-                    PED.SET_PED_RELATIONSHIP_GROUP_HASH(attacker, relHash)
-                    PED.SET_PED_INTO_VEHICLE(attacker, vehicle, -1)
-                    PED.CREATE_PED_INSIDE_VEHICLE(attacker, vehicle, 28, hash_model, -1, true)
-                    PED.SET_PED_INTO_VEHICLE(attacker, vehicle, -1)
-                    ENTITY.SET_ENTITY_AS_MISSION_ENTITY(attacker, true, true)
-                    TASK.TASK_VEHICLE_MISSION_PED_TARGET(attacker, vehicle, ped, 6, 500.0, 786988, 0.0, 0.0, true)
-                    TASK.TASK_VEHICLE_CHASE(attacker, ped)
-                    PED.SET_PED_ACCURACY(attacker, 100.0)
-                    PED.SET_PED_COMBAT_ABILITY(attacker, 2, true)
-                    PED.SET_PED_FLEE_ATTRIBUTES(attacker, 0, false)
-                    PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 46, true)
-                    PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 5, true)
-                    SET_PED_CAN_BE_KNOCKED_OFF_VEH(attacker, 1)
-                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(ped, true)
-                    PED.SET_PED_CONFIG_FLAG(attacker, 52, true)
-                    local relHash = PED.GET_PED_RELATIONSHIP_GROUP_HASH(ped)
-                    PED.SET_PED_RELATIONSHIP_GROUP_HASH(attacker, relHash)
+        function escort_attack(pedUser, hash, surfaceVehicle)
+            local limitSpeed = 960.0
+            local speedVehicle = 440.0
+            if not players.is_in_interior(pedUser) then
+                local vehicleHash = util.joaat(hash)
+                local playerPed = PLAYER.PLAYER_PED_ID()
+                local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pedUser)
+                local altitude = surfaceVehicle and 550 or 100
+                request_model_load(vehicleHash)
+                local playerPos = players.get_position(playerPed)
+                playerPos.z = playerPos.z + altitude
+                local offsetX = math.random(-55, 55)
+                local offsetY = math.random(surfaceVehicle and -125 or -100, surfaceVehicle and 10 or -5)
+                local coords = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(playerPed, offsetX, offsetY, playerPos.z)
+                local vehicle = entities.create_vehicle(vehicleHash, coords, ENTITY.GET_ENTITY_HEADING(playerPed))
+        
+                if not STREAMING.HAS_MODEL_LOADED(vehicle) then
+                    request_model_load(vehicle)
                 end
-            else
-                if not players.is_in_interior(pedUser) then
-                    local vehicleHash = util.joaat(hash)
-                    local playerPed = PLAYER.PLAYER_PED_ID()
-                    local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pedUser)
-                    local altitude = 70
-                    request_model_load(vehicleHash)
-                    local playerPos = players.get_position(playerPed)
-                    playerPos.z = playerPos.z + altitude
-                    local offsetX = math.random(-55, 55)
-                    local offsetY = math.random(-100, 5)
-                    local coords = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(playerPed, offsetX, offsetY, playerPos.z)
-                    local vehicle = entities.create_vehicle(vehicleHash, coords, ENTITY.GET_ENTITY_HEADING(playerPed))
-                    if not STREAMING.HAS_MODEL_LOADED(vehicle) then
-                        LoadingModel(vehicle)
-                    end
-                    for i = 0,49 do
-                        local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
-                        VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
-                    end
-                    VEHICLE.CONTROL_LANDING_GEAR(vehicle, 3)
-                    VEHICLE.SET_VEHICLE_FORWARD_SPEED(vehicle, 320.0)
-                    VEHICLE.SET_VEHICLE_MAX_SPEED(vehicle, 540.0)
-                    VEHICLE.SET_VEHICLE_DOORS_LOCKED(vehicle, 4)
-                    ENTITY.SET_ENTITY_INVINCIBLE(vehicle, true)
-                    coords = ENTITY.GET_ENTITY_COORDS(playerPed, false)
-                    coords.x = coords['x']
-                    coords.y = coords['y']
-                    coords.z = coords['z']
-                    local hash_models = {
-                        util.joaat("s_m_y_blackops_01"),
-                        util.joaat("s_m_m_marine_01"),
-                        util.joaat("s_m_m_pilot_02"),
-                        util.joaat("s_m_y_pilot_01"),
-                        util.joaat("s_m_m_marine_02"),
-                        util.joaat("s_m_m_prisguard_01"),
-                        util.joaat("mp_g_m_pros_01"),
-                        util.joaat("mp_m_avongoon"),
-                        util.joaat("mp_m_boatstaff_01"),
-                        util.joaat("mp_m_bogdangoon"),
-                        util.joaat("mp_m_claude_01"),
-                        util.joaat("mp_m_cocaine_01"),
-                        util.joaat("mp_m_counterfeit_01"),
-                        util.joaat("mp_m_exarmy_01"),
-                        util.joaat("mp_m_fibsec_01")
-                    }
-                    local hash_model = hash_models[math.random(#hash_models)]
-                    request_model_load(hash_model)
-                    local attacker = entities.create_ped(28, hash_model, coords, math.random(0, 270))
-                    PED.SET_PED_AS_COP(attacker, true)
-                    PED.SET_PED_CONFIG_FLAG(attacker, 281, true)
-                    PED.SET_PED_CONFIG_FLAG(attacker, 2, true)
-                    PED.SET_PED_CONFIG_FLAG(attacker, 33, false)
-                    PED.SET_PED_HEARING_RANGE(attacker, 99999)
-                    PED.SET_PED_RANDOM_COMPONENT_VARIATION(attacker, 0)
-                    PED.SET_PED_SHOOT_RATE(attacker, 5)
-                    PED.SET_PED_ACCURACY(attacker, 100.0)
-                    PED.SET_PED_COMBAT_ABILITY(attacker, 2, true)
-                    PED.SET_PED_FLEE_ATTRIBUTES(attacker, 0, false)
-                    PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 46, true)
-                    PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 5, true)
-                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(attacker, true)
-                    ENTITY.SET_ENTITY_INVINCIBLE(attacker, true)
-                    PED.SET_PED_CONFIG_FLAG(attacker, 52, true)
-                    local relHash = PED.GET_PED_RELATIONSHIP_GROUP_HASH(ped)
-                    PED.SET_PED_RELATIONSHIP_GROUP_HASH(attacker, relHash)
-                    PED.SET_PED_INTO_VEHICLE(attacker, vehicle, -1)
-                    PED.CREATE_PED_INSIDE_VEHICLE(attacker, vehicle, 28, hash_model, -1, true)
-                    PED.SET_PED_INTO_VEHICLE(attacker, vehicle, -1)
-                    ENTITY.SET_ENTITY_AS_MISSION_ENTITY(attacker, true, true)
-                    TASK.TASK_VEHICLE_MISSION_PED_TARGET(attacker, vehicle, ped, 6, 500.0, 786988, 0.0, 0.0, true)
-                    TASK.TASK_VEHICLE_CHASE(attacker, ped)
-                    PED.SET_PED_ACCURACY(attacker, 100.0)
-                    PED.SET_PED_COMBAT_ABILITY(attacker, 2, true)
-                    PED.SET_PED_FLEE_ATTRIBUTES(attacker, 0, false)
-                    PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 46, true)
-                    PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 5, true)
-                    SET_PED_CAN_BE_KNOCKED_OFF_VEH(attacker, 1)
-                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(ped, true)
-                    PED.SET_PED_CONFIG_FLAG(attacker, 52, true)
-                    local relHash = PED.GET_PED_RELATIONSHIP_GROUP_HASH(ped)
-                    PED.SET_PED_RELATIONSHIP_GROUP_HASH(attacker, relHash)
+                for i = 0, 49 do
+                    local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
+                    VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
                 end
+                VEHICLE.CONTROL_LANDING_GEAR(vehicle, 3)
+                VEHICLE.SET_VEHICLE_FORWARD_SPEED(vehicle, speedVehicle)
+                VEHICLE.SET_VEHICLE_MAX_SPEED(vehicle, limitSpeed)
+                VEHICLE.SET_VEHICLE_DOORS_LOCKED(vehicle, 4)
+                ENTITY.SET_ENTITY_INVINCIBLE(vehicle, true)
+                coords = ENTITY.GET_ENTITY_COORDS(playerPed, false)
+                coords.x = coords['x']
+                coords.y = coords['y']
+                coords.z = coords['z']
+                local hash_models = {
+                    util.joaat("s_m_y_blackops_01"),
+                    util.joaat("s_m_m_marine_01"),
+                    util.joaat("s_m_m_pilot_02"),
+                    util.joaat("s_m_y_pilot_01"),
+                    util.joaat("s_m_m_marine_02"),
+                    util.joaat("s_m_m_prisguard_01"),
+                    util.joaat("mp_g_m_pros_01"),
+                    util.joaat("mp_m_avongoon"),
+                    util.joaat("mp_m_boatstaff_01"),
+                    util.joaat("mp_m_bogdangoon"),
+                    util.joaat("mp_m_claude_01"),
+                    util.joaat("mp_m_cocaine_01"),
+                    util.joaat("mp_m_counterfeit_01"),
+                    util.joaat("mp_m_exarmy_01"),
+                    util.joaat("mp_m_fibsec_01")
+                }
+                local hash_model = hash_models[math.random(#hash_models)]
+                request_model_load(hash_model)
+                local attacker = entities.create_ped(28, hash_model, coords, math.random(0, 270))
+                PED.SET_PED_AS_COP(attacker, true)
+                PED.SET_PED_CONFIG_FLAG(attacker, 281, true)
+                PED.SET_PED_CONFIG_FLAG(attacker, 2, true)
+                PED.SET_PED_CONFIG_FLAG(attacker, 33, false)
+                PED.SET_PED_HEARING_RANGE(attacker, 99999)
+                PED.SET_PED_RANDOM_COMPONENT_VARIATION(attacker, 0)
+                PED.SET_PED_SHOOT_RATE(attacker, 5)
+                PED.SET_PED_ACCURACY(attacker, 100.0)
+                PED.SET_PED_COMBAT_ABILITY(attacker, 2, true)
+                PED.SET_PED_FLEE_ATTRIBUTES(attacker, 0, false)
+                PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 46, true)
+                PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 5, true)
+                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(attacker, true)
+                ENTITY.SET_ENTITY_INVINCIBLE(attacker, true)
+                PED.SET_PED_CONFIG_FLAG(attacker, 52, true)
+                local relHash = PED.GET_PED_RELATIONSHIP_GROUP_HASH(ped)
+                PED.SET_PED_RELATIONSHIP_GROUP_HASH(attacker, relHash)
+                PED.SET_PED_INTO_VEHICLE(attacker, vehicle, -1)
+                PED.CREATE_PED_INSIDE_VEHICLE(attacker, vehicle, 28, hash_model, -1, true)
+                ENTITY.SET_ENTITY_AS_MISSION_ENTITY(attacker, true, true)
+                TASK.TASK_VEHICLE_MISSION_PED_TARGET(attacker, vehicle, ped, 6, 500.0, 786988, 0.0, 0.0, true)
+                TASK.TASK_VEHICLE_CHASE(attacker, ped)
+                PED.SET_PED_ACCURACY(attacker, 100.0)
+                PED.SET_PED_COMBAT_ABILITY(attacker, 2, true)
+                PED.SET_PED_FLEE_ATTRIBUTES(attacker, 0, false)
+                PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 46, true)
+                PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 5, true)
+                PED.SET_PED_CAN_BE_KNOCKED_OFF_VEHICLE(attacker, 1)
+                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(ped, true)
+                PED.SET_PED_CONFIG_FLAG(attacker, 52, true)
             end
-        end 
+        end
 
         function harass_vehicle(pedUser, vehicleHash, aerialCar, heliCars)
             if aerialCar then
@@ -702,7 +617,7 @@
         function groundAttack(pid, hash, groundVehicle)
             if groundVehicle then
                 if not players.is_in_interior(pid) then
-                    local player_ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                    local player_ped = PLAYER.PLAYER_PED_ID()
                     local vehicleHash = util.joaat(hash)
                     local hash_models = {
                         util.joaat("s_m_y_blackops_01"),
@@ -725,12 +640,12 @@
                     request_model_load(vehicleHash)
                     request_model_load(marine1)
                     local targetPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                    local pos = ENTITY.GET_ENTITY_COORDS(targetPed)
-                    local vehicle = entities.create_vehicle(vehicleHash, pos, CAM.GET_GAMEPLAY_CAM_ROT(0).z)
+                    local pos = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(player_ped, 0.0, 20.0, 0.0)
+                    local vehicle = entities.create_vehicle(vehicleHash, pos, ENTITY.GET_ENTITY_HEADING(player_ped))
                     if not ENTITY.DOES_ENTITY_EXIST(vehicle) then
                         return
                     end
-                    local offset = getOffsetFromEntityGivenDistance(vehicle, 10)
+                    local offset = getOffsetFromEntityGivenDistance(vehicle, 4)
                     local outCoords = v3.new()
                     local outHeading = memory.alloc()
                 
@@ -740,7 +655,7 @@
                         VEHICLE.SET_VEHICLE_ENGINE_ON(vehicle, true, true, true)
                     end
                     for i=-1, VEHICLE.GET_VEHICLE_MAX_NUMBER_OF_PASSENGERS(vehicle) - 1 do
-                        local attackerFlag = entities.create_ped(2, marine1, outCoords, CAM.GET_GAMEPLAY_CAM_ROT(0).z)
+                        local attackerFlag = entities.create_ped(2, marine1, outCoords, math.random(0, 270))
                         PED.SET_PED_INTO_VEHICLE(attackerFlag, vehicle, i)
                         if i % 2 == 0 then
                             WEAPON.GIVE_WEAPON_TO_PED(attackerFlag, 584646201 , 9999, false, true)
@@ -750,6 +665,8 @@
                             PED.SET_PED_FIRING_PATTERN(attackerFlag, -957453492)
                         end
                         PED.SET_PED_AS_COP(attackerFlag, true)
+                        VEHICLE.SET_VEHICLE_FORWARD_SPEED(vehicle, 20.0)
+                        VEHICLE.SET_VEHICLE_MAX_SPEED(vehicle, 200.0)
                         ENTITY.SET_ENTITY_INVINCIBLE(vehicle, menu.get_value(TankToggleGod))
                         PED.SET_PED_CONFIG_FLAG(attackerFlag, 281, true)
                         PED.SET_PED_CONFIG_FLAG(attackerFlag, 2, true)
@@ -778,10 +695,10 @@
                         PED.SET_PED_COMBAT_ATTRIBUTES(attackerFlag, 3, false)
                         ENTITY.SET_ENTITY_INVINCIBLE(vehicle, menu.get_value(TankToggleGod))
                         if i == -1 then
-                            TASK.TASK_VEHICLE_CHASE(attackerFlag, player_ped)
+                            TASK.TASK_VEHICLE_CHASE(attackerFlag, targetPed)
                             WEAPON.GIVE_WEAPON_TO_PED(attackerFlag, 584646201 , 1000, false, true)
                         else
-                            TASK.TASK_COMBAT_PED(attackerFlag, player_ped, 0, 16)
+                            TASK.TASK_COMBAT_PED(attackerFlag, targetPed, 0, 16)
                             WEAPON.GIVE_WEAPON_TO_PED(attackerFlag, 4208062921, 9999, false, true)
                             WEAPON.GIVE_WEAPON_COMPONENT_TO_PED(attackerFlag, 4208062921, 0x8B3C480B)
                             WEAPON.GIVE_WEAPON_COMPONENT_TO_PED(attackerFlag, 4208062921, 0x4DB62ABE)
