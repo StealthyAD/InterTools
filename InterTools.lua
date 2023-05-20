@@ -2221,40 +2221,13 @@
             planesHash = planeModels[selectedPlaneModel]
         end)
 
-        local planeModels1 = {
-            "molotok",
-            "rogue",
-            "pyro",
-            "nokota",
-            "starling",
-            "mogul",
-            "seabreeze",
-            "strikeforce",
-        }
-
         AerialParts:action("Send Air Force", {"interusaf"}, "Sending America to war and intervene more planes (Real Undetectable).\nWARNING: The action is irreversible in the session if toggle godmode on.\nNOTE: Toggle Exclude features.", function()
-            if menu.get_value(RandomizePlane) == true then
-                local playerList = players.list(true, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                local counter = 0
-                local max_iterations = 5 -- change this to adjust the number of iterations
-                while counter < max_iterations do
-                    for _, pid in pairs(playerList) do
-                        if AvailableSession() then
-                            local randomModel = planeModels1[math.random(#planeModels1)]
-                            AggressivePlanes(pid, randomModel)
-                            InterWait(5000)
-                        end
-                    end
-                    counter = counter + 1
-                end
-            else
-                local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                for _, pid in pairs(playerList) do
-                    if AvailableSession() then
-                        for i = 1, menu.get_value(PlaneCount) do
-                            harass_vehicle(pid, planesHash, true, false)
-                            InterWait(5000)
-                        end
+            local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+            for _, pid in pairs(playerList) do
+                if AvailableSession() then
+                    for _ = 1, menu.get_value(PlaneCount) do
+                        harass_vehicle(pid, planesHash, true, false)
+                        InterWait(5000)
                     end
                 end
             end
