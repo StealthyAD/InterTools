@@ -1046,7 +1046,7 @@
             local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
             if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
                 if PAD.IS_CONTROL_JUST_PRESSED(357, 357) then
-                    STREAMING.REQUEST_NAMED_PTFX_ASSET('veh_xs_vehicle_mods')  
+                    STREAMING.REQUEST_NAMED_PTFX_ASSET('veh_xs_vehicle_mods')
                     VEHICLE.SET_OVERRIDE_NITROUS_LEVEL(playerVehicle, true, 100, 1, 99999999999, false)
                     repeat util.yield() until PAD.IS_CONTROL_JUST_PRESSED(357, 357)
                     VEHICLE.SET_OVERRIDE_NITROUS_LEVEL(playerVehicle, false, 0, 0, 0, false)
@@ -1293,7 +1293,7 @@
             local hash = util.joaat(vehicleData[index])
             local ped = PLAYER.GET_PLAYER_PED()
             if not STREAMING.HAS_MODEL_LOADED(hash) then
-                LoadingModel(hash)
+                request_model_load(hash)
             end
             local function upgrade_vehicle(vehicle)
                 if menu.get_value(SelfTUpgrade) == true then
@@ -1340,7 +1340,7 @@
             local hash = util.joaat(text)
             local ped = PLAYER.GET_PLAYER_PED()
             if not STREAMING.HAS_MODEL_LOADED(hash) then
-                LoadingModel(hash)
+                request_model_load(hash)
             end
             local function upgrade_vehicle(vehicle)
                 if menu.get_value(SelfTUpgrade) == true then
@@ -2484,9 +2484,9 @@
             if not PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then InterNotify("To operate the action, you need to be in a vehicle.") return end
             local vehicleClass = VEHICLE.GET_VEHICLE_CLASS(playerVehicle)
             if isSurfaceTask then if vehicleClass ~= 19 then
-                    InterNotify("To operate the action, you need to be in a military vehicle.")
-                    return
-                end
+                InterNotify("To operate the action, you need to be in a military vehicle.")
+                return
+            end
             else
                 if not (PED.IS_PED_IN_ANY_PLANE(player) or PED.IS_PED_IN_ANY_HELI(player)) then
                     InterNotify("To operate the action, you need to be in a plane or helicopter.")
@@ -2609,7 +2609,7 @@
                 if delay and delay > 1 then
                     delayCountdownTF = delay
                 else
-                    AerialFleetsNotify("Invalid delay value. Please enter a positive number greater than 1.")
+                    InterNotify("Invalid delay value. Please enter a positive number greater than 1.")
                     delayCountdownTF = 2
                 end
             else
@@ -2624,7 +2624,7 @@
                 if delay and delay > 0 then
                     delaySpawningPresets = delay
                 else
-                    AerialFleetsNotify("Invalid delay value. Please enter a positive number greater than 0.")
+                    InterNotify("Invalid delay value. Please enter a positive number greater than 0.")
                     delaySpawningPresets = 1
                 end
             else
@@ -2649,25 +2649,25 @@
                 if menu.get_value(CustomPresets) == true then
                     if isSurfaceTF then
                         if vehicleClass ~= 19 then
-                            AerialFleetsNotify("To operate the action, you need to be in a military vehicle.")
+                            InterNotify("To operate the action, you need to be in a military vehicle.")
                             return
                         end
                     elseif not PED.IS_PED_IN_ANY_PLANE(player) then
-                        AerialFleetsNotify("To operate the action, you need to be in a plane.")
+                        InterNotify("To operate the action, you need to be in a plane.")
                         return
                     end
                 else
-                    AerialFleetsNotify("Please enable \"Toggle Preset Vehicle\" to work for "..spawnerName)
+                    InterNotify("Please enable \"Toggle Preset Vehicle\" to work for "..spawnerName)
                     return
                 end
                 if not PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                    AerialFleetsNotify("Please sit down in a vehicle.")
+                    InterNotify("Please sit down in a vehicle.")
                     return
                 end
                 if showingMsgs then
-                    local countdown = isSurfaceTF and 3 or delayCountdownTF
+                    local countdown = isSurfaceTF and delayCountdownTF or delayCountdownTF
                     for i = countdown, 1, -1 do
-                        AerialFleetsNotify("Ready in "..i.." seconds.")
+                        InterNotify("Ready in "..i.." seconds.")
                         util.yield(1000)
                     end
                     chat.send_message(msgPresets, false, true, true)
@@ -2710,12 +2710,10 @@
         }
 
         local modelToDelete = {
-            util.joaat("s_m_y_marine_01"),
-            util.joaat("s_m_y_marine_03"),
-            util.joaat("s_m_y_pilot_01"),
             util.joaat("s_m_y_blackops_01"),
             util.joaat("s_m_m_marine_01"),
             util.joaat("s_m_m_pilot_02"),
+            util.joaat("s_m_y_pilot_01"),
             util.joaat("s_m_m_marine_02"),
             util.joaat("s_m_m_prisguard_01"),
             util.joaat("mp_g_m_pros_01"),
@@ -2726,7 +2724,11 @@
             util.joaat("mp_m_cocaine_01"),
             util.joaat("mp_m_counterfeit_01"),
             util.joaat("mp_m_exarmy_01"),
-            util.joaat("mp_m_fibsec_01")
+            util.joaat("mp_m_fibsec_01"),
+            util.joaat("s_m_m_ciasec_01"),
+            util.joaat("s_m_m_cntrybar_0"),
+            util.joaat("s_m_y_clown_01"),
+            util.joaat("s_m_y_swat_01"),
         }
         
         AerialRoots:action("Cleanup Air Force", {}, "Includes helicopters also too.", function()
@@ -3648,7 +3650,7 @@
                 end
             end
             if not STREAMING.HAS_MODEL_LOADED(hash) then
-                LoadingModel(hash)
+                request_model_load(hash)
             end
             for k,v in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
                 local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(v)
@@ -3673,7 +3675,7 @@
             if txt == nil or txt == "" then return end
             local hash = util.joaat(txt)
             if not STREAMING.HAS_MODEL_LOADED(hash) then
-                LoadingModel(hash)
+                request_model_load(hash)
             end
             local function upgrade_vehicle(vehicle)
                 if menu.get_value(ToggleUpgradeAll) == true then
@@ -4019,7 +4021,7 @@
 
         WorldParts:action("Send Boeing to Casino", {}, "Recommended for blocking roads on the casino.", function()
             local hash = util.joaat("jet")
-            LoadingModel(hash)
+            request_model_load(hash)
             while not STREAMING.HAS_MODEL_LOADED(hash) do
                 InterWait()
             end
@@ -4382,7 +4384,7 @@
             end
             musicStartTime = os.clock()
             local hash = util.joaat("jet")
-            LoadingModel(hash)
+            request_model_load(hash)
             while not STREAMING.HAS_MODEL_LOADED(hash) do
                 InterWait()
             end
@@ -5277,7 +5279,7 @@
                         local coords = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 0.0, altitude)
                         local vehicle = entities.create_vehicle(hash, coords, ENTITY.GET_ENTITY_HEADING(ped))
                         if not STREAMING.HAS_MODEL_LOADED(vehicle) then
-                            LoadingModel(vehicle)
+                            request_model_load(vehicle)
                         end
                         for i = 0,49 do
                             local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
@@ -5735,7 +5737,7 @@
                 local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
                 local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 5.0, 0.0)
                 if not STREAMING.HAS_MODEL_LOADED(hash) then
-                    LoadingModel(hash)
+                    request_model_load(hash)
                 end
                 if STREAMING.IS_MODEL_A_VEHICLE(hash) then
                     local vehicle = entities.create_vehicle(hash, c, 0)
@@ -6493,7 +6495,7 @@
                         local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 5.0, 0.0)
                         local hash = util.joaat("kosatka")
                         if not STREAMING.HAS_MODEL_LOADED(hash) then
-                            LoadingModel(hash)
+                            request_model_load(hash)
                         end
                         while InterSpam >= 1 do
                             entities.create_vehicle(hash, c, 0)
@@ -6517,7 +6519,7 @@
                         local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 5.0, 0.0)
                         local hash = util.joaat("cargoplane")
                         if not STREAMING.HAS_MODEL_LOADED(hash) then
-                            LoadingModel(hash)
+                            request_model_load(hash)
                         end
                         while InterSpam >= 1 do
                             entities.create_vehicle(hash, c, 0)
@@ -6541,7 +6543,7 @@
                         local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 5.0, 0.0)
                         local hash = util.joaat("jet")
                         if not STREAMING.HAS_MODEL_LOADED(hash) then
-                            LoadingModel(hash)
+                            request_model_load(hash)
                         end
                         while InterSpam >= 1 do
                             entities.create_vehicle(hash, c, 0)
@@ -6565,7 +6567,7 @@
                         local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 5.0, 0.0)
                         local hash = util.joaat("alkonost")
                         if not STREAMING.HAS_MODEL_LOADED(hash) then
-                            LoadingModel(hash)
+                            request_model_load(hash)
                         end
                         while InterSpam >= 1 do
                             entities.create_vehicle(hash, c, 0)
@@ -6589,7 +6591,7 @@
                         local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 5.0, 0.0)
                         local hash = util.joaat("rhino")
                         if not STREAMING.HAS_MODEL_LOADED(hash) then
-                            LoadingModel(hash)
+                            request_model_load(hash)
                         end
                         while InterSpam >= 1 do
                             entities.create_vehicle(hash, c, 0)
@@ -6624,7 +6626,7 @@
                         local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(targetID, 0.0, 0, 200.0)
                         local hash = util.joaat("jet")
                         if not STREAMING.HAS_MODEL_LOADED(hash) then
-                            LoadingModel(hash)
+                            request_model_load(hash)
                         end
                         local boeing = entities.create_vehicle(hash, c, ENTITY.GET_ENTITY_HEADING(targetID))
                         ENTITY.SET_ENTITY_INVINCIBLE(boeing, false)
@@ -6657,7 +6659,7 @@
                         local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(targetID, 0.0, 40, 125.0)
                         local hash = util.joaat("lazer")
                         if not STREAMING.HAS_MODEL_LOADED(hash) then
-                            LoadingModel(hash)
+                            request_model_load(hash)
                         end
                         local lazersuicide = entities.create_vehicle(hash, c, ENTITY.GET_ENTITY_HEADING(targetID))
                         ENTITY.SET_ENTITY_INVINCIBLE(lazersuicide, false)
@@ -6693,7 +6695,7 @@
                         local hash = util.joaat("cargoplane")
                     
                         if not STREAMING.HAS_MODEL_LOADED(hash) then
-                            LoadingModel(hash)
+                            request_model_load(hash)
                         end
                     
                         local cargoplane = entities.create_vehicle(hash, c, ENTITY.GET_ENTITY_HEADING(targetID))
