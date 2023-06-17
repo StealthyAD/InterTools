@@ -54,14 +54,6 @@
             EToggleOrg = not toggle
         end
 
-        function QuickRespawn()
-            local resp = memory.script_global(2672505 + 1685 + 756)
-            if PED.IS_PED_DEAD_OR_DYING(players.user_ped()) then
-                GRAPHICS.ANIMPOSTFX_STOP_ALL()
-                memory.write_int(resp, memory.read_int(resp) | 1 << 1)
-            end
-        end
-
         function RequestModel(hash, timeout) -- Requesting Model
             timeout = timeout or 3
             STREAMING.REQUEST_MODEL(hash)
@@ -301,7 +293,6 @@
             util.joaat("mp_g_m_pros_01"),
             util.joaat("mp_m_avongoon"),
             util.joaat("mp_m_boatstaff_01"),
-            util.joaat("mp_m_bogdangoon"),
             util.joaat("mp_m_claude_01"),
             util.joaat("mp_m_cocaine_01"),
             util.joaat("mp_m_counterfeit_01"),
@@ -315,38 +306,45 @@
 
         function escort_attack(pedUser, hash, surfaceVehicle)
             local limitSpeed = 3200.0
-            local speedVehicle = 1300.0
-            if not players.is_in_interior(pedUser) then
+            local speedVehicle = 2650.0
+            if not players.is_in_interior(pedUser) and players.exists(pedUser) then
                 local vehicleHash = util.joaat(hash)
                 local playerPed = PLAYER.PLAYER_PED_ID()
                 local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pedUser)
-                local altitude = surfaceVehicle and 450 or 30
+                local altitude = surfaceVehicle and math.random(440, 660) or math.random(100, 200)
                 request_model_load(vehicleHash)
                 local playerPos = players.get_position(playerPed)
                 playerPos.z = playerPos.z + altitude
-                local offsetX = math.random(-55, 55)
+                local offsetX = math.random(-100, 100)
                 local offsetY = math.random(surfaceVehicle and -125 or -100, surfaceVehicle and 10 or -5)
                 local coords = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(playerPed, offsetX, offsetY, playerPos.z)
                 local vehicle = entities.create_vehicle(vehicleHash, coords, ENTITY.GET_ENTITY_HEADING(playerPed))
-                if not STREAMING.HAS_MODEL_LOADED(vehicle) then
-                    request_model_load(vehicle)
-                end
+                if not STREAMING.HAS_MODEL_LOADED(vehicle) then request_model_load(vehicle) end
                 for i = 0, 49 do
                     local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
                     if vehicleHash == util.joaat("rogue") or
-                       vehicleHash == util.joaat("pyro") or
-                       vehicleHash == util.joaat("nokota") or
-                       vehicleHash == util.joaat("strikeforce") or
-                       vehicleHash == util.joaat("molotok") or
-                       vehicleHash == util.joaat("hunter") or
-                       vehicleHash == util.joaat("starling") or
-                       vehicleHash == util.joaat("akula") then
+                        vehicleHash == util.joaat("pyro") or
+                        vehicleHash == util.joaat("nokota") or
+                        vehicleHash == util.joaat("strikeforce") or
+                        vehicleHash == util.joaat("molotok") or
+                        vehicleHash == util.joaat("hunter") or
+                        vehicleHash == util.joaat("starling") or
+                        vehicleHash == util.joaat("akula") then
+                        VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
+                    
+                    end
+                end
+                if vehicleHash == util.joaat("raiju") or vehicleHash == util.joaat("avenger3") then
+                    VEHICLE.SET_VEHICLE_LIVERY(vehicle, 8)
+                    for i = 0, 47 do
+                        local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
                         VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
                     end
+                    VEHICLE.SET_VEHICLE_FLIGHT_NOZZLE_POSITION_IMMEDIATE(vehicle, 0)
                 end
                 VEHICLE.CONTROL_LANDING_GEAR(vehicle, 3)
                 VEHICLE.SET_VEHICLE_FORWARD_SPEED(vehicle, speedVehicle)
-                VEHICLE.MODIFY_VEHICLE_TOP_SPEED(vehicle, speedVehicle)
+                VEHICLE.MODIFY_VEHICLE_TOP_SPEED(vehicle, 100) -- multiplier speed
                 VEHICLE.SET_VEHICLE_ALLOW_HOMING_MISSLE_LOCKON(vehicle, false)
                 VEHICLE.SET_VEHICLE_ALLOW_HOMING_MISSLE_LOCKON_SYNCED(vehicle, false)
                 VEHICLE.SET_VEHICLE_MAX_SPEED(vehicle, limitSpeed)
@@ -355,7 +353,8 @@
                 VEHICLE.SET_PLANE_TURBULENCE_MULTIPLIER(vehicle, 0.0)
                 VEHICLE.SET_VEHICLE_FORCE_AFTERBURNER(vehicle, true)
                 VEHICLE.SET_VEHICLE_WINDOW_TINT(vehicle, 1)
-                ENTITY.SET_ENTITY_INVINCIBLE(vehicle, true)
+                VEHICLE.SET_VEHICLE_FLIGHT_NOZZLE_POSITION_IMMEDIATE(vehicle, 0)
+                ENTITY.SET_ENTITY_INVINCIBLE(vehicle, menu.get_value(ToggleGodsIT))
                 coords = ENTITY.GET_ENTITY_COORDS(playerPed, false)
                 coords.x = coords['x']
                 coords.y = coords['y']
@@ -363,29 +362,74 @@
                 local hash_model = ped_models[math.random(#ped_models)]
                 request_model_load(hash_model)
                 local attacker = entities.create_ped(28, hash_model, coords, math.random(0, 270))
-                PED.SET_PED_AS_COP(attacker, true)
+                PED.SET_PED_AS_ENEMY(attacker, true)
                 PED.SET_DRIVER_AGGRESSIVENESS(attacker, 1.0)
                 PED.SET_PED_CONFIG_FLAG(attacker, 281, true)
                 PED.SET_PED_CONFIG_FLAG(attacker, 2, true)
                 PED.SET_PED_CONFIG_FLAG(attacker, 33, false)
-                PED.SET_PED_HEARING_RANGE(attacker, 99999)
                 PED.SET_PED_RANDOM_COMPONENT_VARIATION(attacker, 0)
-                PED.SET_PED_SHOOT_RATE(attacker, 5)
+                PED.SET_PED_SHOOT_RATE(attacker, 999)
                 PED.SET_PED_ACCURACY(attacker, 100.0)
+                PED.SET_PED_FIRING_PATTERN(attacker, 0x914E786F)
+                PED.SET_PED_FIRING_PATTERN(attacker, 0xC6EE6B4C)
+                PED.SET_PED_FIRING_PATTERN(attacker, 0xD6FF6D61)
+                PED.SET_PED_FIRING_PATTERN(attacker, 0xD31265F2)
+                PED.SET_PED_FIRING_PATTERN(attacker, 0xA018DB8A)
+                PED.SET_PED_FIRING_PATTERN(attacker, 0x9C74B406)
                 PED.SET_PED_FLEE_ATTRIBUTES(attacker, 0, false)
-                PED.SET_PED_COMBAT_ABILITY(attacker, 2, false)
+                PED.SET_PED_COMBAT_ABILITY(attacker, 2)
+                PED.SET_PED_COMBAT_RANGE(attacker, 3)
                 PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 5, true)
                 PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 46, false)
+                PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 1, true)
+                PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 3, false)
+                PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 2, true)
+                PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 52, true)
+                PED.SET_PED_COMBAT_ATTRIBUTES(attacker, 4, true)
+                PED.SET_PED_COMBAT_MOVEMENT(attacker, 2)
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(attacker, true)
-                ENTITY.SET_ENTITY_INVINCIBLE(attacker, true)
+                ENTITY.SET_ENTITY_INVINCIBLE(attacker, menu.get_value(ToggleGodsIT))
                 PED.SET_PED_CONFIG_FLAG(attacker, 52, true)
                 local relHash = PED.GET_PED_RELATIONSHIP_GROUP_HASH(ped)
                 PED.SET_PED_RELATIONSHIP_GROUP_HASH(attacker, relHash)
                 PED.SET_PED_INTO_VEHICLE(attacker, vehicle, -1)
                 PED.CREATE_PED_INSIDE_VEHICLE(attacker, vehicle, 28, hash_model, -1, true)
                 ENTITY.SET_ENTITY_AS_MISSION_ENTITY(attacker, true, true)
+                if menu.get_value(SpecialBlipIT) == true then
+                    local BLIP = HUD.ADD_BLIP_FOR_ENTITY(vehicle)
+                    HUD.SET_BLIP_SPRITE(BLIP, math.random(686, 723))
+                    HUD.SET_BLIP_FADE(BLIP, 255, -1)
+                end
                 local playerEnemy = players.get_position(pedUser)
-                playerEnemy.z = playerEnemy.z + altitude
+                local model = ENTITY.GET_ENTITY_MODEL(vehicle)
+                if model == util.joaat("strikeforce") then -- Only 3 weapons usable per vehicle (https://gtamods.com/wiki/Handling.meta)
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_STRIKEFORCE_MISSILE"))
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_STRIKEFORCE_BARRAGE"))
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_STRIKEFORCE_CANNON"))
+                elseif model == util.joaat("lazer") then
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_PLANE_ROCKET"))
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_PLAYER_SAVAGE"))
+                elseif model == util.joaat("rogue") then
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_ROGUE_MG"))
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_ROGUE_CANNON"))
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_ROGUE_MISSILE"))
+                elseif model == util.joaat("molotok") or model == util.joaat("nokota") or model == util.joaat("pyro") or model == util.joaat("starling") then
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_DOGFIGHTER_MISSILE"))
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_DOGFIGHTER_MG"))
+                elseif model == util.joaat("seabreeze") then
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_SEABREEZE_MG"))
+                elseif model == util.joaat("avenger3") then -- Avenger Customized
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_AVENGER_CANNON"))
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_AVENGER3_MINIGUN"))
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_AVENGER3_MISSILE"))
+                elseif model == util.joaat("raiju") then -- F-160 Raiju
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_RAIJU_CANNONS"))
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_RAIJU_MISSILES"))
+                else
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_PLANE_ROCKET"))
+                    WEAPON.SET_CURRENT_PED_VEHICLE_WEAPON(attacker, util.joaat("VEHICLE_WEAPON_PLAYER_LAZER"))
+                end
+                VEHICLE.SET_VEHICLE_SHOOT_AT_TARGET(attacker, ped, playerEnemy.x, playerEnemy.y, playerEnemy.z)
                 if VEHICLE.IS_THIS_MODEL_A_HELI(vehicleHash) then
                     TASK.TASK_HELI_CHASE(attacker, ped, playerEnemy.x, playerEnemy.y, playerEnemy.z)
                     local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(ped, true)
@@ -410,6 +454,7 @@
                     VEHICLE.SET_HELI_BLADES_FULL_SPEED(vehicle)
                     VEHICLE.SET_VEHICLE_ENGINE_ON(vehicle, true, true, true)
                     VEHICLE.SET_VEHICLE_FORCE_AFTERBURNER(vehicle, true)
+                    VEHICLE.SET_VEHICLE_FLIGHT_NOZZLE_POSITION_IMMEDIATE(vehicle, 0)
                 end
                 TASK.SET_DRIVE_TASK_CRUISE_SPEED(attacker, speedVehicle)
                 TASK.SET_DRIVE_TASK_MAX_CRUISE_SPEED(attacker, limitSpeed)
@@ -418,6 +463,12 @@
                 PED.SET_PED_CAN_BE_KNOCKED_OFF_VEHICLE(attacker, 1)
                 PED.SET_PED_SEEING_RANGE(attacker, 99999.0)
                 PED.SET_PED_HEARING_RANGE(attacker, 99999.0)
+                for i = 2, 3 do
+                    PED.SET_PED_TARGET_LOSS_RESPONSE(attacker, i)
+                end
+                PED.SET_PED_CAN_RAGDOLL(attacker, false)
+                PED.SET_PED_ALERTNESS(attacker, 3)
+                TASK.SET_TASK_VEHICLE_CHASE_BEHAVIOR_FLAG(attacker, 1, true)
             end
         end
 
@@ -680,7 +731,7 @@
 
         function UpdateAutoMusics()
             Music_TempFiles = {}
-            for i, path in ipairs(filesystem.list_files(script_store_songs)) do
+            for _ , path in ipairs(filesystem.list_files(script_store_songs)) do
                 local file_str = path:gsub(script_store_songs, ''):gsub("\\","")
                 if ends_with(file_str, '.wav') then
                     Music_TempFiles[#Music_TempFiles+1] = file_str
@@ -1618,16 +1669,6 @@
             [114] = {"Office Garage 3 (Maze Bank Tower)"}
         }
 
-        randomSongs = {
-            "BadToTheBone",
-            "CaliforniaDreamin",
-            "RuleTheWorld",
-            "FortunateSon",
-            "PaintItBlack",
-            "Paranoid",
-            "MaterialGirl",
-            "HighwayToHell",
-        }
 --[[
 
 ███████ ███    ██ ██████       ██████  ███████     ████████ ██   ██ ███████     ██████   █████  ██████  ████████ 
