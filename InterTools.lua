@@ -47,9 +47,9 @@
         local int_min = -2147483647
         local int_max = 2147483647
         local STAND_VERSION = menu.get_version().version
-        local SCRIPT_VERSION = "1.73LN"
+        local SCRIPT_VERSION = "1.74"
         local InterMenu = "InterTools v"..SCRIPT_VERSION
-        local GTAO_VERSION = "1.66"
+        local GTAO_VERSION = "1.67"
         local InterMessage = "> InterTools v"..SCRIPT_VERSION
         InterNotify = function(str) if ToggleNotify then if NotifMode == 2 then util.show_corner_help(InterMessage.."~s~~n~"..str ) else InterToast(InterMessage.."\n\n"..str) end end end
         AWACSNotify = function(str) if ToggleNotify then if NotifMode == 2 then util.show_corner_help("AWACS Detection System".."~s~~n~"..str ) else InterToast("AWACS Detection System".."\n\n"..str) end end end
@@ -201,78 +201,6 @@
                     script_relpath="resources/Inter/toggleMsg.txt",
                     check_interval=default_check_interval,
                 },
-                {
-                    name="BadToTheBone",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/PresetsMusics/BadToTheBone.wav",
-                    script_relpath="resources/Inter/PresetsMusics/BadToTheBone.wav",
-                    check_interval=default_check_interval,
-                },
-                {
-                    name="CaliforniaDreamin",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/PresetsMusics/CaliforniaDreamin.wav",
-                    script_relpath="resources/Inter/PresetsMusics/CaliforniaDreamin.wav",
-                    check_interval=default_check_interval,
-                },
-                {
-                    name="DangerZone",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/PresetsMusics/DangerZone.wav",
-                    script_relpath="resources/Inter/PresetsMusics/DangerZone.wav",
-                    check_interval=default_check_interval,
-                },
-                {
-                    name="RuleTheWorld",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/PresetsMusics/RuleTheWorld.wav",
-                    script_relpath="resources/Inter/PresetsMusics/RuleTheWorld.wav",
-                    check_interval=default_check_interval,
-                },
-                {
-                    name="FortunateSon",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/PresetsMusics/FortunateSon.wav",
-                    script_relpath="resources/Inter/PresetsMusics/FortunateSon.wav",
-                    check_interval=default_check_interval,
-                },
-                {
-                    name="Master of Puppets",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/PresetsMusics/MasterOfPuppets.wav",
-                    script_relpath="resources/Inter/PresetsMusics/MasterOfPuppets.wav",
-                    check_interval=default_check_interval,
-                },
-                {
-                    name="PaintItBlack",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/PresetsMusics/PaintItBlack.wav",
-                    script_relpath="resources/Inter/PresetsMusics/PaintItBlack.wav",
-                    check_interval=default_check_interval,
-                },
-                {
-                    name="Paranoid",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/PresetsMusics/Paranoid.wav",
-                    script_relpath="resources/Inter/PresetsMusics/Paranoid.wav",
-                    check_interval=default_check_interval,
-                },
-                {
-                    name="ShouldIGo",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/PresetsMusics/ShouldIGo.wav",
-                    script_relpath="resources/Inter/PresetsMusics/ShouldIGo.wav",
-                    check_interval=default_check_interval,
-                },
-                {
-                    name="MississippiQueen",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/PresetsMusics/MississippiQueen.wav",
-                    script_relpath="resources/Inter/PresetsMusics/MississippiQueen.wav",
-                    check_interval=default_check_interval,
-                },
-                {
-                    name="MaterialGirl",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/PresetsMusics/MaterialGirl.wav",
-                    script_relpath="resources/Inter/PresetsMusics/MaterialGirl.wav",
-                    check_interval=default_check_interval,
-                },
-                {
-                    name="HighwaytoHell",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/PresetsMusics/HighwaytoHell.wav",
-                    script_relpath="resources/Inter/PresetsMusics/HighwaytoHell.wav",
-                    check_interval=default_check_interval,
-                },
             }
         }
 
@@ -359,10 +287,6 @@
     ---         The part of self parts
     ----========================================----
 
-        SelfParts:toggle_loop("Enhance Respawn", {}, "Able to respawn faster while toggle.", function()
-            QuickRespawn()
-        end)
-
         SelfParts:toggle_loop("Ragdoll Loop", {}, "Loop Ragdoll", function()
             PED.SET_PED_TO_RAGDOLL(players.user_ped(), 2500, 0, 0, false, false, false)
         end)
@@ -400,15 +324,15 @@
 
         local maxHealth <const> = 328
         SelfParts:toggle_loop("Undead OTR", {}, "Turn you off the radar without notifying other players.\nNOTE: Trigger Modded Health detection.", function()
-            if  ENTITY.GET_ENTITY_MAX_HEALTH(players.user_ped()) ~= 0 then
+            if ENTITY.GET_ENTITY_MAX_HEALTH(players.user_ped()) ~= 0 then
                 ENTITY.SET_ENTITY_MAX_HEALTH(players.user_ped(), 0)
             end
-        end, function ()
+        end, function()
             ENTITY.SET_ENTITY_MAX_HEALTH(players.user_ped(), maxHealth)
         end)
 
         SelfParts:toggle_loop("Force Clean Ped & Wetness", {}, "Force Cleanup Ped & Wetness against blood or damage.", function() 
-            PED.CLEAR_PED_BLOOD_DAMAGE(PLAYER.PLAYER_PED_ID()) 
+            PED.CLEAR_PED_BLOOD_DAMAGE(PLAYER.PLAYER_PED_ID())
             PED.CLEAR_PED_WETNESS(PLAYER.PLAYER_PED_ID())
         end)
 
@@ -472,7 +396,7 @@
                 local customTime = menu.get_value(CustomTimerAutority) * 1000
                 SET_INT_GLOBAL(2793046 + 4654, 81)
                 SET_INT_GLOBAL(2793046 + 4655, 1)
-                SET_INT_GLOBAL(2793046 + 4657, NETWORK.GET_NETWORK_TIME() + customTime) 
+                SET_INT_GLOBAL(2793046 + 4657, NETWORK.GET_NETWORK_TIME() + customTime)
             else
                 SET_INT_GLOBAL(2793046 + 4657, 0)
             end
@@ -788,7 +712,6 @@
             WEAPON.REFILL_AMMO_INSTANTLY(PLAYER.PLAYER_PED_ID())
         end)
 
-
     ----========================================----
     ---          Weapons Parts (Others)
     ---           The part of weapons
@@ -1026,7 +949,7 @@
             local player = players.user_ped()
             local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
             if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                VEHICLE.SET_VEHICLE_MAX_SPEED(playerVehicle, 540) -- vitesse par défaut
+                VEHICLE.SET_VEHICLE_MAX_SPEED(playerVehicle, 540) -- default speed
             end
         end)
 
@@ -1142,7 +1065,6 @@
         TeslaParts:toggle("Tesla Mode", {}, "", function(toggle)
             local ped = players.user_ped()
             local playerpos = ENTITY.GET_ENTITY_COORDS(ped, false)
-            local pos = ENTITY.GET_ENTITY_COORDS(ped)
             local tesla_ai = util.joaat("u_m_y_baygor")
             local tesla = util.joaat("raiden")
             RequestModel(tesla_ai)
@@ -1176,7 +1098,7 @@
                 else
                     VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(tesla_vehicle, TeslaPlate)
                 end
-                VEHICLE.SET_VEHICLE_WINDOW_TINT(veh, menu.get_value(TeslaWindowTint))
+                VEHICLE.SET_VEHICLE_WINDOW_TINT(tesla_vehicle, menu.get_value(TeslaWindowTint))
         
                 if HUD.IS_WAYPOINT_ACTIVE() then
                     local pos = HUD.GET_BLIP_COORDS(HUD.GET_FIRST_BLIP_INFO_ID(8))
@@ -1424,7 +1346,7 @@
                     MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(targetP3['x'], targetP3['y'], targetP3['z'], targetFG3['x'], targetFG3['y'], targetFG3['z'], 100.0, true, 1198879012, players.user_ped(), true, false, 25.0)
                     util.yield(300)
 
-                    for i = 0, 4, 2 do
+                    for _ = 0, 4, 2 do
                         local targetP4 = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), -4, -2.0, 0)
                         local target2 = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), -10, -15.0, -1)
                         MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(targetP4['x'], targetP4['y'], targetP4['z'], target2['x'], target2['y'], target2['z'], 100.0, true, 1198879012, players.user_ped(), true, false, 25.0)
@@ -1434,7 +1356,7 @@
                         util.yield(300)
                     end
 
-                    for i = 0, 10 do
+                    for _ = 0, 10 do
                         local targetP6 = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), -4, -2.0, 0)
                         local target4 = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(players.user_ped(), -10, -10.0, -1)
                         MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(targetP6['x'], targetP6['y'], targetP6['z'], target4['x'], target4['y'], target4['z'], 100.0, true, 1198879012, players.user_ped(), true, false, 25.0)
@@ -1789,7 +1711,7 @@
 
         local kick_time = 0
         DetectionRoots:toggle_loop("Auto Kick Host Token Users", {'interhostkick'}, "Kick automatically users while using \"Aggressive\", \"Sweet Spot\" or \"Handicap\" features which can be nuisible and control the entire session might resulting to destroy or block access for modders.", function()
-            local commands = {"breakup", "ban", "kick", "confusionkick", "nonhostkick", "pickupkick"}
+            local commands = {"kick", "nonhostkick", "pickupkick"}
             for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do --adding false because it will affect self while using host token.
                 local SpoofToken = players.get_host_token_hex(pid)
                 local isSpoofToken
@@ -1838,7 +1760,7 @@
 
         local modderkick = 0
         DetectionRoots:toggle_loop("Auto Kick Modders", {"interkickmod"}, "Kick automatically modders marked as \"Modder\" or \"Attack\" (it means that a Modder is trying to crash you/kick/giving collectibles, etc...).\n\nWarning: Enable Stand User Identification will block any attempt to kick Stand Users or someone, read before to use.", function()
-            local commands = {"breakup", "ban", "confusionkick", "nonhostkick", "pickupkick"}
+            local commands = {"kick", "confusionkick", "nonhostkick", "pickupkick"}
             for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
                 InterWait(10)
                 modderkick += 1
@@ -2040,7 +1962,7 @@
                             while players.get_host() ~= players.user() do
                                 local host = players.get_host()
                                 if players.exists(host) then
-                                    InterCmds("breakup"..players.get_name(host))
+                                    InterCmds("kick"..players.get_name(host))
                                 end
                                 InterWait(50)
                             end
@@ -2121,7 +2043,7 @@
 
         table.sort(sorted_languages, function(a, b) return a[2][1] < b[2][1] end)
 
-        for i, language_data in ipairs(sorted_languages) do
+        for _, language_data in ipairs(sorted_languages) do
             local language = language_data[1]
             local data = language_data[2]
 
@@ -2134,7 +2056,7 @@
                         if languageIndex == data[1] then
                             InterWait(15)
                             if kick_timeC >= 3 and not players.get_name(pid) ~= "UndiscoveredPlayer" then
-                                InterCmds("breakup" .. players.get_name(pid))
+                                InterCmds("kick" .. players.get_name(pid))
                                 repeat
                                     InterWait()
                                 until pid ~= nil
@@ -2194,15 +2116,15 @@
         PlaneToggleGod = AerialParts:toggle_loop("Toggle Godmode Air Force", {}, "Toggle (Enable/Disable) Godmode Planes while using \"Send Air Force\".",  function()end)
         RandomizePlane = AerialParts:toggle_loop("Toggle Random Plane", {}, "", function()end)
         local planeModels = {
-            ["Lazer"] = "lazer",
-            ["Hydra"] = "hydra",
+            ["P-996 Lazer"] = "lazer",
+            ["F-160 Raiju"] = "raiju",
+            ["Mammoth Avenger"] = "avenger3",
             ["V-65 Molotok"] = "molotok",
             ["Western Rogue"] = "rogue",
-            ["Pyro"] = "pyro",
+            ["Buckingham Pyro"] = "pyro",
             ["P-45 Nokota"] = "nokota",
             ["LF-22 Starling"] = "starling",
-            ["Mogul"] = "mogul",
-            ["Seabreeze"] = "seabreeze",
+            ["Western Seabreeze"] = "seabreeze",
             ["B-11 Strikeforce"] = "strikeforce",
         }
         
@@ -2269,6 +2191,7 @@
             ["Cargobob"] = "cargobob",
             ["Annihilator Stealth"] = "annihilator2",
             ["Buzzard Attack Chopper"] = "buzzard",
+            ["Weaponized Conada"] = "buzzard",
             ["Savage"] = "savage",
             ["Valkyrie"] = "valkyrie",
             ["FH-1 Hunter"] = "hunter",
@@ -2332,6 +2255,8 @@
         TaskForce:divider("Parameters for Task Force")
         local PresetSpawningTF = TaskForce:list("Preset Spawner")
         local CustomVehicleTF = TaskForce:list("Custom Parts")
+        SpecialBlipIT = TaskForce:toggle_loop("Show Aerial Blips", {}, "welcome to zoo, "..os.date("%m/%d/%Y"), function() end)
+        ToggleGodsIT = TaskForce:toggle_loop("Toggle Godmode", {}, "Release these player without godmode, fight like real, turn on = session is dead", function()end)
         CustomVehicleAdvanced = CustomVehicleTF:toggle_loop("Custom Vehicle", {}, "", function()end)
         ShowMessages = CustomVehicleTF:toggle_loop("Show Messages", {}, "", function()end)
         CustomVehicleTF:text_input("Send Message", {"intertfmsgs"}, "America has sent a friend request.", function(typeText)
@@ -2574,14 +2499,14 @@
 
         PresetSpawningTF:divider("Preset Vehicles")
         local tableSpawners = {
-            ["Lazer"] = "lazer",
-            ["Molotok"] = "molotok",
-            ["Rogue"] = "rogue",
-            ["Pyro"] = "pyro",
-            ["Nokota"] = "nokota",
-            ["Starling"] = "starling",
-            ["Seabreeze"] = "seabreeze",
-            ["Strikeforce"] = "strikeforce",
+            ["P-996 Lazer"] = "lazer",
+            ["V-65 Molotok"] = "molotok",
+            ["Western Rogue"] = "rogue",
+            ["Buckingham Pyro"] = "pyro",
+            ["P-45 Nokota"] = "nokota",
+            ["LF-22 Starling"] = "starling",
+            ["Western Seabreeze"] = "seabreeze",
+            ["B-11 Strikeforce"] = "strikeforce",
         }
 
         local tempSpawners = {}
@@ -2772,8 +2697,23 @@
         local modelToDeleteP = {
             util.joaat("s_m_y_blackops_01"),
             util.joaat("s_m_m_marine_01"),
-            util.joaat("s_m_y_marine_03"),
-            util.joaat("s_m_y_pilot_01")
+            util.joaat("s_m_m_pilot_02"),
+            util.joaat("s_m_y_pilot_01"),
+            util.joaat("s_m_m_marine_02"),
+            util.joaat("s_m_m_prisguard_01"),
+            util.joaat("mp_g_m_pros_01"),
+            util.joaat("mp_m_avongoon"),
+            util.joaat("mp_m_boatstaff_01"),
+            util.joaat("mp_m_bogdangoon"),
+            util.joaat("mp_m_claude_01"),
+            util.joaat("mp_m_cocaine_01"),
+            util.joaat("mp_m_counterfeit_01"),
+            util.joaat("mp_m_exarmy_01"),
+            util.joaat("mp_m_fibsec_01"),
+            util.joaat("s_m_m_ciasec_01"),
+            util.joaat("s_m_m_cntrybar_0"),
+            util.joaat("s_m_y_clown_01"),
+            util.joaat("s_m_y_swat_01"),
         }
         
         AerialRoots:action("Cleanup Ground Forces", {}, "", function()
@@ -3131,7 +3071,7 @@
                         local randomIndex = math.random(#playerList)
                         local playerId = playerList[randomIndex]
                         local Ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(playerId)
-                        for i = 1, 10 do
+                        for _ = 1, 10 do
                             FIRE.ADD_OWNED_EXPLOSION(Ped, pos.x, pos.y, pos.z, 48, 1, menu.get_value(AudibleExplode), menu.get_value(VisibleExplode), 0.0, false)
                         end
                     end
@@ -3360,7 +3300,7 @@
             InterWait(500)
         end)
 
-        SessionRoots:action_slider("Random Action Player", {}, "Different types of player actions:\n- Teleport Player\n- Kick Player\n- Crash Player\n- Bounty Player", {"Teleport", "Kick", "Crash", "Bounty"}, function(randselect)
+        SessionRoots:action_slider("Random Action Player", {}, "Different types of player actions:\n- Teleport Player\n- Kick Player\n- Crash Player\n- Bounty Player", {"Teleport", "Kick", "Crash", "Bounty", "Custom Bounty"}, function(randselect)
             if randselect == 1 then
                 local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
                 if #playerList > 0 then
@@ -3373,7 +3313,7 @@
                     InterNotify("No players are currently in the session.")
                 end
             elseif randselect == 2 then
-                local commands = {"breakup", "nonhostkick", "kick", "ban"}
+                local commands = {"nonhostkick", "kick"}
                 local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
                 if #playerList > 0 then
                     local randomIndex = math.random(#playerList)
@@ -3386,7 +3326,7 @@
                     InterNotify("No players are currently in the session.")
                 end
             elseif randselect == 3 then
-                local commands = {"crash", "choke", "flashcrash", "ngcrash"}
+                local commands = {"crash", "choke", "ngcrash"}
                 local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
                 if #playerList > 0 then
                     local randomIndex = math.random(#playerList)
@@ -3398,14 +3338,25 @@
                 else
                     InterNotify("No players are currently in the session.")
                 end
-            else
+            elseif randselect == 4 then
                 local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
                 if #playerList > 0 then
-                    bountyRand = math.random(1, 10000)
+                    local bountyRand = math.random(1, 10000)
                     local randomIndex = math.random(#playerList)
                     local playerName = players.get_name(playerList[randomIndex])
                     InterNotify("Player name randomly targeted: "..playerName.."\nBounty Randomized: $"..bountyRand)
                     InterCmds("bounty"..playerName.." "..bountyRand)
+                else
+                    InterNotify("No players are currently in the session.")
+                end
+            else
+                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                if #playerList > 0 then
+                    local txt = display_onscreen_keyboard()
+                    local randomIndex = math.random(#playerList)
+                    local playerName = players.get_name(playerList[randomIndex])
+                    InterNotify("Player name randomly targeted: "..playerName.."\nBounty Set: $"..txt)
+                    InterCmds("bounty"..playerName.." "..txt)
                 else
                     InterNotify("No players are currently in the session.")
                 end
@@ -3694,30 +3645,32 @@
                 end
             end
             for k,v in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                if STREAMING.IS_MODEL_A_VEHICLE(hash) then
-                    local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(v)
-                    local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 5.0, 0.0)
-                    local vehicle = entities.create_vehicle(hash, c, 0)
-                    if menu.get_value(TogglePaintAll) == true then
-                        VEHICLE.SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(vehicle, 0, math.random(0, 255), math.random(0, 255))
-                        VEHICLE.SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(vehicle, 0, math.random(0, 255), math.random(0, 255))
-                        VEHICLE.SET_VEHICLE_XENON_LIGHT_COLOR_INDEX(vehicle, math.random(0, 255), math.random(0, 255), math.random(0, 255))
-                    end
-                    ENTITY.SET_ENTITY_INVINCIBLE(vehicle, menu.get_value(ToggleGodAll))
-                    VEHICLE.SET_VEHICLE_WINDOW_TINT(vehicle, menu.get_value(WindowTintAll))
-                    upgrade_vehicle(vehicle)
-                    RequestControlOfEntity(vehicle)
+                if not players.is_in_interior(v) then
+                    if STREAMING.IS_MODEL_A_VEHICLE(hash) then
+                        local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(v)
+                        local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 5.0, 0.0)
+                        local vehicle = entities.create_vehicle(hash, c, 0)
+                        if menu.get_value(TogglePaintAll) == true then
+                            VEHICLE.SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(vehicle, 0, math.random(0, 255), math.random(0, 255))
+                            VEHICLE.SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(vehicle, 0, math.random(0, 255), math.random(0, 255))
+                            VEHICLE.SET_VEHICLE_XENON_LIGHT_COLOR_INDEX(vehicle, math.random(0, 255), math.random(0, 255), math.random(0, 255))
+                        end
+                        ENTITY.SET_ENTITY_INVINCIBLE(vehicle, menu.get_value(ToggleGodAll))
+                        VEHICLE.SET_VEHICLE_WINDOW_TINT(vehicle, menu.get_value(WindowTintAll))
+                        upgrade_vehicle(vehicle)
+                        RequestControlOfEntity(vehicle)
 
-                    local InvincibleStatus = menu.get_value(ToggleGodAll) and "Active" or "Inactive"
-                    local UpgradedCar = menu.get_value(ToggleUpgradeAll) and "Active" or "Inactive"
-                    local RandomPainter = menu.get_value(TogglePaintAll) and "Active" or "Inactive"
-                    if PlateNameAll == nil then
-                        InterNotify("You have spawned: "..txt.. " for everyone with the parameters: \n- Plate Color: "..menu.get_value(PlateIndexAll).."\n- Window Tint: "..menu.get_value(WindowTintAll).."\n- Invincible Status: "..InvincibleStatus.."\n- Upgrade Status: "..UpgradedCar.."\n- Random Paint: "..RandomPainter)
+                        local InvincibleStatus = menu.get_value(ToggleGodAll) and "Active" or "Inactive"
+                        local UpgradedCar = menu.get_value(ToggleUpgradeAll) and "Active" or "Inactive"
+                        local RandomPainter = menu.get_value(TogglePaintAll) and "Active" or "Inactive"
+                        if PlateNameAll == nil then
+                            InterNotify("You have spawned: "..txt.. " for everyone with the parameters: \n- Plate Color: "..menu.get_value(PlateIndexAll).."\n- Window Tint: "..menu.get_value(WindowTintAll).."\n- Invincible Status: "..InvincibleStatus.."\n- Upgrade Status: "..UpgradedCar.."\n- Random Paint: "..RandomPainter)
+                        else
+                            InterNotify("You have spawned: "..txt.. " for everyone with the parameters: \n- Plate Name: "..PlateNameAll.."\n- Plate Color: "..menu.get_value(PlateIndexAll).."\n- Window Tint: "..menu.get_value(WindowTintAll).."\n- Invincible Status: "..InvincibleStatus.."\n- Upgrade Status: "..UpgradedCar.."\n- Random Paint: "..RandomPainter)
+                        end
                     else
-                        InterNotify("You have spawned: "..txt.. " for everyone with the parameters: \n- Plate Name: "..PlateNameAll.."\n- Plate Color: "..menu.get_value(PlateIndexAll).."\n- Window Tint: "..menu.get_value(WindowTintAll).."\n- Invincible Status: "..InvincibleStatus.."\n- Upgrade Status: "..UpgradedCar.."\n- Random Paint: "..RandomPainter)
-                    end
-                else
-                    InterNotify("The model named: "..txt.." is not recognized, please retry later.")
+                        InterNotify("The model named: "..txt.." is not recognized, please retry later.")
+                    end  
                 end
                 InterWait()
             end
@@ -3751,8 +3704,10 @@
                 if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
                     if name ~= "" or name == nil then
                         VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(playerVehicle, name)
+                        InterNotify("Plate changed to: "..name)
                     else
                         VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(playerVehicle, RandomPlate())
+                        InterNotify("Plate randomized because you don't have changed parameters.")
                     end
                 end
             end
@@ -3830,36 +3785,8 @@
                 local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
                 local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
                 if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
                     entities.delete_by_handle(playerVehicle)
-                end
-            end
-        end)
-
-        local vehicleSpeedINT = 50.0
-        AdvancedVehicles:text_input("Modify Speed", {"intvehspeed"}, "", function(valueInput)
-            if valueInput ~= "" then
-                vehicleSpeedINT = tonumber(valueInput)
-            else
-                vehicleSpeedINT = 50.0
-            end
-        end)
-
-        AdvancedVehicles:toggle_loop("Uncontrollable Vehicle", {}, "Boost faster to deform vehicle without any manner to control.\n".."NOTE: Toggle Exclude features to avoid impacted.", function()
-            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
-                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
-                    VEHICLE.SET_VEHICLE_FORWARD_SPEED(playerVehicle, vehicleSpeedINT)
-                end
-            end
-        end, function()
-            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
-                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
-                    VEHICLE.SET_VEHICLE_FORWARD_SPEED(playerVehicle, 0)
                 end
             end
         end)
@@ -4925,8 +4852,6 @@
             end
         end)
 
-        local PresetsMusics = MusicParts:list("Preset Musics")
-
         MusicParts:action("Stop Music", {'intermstop'}, "It will stop your music instantly.\nNOTE: Don't delete the folder called Stop Sounds, music won't stop and looped. Don't rename file.", function() -- Force automatically stop your musics
             local sound_location_1 = join_path(script_resources, "stops.wav")
             if not filesystem.exists(sound_location_1) then
@@ -4935,34 +4860,6 @@
                 PlaySong(sound_location_1, SND_FILENAME | SND_ASYNC)
             end
         end)
-
-    ----========================================----
-    ---             Presets Musics
-    ----========================================----
-
-        local PresetMusicParts = script_resources .. "/PresetsMusics"
-        local songs = {
-            {"Bad To The Bone", "George Thorogood & The Destroyers", "BadToTheBone", "September 1982", "Freedom & Liberty"},
-            {"California Dreamin", "The Mamas & The Papas", "CaliforniaDreamin", "December 1965", "Fighting for Freedom / Vietnam War"},
-            {"Danger Zone", "Kenny Loggins", "DangerZone", "May 1986", "Promoting Top Gun"},
-            {"Everybody Wants To Rule The World", "Tears For Fears", "RuleTheWorld", "March 1985", "Consumer Society / Control the World (USSR/USA) / Gulf War"},
-            {"Fortunate Son", "Creedence Clearwater Revival", "FortunateSon", "September 1969", "Vietnam War"},
-            {"Master of Puppets", "Metallica", "MasterOfPuppets", "March 1986", "Freedom & Liberty"},
-            {"Paint It, Black", "The Rolling Stones", "PaintItBlack", "May 1966", "Civil Rights / Vietnam War"},
-            {"Paranoid", "Black Sabbath", "Paranoid", "September 1970", "Civil Rights / Peace World / Vietnam War"},
-            {"Should I Stay or Should I Go", "The Clash", "ShouldIGo", "September 1982", "Freedom & Liberty / Indecision and Anxiety"},
-            {"Mississippi Queen", "Mountain", "MississippiQueen", "February 1970", "Post Vietnam War"},
-            {"Material Girl", "Madonna", "MaterialGirl", "January 1985", "Consumer Society / Individualism"},
-            {"Highway to Hell", "AC/DC", "HighwayToHell", "July 1979", "Spirit of Rebellion"}
-        }
-        
-        table.sort(songs, function(a, b) return a[1] < b[1] end)
-        
-        for _, song in ipairs(songs) do
-            PresetsMusics:action(song[1], {}, "Play \""..song[1].."\" by "..song[2].."\nReleased date: "..song[4].."\nContext: "..song[5], function()
-                PlaySong(join_path(PresetMusicParts, song[3]..".wav"), SND_FILENAME | SND_ASYNC)
-            end)
-        end
 
     ----========================================----
     ---              Loop Parts
@@ -4997,6 +4894,7 @@
 
         SettingsParts:divider("Settings")
 
+        SettingsParts:readonly("Game Version", NETWORK.GET_ONLINE_VERSION())
         SettingsParts:readonly("Script Version", SCRIPT_VERSION)
         SettingsParts:readonly("Stand Version", STAND_VERSION)
 
@@ -5200,7 +5098,7 @@
         AdvancedSettings:action("Restart Script", {}, "Any problems for using the lua script, restart quickly.", function() util.restart_script() end)
         WarningExit = AdvancedSettings:action("Leave Game", {}, "", function(click_type)
             menu.show_warning(WarningExit, click_type, "DISCLAIMER: are you sure to leave the game?", function()
-                os.exit()
+                MISC.QUIT_GAME()
             end)
         end)
 
@@ -5444,16 +5342,16 @@
                 "Array"
             }, function(kickType)
                 if kickType == 1 then
-                    local cmd = {"breakup", "kick", "confusionkick", "aids", "orgasmkick","nonhostkick", "pickupkick"}
+                    local cmd = {"kick", "aids", "orgasmkick", "nonhostkick", "pickupkick"}
                     for _, command in pairs(cmd) do
                         InterCmds(command..InterName)
                     end
                     InterNotify(InterName.." has been forced breakup.")
                 elseif kickType == 2 then
                     InterCmds("historyblock " .. InterName)
-                    InterCmds("breakup" .. InterName)
+                    InterCmds("kick" .. InterName)
                 elseif kickType == 3 then
-                    InterCmds("breakup" .. InterName)
+                    InterCmds("kick" .. InterName)
                     InterCmds("givesh" .. InterName)
                     util.trigger_script_event(1 << pid, {697566862, pid, 0x4, -1, 1, 1, 1}) --697566862 Give Collectible
                     util.trigger_script_event(1 << pid, {1268038438, pid, memory.script_global(2657589 + 1 + (pid * 466) + 321 + 8)}) 
@@ -5490,7 +5388,6 @@
                     local cmd = {
                         "crash",
                         "choke",
-                        "flashcrash",
                         "ngcrash",
                         "footlettuce",
                     }
@@ -5917,7 +5814,6 @@
                 end
             end)
 
-
             local SpamChatN = ChatPartsN:list("Spam Chat")
             local PresetChatN = ChatPartsN  :list("Spoof Preset Chats")
             local presetMessages = {
@@ -6007,6 +5903,7 @@
             local ExplosionPlayer = TrollingOptions:list("Explosions Parts")
             local TGodPresets = TrollingOptions:list("Godmode Settings")
             local SoundTrolling = TrollingOptions:list("Sound Trolling")
+            local TaskPersonal = TrollingOptions:list("Task Force")
             local VehicleTrolling = TrollingOptions:list("Vehicle Settings")
 
         ----========================================----
@@ -6127,6 +6024,59 @@
             end)
 
         ----========================================----
+        ---        Troll Options (Task Force)
+        ---     The part of specific player troll 
+        ----========================================----
+
+            local modelVehicleP = "lazer"
+            TaskPersonal:text_input("Model Vehicle", {"intaerialveh"}, "Choose specific model existing on GTAV. Recommended to use combat fighters planes", function(txtModel)
+                if txtModel ~= "" then
+                    local modelHash = util.joaat(txtModel)
+                    if STREAMING.IS_MODEL_A_VEHICLE(modelHash) then
+                        local vehicleClass = VEHICLE.GET_VEHICLE_CLASS_FROM_NAME(modelHash)
+                        if vehicleClass == 15 or vehicleClass == 16 then
+                            modelVehicleP = txtModel
+                        else
+                            InterNotify("Invalid vehicle model: " .. txtModel .. ". Only aerial vehicles (planes and helicopters) are allowed.")
+                            modelVehicleP = "lazer"
+                        end
+                    else
+                        InterNotify("Invalid vehicle model: " .. txtModel)
+                        modelVehicleP = "lazer"
+                    end
+                else
+                    modelVehicleP = "lazer"
+                end
+            end, tostring(modelVehicleP))
+
+            TaskPersonal:action("Target Player (Task Force)", {"intaerialtf"}, "", function()
+                local player = PLAYER.PLAYER_PED_ID()
+                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
+                if not PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then InterNotify("Sit down in a vehicle.") return end
+                if pid == players.user() then InterNotify("You cannot target yourself.") return end
+                local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local vehicle = PED.GET_VEHICLE_PED_IS_IN(playerPed, false)
+                local vehicleClass = VEHICLE.GET_VEHICLE_CLASS(vehicle)
+                if vehicleClass == 15 or vehicleClass == 16 then
+                    menu.trigger_commands("vehkick"..players.get_name(pid))
+                    TASK.TASK_LEAVE_VEHICLE(pid, vehicle, math.random(0, 1))
+                    VEHICLE.SET_VEHICLE_DOORS_LOCKED_FOR_ALL_PLAYERS(vehicle, true)
+                    VEHICLE.SET_VEHICLE_DOORS_LOCKED(playerPed, 4)
+                    TASK.TASK_LEAVE_ANY_VEHICLE(playerPed, 0, 0)
+                end
+                util.yield(250)
+                if not players.is_in_interior(pid) then
+                    InterNotify("Confirmed target player: "..InterName..".".."\nReady to target, roger that. Thanks for the information.")
+                    escort_attack(pid, modelVehicleP, false)
+                else
+                    InterNotify("I'm sorry, you cannot target "..InterName.." while sitting on the base. But I have an idea to force. Let's US Army do something.")
+                    for _ = 1, 5 do
+                        menu.trigger_commands("interiorkick"..InterName)
+                    end
+                end
+            end)
+
+        ----========================================----
         ---      Troll Options (Vehicle Settings)
         ---     The part of specific player troll 
         ----========================================----
@@ -6151,28 +6101,6 @@
                 else
                     vehicleSpeed = 50.0
                 end
-            end)
-
-            local speedLimit = 50.0
-            VehicleTrolling:text_input("Edit Speed Vehicle", {"intervehspeedlim"}, "", function(valueInput)
-                if valueInput ~= "" then
-                    speedLimit = tonumber(valueInput)
-                else
-                    speedLimit = 50.0
-                end
-            end)
-
-            VehicleTrolling:toggle_loop("Toggle Limit Speed Vehicle", {}, "Limit vehicle speed for the specific vehicle.", function()
-                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
-                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
-                    maxLimit = speedLimit / 3.6
-                    VEHICLE.SET_VEHICLE_MAX_SPEED(playerVehicle, maxLimit)
-                end
-            end, function()
-                local vehicle = PED.GET_VEHICLE_PED_IS_IN(PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid), true)
-                VEHICLE.SET_VEHICLE_MAX_SPEED(vehicle, 540)
             end)
 
             DisableUNCTRL = VehicleTrolling:toggle_loop("Uncontrollable Vehicle", {}, "Boost faster to deform vehicle without any manner to control.", function()
@@ -6211,11 +6139,12 @@
                 VEHICLE.SET_VEHICLE_UNDRIVEABLE(vehicle, false)
             end)
 
-            VehicleTrolling:action_slider("Vehicle Remove", {}, "Choose any solution by any means how to remove.\n- Explode (not easy while removing god and explode)\n- Remove (Better)", {"Explode", "Remove"}, function(elimSelect)
+            VehicleTrolling:action_slider("Vehicle Remove", {}, "Choose any solution by any means how to remove.\n- Explode (Revealed)\n- Remove (Better)", {"Explode (Revealed)", "Remove"}, function(elimSelect)
                 local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
                 local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
                 if elimSelect == 1 then
                     if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
+                        NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
                         ENTITY.SET_ENTITY_INVINCIBLE(playerVehicle, false) -- add condition if the player is using godmode car
                         VEHICLE.ADD_VEHICLE_PHONE_EXPLOSIVE_DEVICE(playerVehicle)
                         VEHICLE.DETONATE_VEHICLE_PHONE_EXPLOSIVE_DEVICE()
@@ -6223,6 +6152,7 @@
                 else
                     if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
                         ENTITY.SET_ENTITY_INVINCIBLE(playerVehicle, false) -- add condition if the player is using godmode car
+                        NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
                         entities.delete_by_handle(playerVehicle)
                     end
                 end
