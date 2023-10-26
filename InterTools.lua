@@ -22,8 +22,6 @@
 
         util.keep_running()
         util.require_natives(1681379138)
-        aalib = require("aalib")
-        PlaySong = aalib.play_sound
 
     ----========================================----
     ---           Shortcuts for Stand
@@ -42,12 +40,10 @@
     ---        useless but not important
     ----========================================----
 
-        local SND_ASYNC<const> = 0x0001
-        local SND_FILENAME<const> = 0x00020000
         local int_min = -2147483647
         local int_max = 2147483647
         local STAND_VERSION = menu.get_version().version
-        local SCRIPT_VERSION = "1.74"
+        local SCRIPT_VERSION = "1.76"
         local InterMenu = "InterTools v"..SCRIPT_VERSION
         local GTAO_VERSION = "1.67"
         local InterMessage = "> InterTools v"..SCRIPT_VERSION
@@ -267,13 +263,6 @@
         local TwinTowersParts = WorldParts:list("Twin Towers")
         local TeleportParts = WorldParts:list("Teleports Parts")
         local WeatherFeatures = WorldParts:list("Weather & Time Features")
-
-    ---========================================----
-    ---              Music Roots
-    ---        The part of musics roots
-    ----========================================----
-
-        local MusicParts = InterRoot:list("Music Parts", {"intmusics"})
 
     ---========================================----
     ---             Settings Roots
@@ -851,17 +840,27 @@
         InterWarthog = VehicleParts:toggle_loop("GAU-8 Avenger Warthog", {}, "Only Works on the B-11. Makes the Cannon like how it is in Real Life, you could make BRRRTTT.\n\nNOTE: It will disable when you are not in B-11 Strikeforce.", function()
             local player_veh = PED.GET_VEHICLE_PED_IS_USING(players.user_ped())
             if ENTITY.GET_ENTITY_MODEL(player_veh) == util.joaat("strikeforce") then
-                local A10_while_using = entities.get_user_vehicle_as_handle()
-                local CanPos = ENTITY.GET_ENTITY_BONE_POSTION(A10_while_using, ENTITY.GET_ENTITY_BONE_INDEX_BY_NAME(A10_while_using, "weapon_1a"))
-                local target = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(A10_while_using, 0, 175, 0)
+                local my_ptr = entities.handle_to_pointer(PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(PLAYER.PLAYER_ID()))
+                local weapon_manager_ptr = memory.read_long(my_ptr + 0x10B8)
+                local vehicle_weapon_info_ptr = memory.read_long(weapon_manager_ptr + 0x70)
+                
                 if PAD.IS_CONTROL_PRESSED(114, 114) then
-                    MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(CanPos['x'], CanPos['y'], CanPos['z'], target['x']+math.random(-1,1), target['y']+math.random(-1,1), target['z']+math.random(-1,1), 100.0, true, 3800181289, players.user_ped(), true, false, 100.0)
+                    memory.write_float(vehicle_weapon_info_ptr + 0x13C, 0)
+                    memory.write_float(vehicle_weapon_info_ptr + 0x150, 0)
+                    memory.write_int(vehicle_weapon_info_ptr + 0x24, 0)
+                else
+                    if vehicle_weapon_info_ptr ~= 0 then
+                        memory.write_float(vehicle_weapon_info_ptr + 0x13C, 0.125)
+                        memory.write_float(vehicle_weapon_info_ptr + 0x150, 0.125)
+                        memory.write_int(vehicle_weapon_info_ptr + 0x24, 57)
+                    end
                 end
             else
                 InterNotify("You have to be in a B-11 Strikeforce to use the feature.")
                 InterCmd(InterWarthog, "off")
             end
         end)
+    
 
         VehicleParts:text_input("Plate Name", {"intplatecar"}, "Apply Plate Name if the player is in a vehicle.", function(name)
             local player = players.user_ped()
@@ -4290,13 +4289,11 @@
 
         local currentPosition = math.random(#positions)
         local isAssisting = false
-        local toggleSong
         local isCooldown = false
         local lastTimeUsed = 0
         
         TimerTowers = TwinTowersParts:slider("Cooldown Duration", {"interttcooldown"}, "", 15, 600, 15, 1, function()end)
         TwinTowersParts:toggle("Toggle Teleport 'Twin Towers'", {}, "Toggle while teleporting House to assist 9/11 Crash Planes\n\n- Enable: you will be automatically teleported.\n- Disable: you will not be automatically teleported.", function(toggle) isAssisting = toggle end)
-        TwinTowersParts:toggle("Toggle Sounds for 'Twin Towers'", {}, "Toggle while using song House for 9/11 Crash Planes\n\n- Enable: you will hear the sound (local).\n- Disable: you will not be able to hear the sound (local).", function(toggle) toggleSong = toggle end)
         TwinTowersParts:action("Twin Towers Boeing", {}, "Send Boeing to Twin Towers but you have each interval which you cannot spam more plane.\n\nNostalgic 9/11 but watch this.\n\nBeware, some planes can cross the Twin Towers, be very careful. Do not abuse the features.", function()
             local cooldownTime = menu.get_value(TimerTowers)
             if isAssisting then
@@ -4304,10 +4301,6 @@
                 if UserPos then
                     ENTITY.SET_ENTITY_COORDS(players.user_ped(), UserPos.x, UserPos.y, UserPos.z)
                 end
-            end
-            if toggleSong then
-                local songs911 = script_resources .. '/Sounds'
-                PlaySong(join_path(songs911, "911.wav"), SND_FILENAME | SND_ASYNC)
             end
             musicStartTime = os.clock()
             local hash = util.joaat("jet")
@@ -4329,9 +4322,8 @@
                     ENTITY.SET_ENTITY_INVINCIBLE(boeing, false)
         
                     local speed = currentPosition == 1 and 850.0 or 650.0
-                    VEHICLE.SET_VEHICLE_FORWARD_SPEED(boeing, speed)
+                    VEHICLE.SET_VEHICLE_ENGINE_ON(boeing, true, true, false)
                     VEHICLE.SET_VEHICLE_MAX_SPEED(boeing, speed)
-        
                     if currentPosition > 0 then
                         ENTITY.SET_ENTITY_ROTATION(boeing, orient.x, orient.y, orient.z, 2, false)
                         VEHICLE.SET_HELI_BLADES_SPEED(boeing, 0)
@@ -4342,13 +4334,16 @@
                     end
         
                     VEHICLE.CONTROL_LANDING_GEAR(boeing, 3)
+                    for i = 1, 5 do
+                        VEHICLE.SET_VEHICLE_FORWARD_SPEED(boeing, 150.0)
+                        util.yield(1000)
+                    end
                 end
         
                 currentPosition = math.random(#positions + 1)
                 while os.clock() - musicStartTime < 11 do
                     InterWait()
                 end
-                PlaySong(join_path(script_resources, "stops.wav"), SND_FILENAME | SND_ASYNC)
                 isCooldown = false
             else
                 local remainingTime = cooldownTime - elapsedTime
@@ -4363,7 +4358,6 @@
                     local seconds = math.floor(remainingTime)
                     InterNotify("Please wait " .. seconds .. " second" .. plural .. " to start again.")
                 end
-                PlaySong(join_path(script_resources, "stops.wav"), SND_FILENAME | SND_ASYNC)
                 isAssisting = false
             end
         end)
@@ -4826,64 +4820,14 @@
         WeatherFeatures:toggle_loop("Remove Clouds", {"interremoveclouds"}, "*works locally*", function() MISC.UNLOAD_ALL_CLOUD_HATS() end)
 
     ----========================================----
-    ---              Music Parts
-    ---         The part of music parts
-    ----========================================----
-
-        MusicParts:action("Open Music Folders", {}, "Edit your music and enjoy.\nNOTE: You need to put .wav file.\nMP3 or another files contains invalid file are not accepted.", function()
-            util.open_folder(script_store_songs)
-        end)
-
-        AutoCooldown = MusicParts:slider("Cooldown Random Music", {"interrcrm"}, "Each interval has a specific time, do not spam like crazy and calm down.", 30, 300, 30, 1, function()end)     
-        local InterMuList = MusicParts:list_action("Load Musics", {"intermloadmusic"}, "WARNING: Heavy folder, so check if you have big storage, atleast average .wav file: 25-100 MB.", InterMusicFiles, function(selected_index)
-            local selected_file = InterMusicFiles[selected_index]
-            for _, song in ipairs(InterLoadedSongs) do
-                if song.file == selected_file then
-                    local sound_location = song.sound
-                    if not filesystem.exists(sound_location) then
-                        InterNotify("Sound file does not exist: " .. sound_location)
-                    else
-                        local display_text = string.gsub(selected_file, "%.wav$", "")
-                        PlayAuto(sound_location)
-                        InterNotify("Selected Music: " .. display_text)
-                    end
-                    break
-                end
-            end
-        end)
-
-        MusicParts:action("Stop Music", {'intermstop'}, "It will stop your music instantly.\nNOTE: Don't delete the folder called Stop Sounds, music won't stop and looped. Don't rename file.", function() -- Force automatically stop your musics
-            local sound_location_1 = join_path(script_resources, "stops.wav")
-            if not filesystem.exists(sound_location_1) then
-                InterNotify("Music file does not exist: " .. sound_location_1.. "\n\n".."NOTE: You need to get the file, otherwise you can't stop the sound.")
-            else
-                PlaySong(sound_location_1, SND_FILENAME | SND_ASYNC)
-            end
-        end)
-
-    ----========================================----
     ---              Loop Parts
     ---         The part of function parts
     ----========================================----
-
-        util.on_stop(function()
-            PlaySong(join_path(script_resources, "stops.wav"), SND_FILENAME | SND_ASYNC)
-        end)
 
         util.create_thread(function()
             while true do
                 InterWait(3000) 
                 currentPlate = plateTables[math.random(#plateTables)]
-            end
-        end)
-
-        util.create_thread(function()
-            while true do
-                UpdateAutoMusics()
-                CheckSongs()
-                check_music_folder()
-                menu.set_list_action_options(InterMuList, InterMusicFiles)
-                InterWait(250)
             end
         end)
 
@@ -4965,12 +4909,6 @@
             fp:close()
         end, io.open(script_resources .. '/Template/ToggleTemplate.txt', 'r'):read('*all') == 'True')
 
-        MenuSettings:toggle("Toggle Transition Musics while starting", {}, "Toggle (Enable/Disable) Songs while starting Lua Script InterTools.", function(boolVerify)
-            local fp = io.open(script_resources .. '/Songs/SongToggle.txt', 'w')
-            fp:write(not boolVerify and 'True' or 'False')
-            fp:close()
-        end, io.open(script_resources .. '/Songs/SongToggle.txt', 'r'):read('*all') == 'True')
-
         MenuSettings:toggle("Toggle Message while starting", {}, "Toggle (Enable/Disable) message while starting Lua Script InterTools.", function(msgVerify)
             local fp = io.open(script_resources .. '/toggleMsg.txt', 'w')
             fp:write(not msgVerify and 'True' or 'False')
@@ -4996,16 +4934,6 @@
             fp:close()
 
             InterNotify("The settings have been applied correctly. Make sure you need to restart the Lua Script.\n\nDuration time: "..arg.." seconds")
-        end)
-
-        MenuSettings:action("Rename Music Name", {"intercmn"}, "Change music name of your choice.\nRemember: No music name in your folder, no songs during restart, okay?\nWrite only name, don't add extension like .mp3/wav.", function(inputName)
-            menu.show_command_box_click_based(inputName, "intercmn ")
-        end, function(arg)
-            SongName = arg
-            local fp = io.open(script_resources .. '/Songs/songName.txt', 'w')
-            fp:write(SongName..".wav")
-            fp:close()
-            InterNotify("The settings have been applied correctly. Make sure you need to restart the Lua Script.\n\nName Music: "..SongName..".wav")
         end)
 
         --==========================================================================================--
@@ -6259,10 +6187,19 @@
                 if killselect == 1 then
                     local pidPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
                     local abovePed = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(pidPed, 0, 0, 8)
-                    local missileCount = rand(16, 24)
+                    local missileCount = math.random(16, 24)
+                    local angleDeg = 45
                     for i = 1, missileCount do
-                        local missileOffset = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(pidPed, math.random(-5, 5), math.random(-5, 5), math.random(-5, 5))
-                        MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(abovePed.x, abovePed.y, abovePed.z, missileOffset.x, missileOffset.y, missileOffset.z, 100, true, 1752584910, 0, true, false, 250)
+                        local missileDirection = v3(
+                            math.sin(math.rad(angleDeg)) * math.random(-1, 1), 
+                            math.sin(math.rad(90 - angleDeg)) * math.random(-1, 1), 
+                            math.cos(math.rad(angleDeg)) * math.random(-1, 1) 
+                        )
+                    
+                        -- Destination du missile
+                        local missileDest = v3(abovePed.x + missileDirection.x, abovePed.y + missileDirection.y, abovePed.z + missileDirection.z)
+                    
+                        MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(abovePed.x, abovePed.y, abovePed.z, missileDest.x, missileDest.y, missileDest.z, 100, true, 1752584910, 0, true, false, 250)
                     end
                 elseif killselect == 2 then
                     local pos = players.get_position(pid)
@@ -6855,24 +6792,11 @@
         local fp = io.open(boolSong, 'r')
         local boolVerify = fp and (fp:read('*all') == 'True')
         fp:close()
-
-        -- Check if the file exists and read its content (True or False) -- Bool Music Starting
-        local fp = io.open(boolTransition, 'r')
-        local boolVerifyTR = fp and (fp:read('*all') == 'True')
-        fp:close()
         
         -- Check if the file exists and read its content (True or False) -- SongFileName
         local fp = io.open(songFileName, 'r')
         local file_selection = fp:read('*a')
         fp:close()
-        
-        local sound_location = script_resources .. '\\Songs\\' .. file_selection
-        
-        if boolVerify ~= false then -- check if boolVerify is not explicitly false
-            if filesystem.exists(sound_location) then
-                PlaySong(sound_location, SND_FILENAME | SND_ASYNC)
-            end
-        end
 
         if boolMsgVerify ~= false then -- check if msgVerify is not explicitly false
             InterNotify("Welcome "..SOCIALCLUB.SC_ACCOUNT_INFO_GET_NICKNAME().." to InterTools.\nCompatible with Stand v"..STAND_VERSION..".")
