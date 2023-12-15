@@ -150,12 +150,6 @@
                     check_interval=default_check_interval,
                 },
                 {
-                    name="aalib",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/lib/aalib.dll",
-                    script_relpath="lib/aalib.dll",
-                    check_interval=default_check_interval,
-                },
-                {
                     name="ToggleTemplate",
                     source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/Template/ToggleTemplate.txt",
                     script_relpath="resources/Inter/Template/ToggleTemplate.txt",
