@@ -242,12 +242,6 @@
             FIRE.ADD_EXPLOSION(coords['x'], coords['y'], coords['z'], 7, 0, false, true, force)
         end
 
-        function EnhanceOTR(toggled)
-            otr = otr ?? memory.script_global(2657589 + 1 + (players.user() * 466) + 321)
-            local v = memory.read_byte(otr)
-            memory.write_byte(otr, toggled ? (v | 0xA) : (v & ~0xA))
-        end
-
         function OwnedOrbitalCannon(state)
             local cannon = memory.script_global(2657589 + 1 + (0 * 466) + 427)
             if state then
@@ -615,6 +609,31 @@
             end
         end
 
+        function prepareExplosion(pid)
+            local pos = players.get_position(pid)
+            pos.z = pos.z - 1.0
+            return pos, PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+        end
+        
+        function triggerExplosion(pos, ped)
+            STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
+            while not STREAMING.HAS_NAMED_PTFX_ASSET_LOADED("scr_xm_orbital") do
+                STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
+                InterWait(0)
+            end
+            GRAPHICS.USE_PARTICLE_FX_ASSET("scr_xm_orbital")
+            AUDIO.PLAY_SOUND_FROM_COORD(1, "DLC_XM_Explosions_Orbital_Cannon", pos.x, pos.y, pos.z, 0, true, 0, false)
+            GRAPHICS.START_NETWORKED_PARTICLE_FX_NON_LOOPED_AT_COORD("scr_xm_orbital_blast", pos.x, pos.y, pos.z + 1, 0, 180, 0, 1.0, true, true, true)
+            for i = 1, 5 do
+                AUDIO.PLAY_SOUND_FROM_ENTITY(-1, "DLC_XM_Explosions_Orbital_Cannon", ped, 0, true, false)
+            end
+        end
+
+        function toggleStealthRadar(state)
+            HUD.TOGGLE_STEALTH_RADAR(state)
+            menu.trigger_command(OTR, state and "on" or "off")
+        end
+
         function groundAttack(pid, hash, groundVehicle)
             if groundVehicle then
                 if not players.is_in_interior(pid) then
@@ -667,8 +686,12 @@
                         end
                         PED.SET_PED_AS_COP(attackerFlag, true)
                         VEHICLE.SET_VEHICLE_FORWARD_SPEED(vehicle, 20.0)
+                        VEHICLE.SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(vehicle, 0, 0, 0)
+                        VEHICLE.SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(vehicle, 255, 255, 255)
+                        VEHICLE.SET_VEHICLE_COLOURS(vehicle, 0, 0)
                         VEHICLE.SET_VEHICLE_MAX_SPEED(vehicle, 200.0)
                         ENTITY.SET_ENTITY_INVINCIBLE(vehicle, menu.get_value(TankToggleGod))
+                        ENTITY.SET_ENTITY_INVINCIBLE(attackerFlag, menu.get_value(TankToggleGod))
                         PED.SET_PED_CONFIG_FLAG(attackerFlag, 281, true)
                         PED.SET_PED_CONFIG_FLAG(attackerFlag, 2, true)
                         PED.SET_PED_CONFIG_FLAG(attackerFlag, 33, false)
@@ -677,11 +700,12 @@
                         PED.SET_PED_ACCURACY(attackerFlag, 100.0)
                         PED.SET_PED_HEARING_RANGE(attackerFlag, 99999)
                         PED.SET_PED_RANDOM_COMPONENT_VARIATION(attackerFlag, 0)
+                        VEHICLE.SET_VEHICLE_SIREN(vehicle, true)
                         VEHICLE.SET_VEHICLE_DOORS_LOCKED(vehicle, 3)
                         VEHICLE.SET_VEHICLE_EXPLODES_ON_HIGH_EXPLOSION_DAMAGE(vehicle, false)
                         VEHICLE.MODIFY_VEHICLE_TOP_SPEED(vehicle, 50)
                         PED.SET_PED_MAX_HEALTH(attackerFlag, 150)
-                        ENTITY.SET_ENTITY_PROOFS(ped, false, true, false, false, true, false, false, false)
+                        ENTITY.SET_ENTITY_PROOFS(attackerFlag, false, true, false, false, true, false, false, false)
                         ENTITY.SET_ENTITY_HEALTH(attackerFlag, 150)
                         PED.SET_PED_ARMOUR(attackerFlag, 100)
                         PED.SET_PED_SHOOT_RATE(attackerFlag, 5)
