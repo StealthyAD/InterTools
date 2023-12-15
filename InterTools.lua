@@ -156,18 +156,6 @@
                     check_interval=default_check_interval,
                 },
                 {
-                    name="911",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/Sounds/911.wav",
-                    script_relpath="resources/Inter/Sounds/911.wav",
-                    check_interval=default_check_interval,
-                },
-                {
-                    name="Stops",
-                    source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/stops.wav",
-                    script_relpath="resources/Inter/stops.wav",
-                    check_interval=default_check_interval,
-                },
-                {
                     name="DisplayTime",
                     source_url="https://raw.githubusercontent.com/StealthyAD/InterTools/main/resources/Inter/Template/DisplayDuration.txt",
                     script_relpath="resources/Inter/Template/DisplayDuration.txt",
