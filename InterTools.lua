@@ -43,9 +43,9 @@
         local int_min = -2147483647
         local int_max = 2147483647
         local STAND_VERSION = menu.get_version().version
-        local SCRIPT_VERSION = "1.76"
+        local SCRIPT_VERSION = "1.76V"
         local InterMenu = "InterTools v"..SCRIPT_VERSION
-        local GTAO_VERSION = "1.67"
+        local GTAO_VERSION = "1.68"
         local InterMessage = "> InterTools v"..SCRIPT_VERSION
         InterNotify = function(str) if ToggleNotify then if NotifMode == 2 then util.show_corner_help(InterMessage.."~s~~n~"..str ) else InterToast(InterMessage.."\n\n"..str) end end end
         AWACSNotify = function(str) if ToggleNotify then if NotifMode == 2 then util.show_corner_help("AWACS Detection System".."~s~~n~"..str ) else InterToast("AWACS Detection System".."\n\n"..str) end end end
@@ -246,8 +246,6 @@
         local ExcludeRoot = OnlineParts:list("Exclude Parts", {}, "Exclude every features.\nIncludes: \n- Session Parts")
         local ChatParts = OnlineParts:list("Chat Parts")
         local DetectionRoots = OnlineParts:list("Detection Parts")
-        local HostRoots = OnlineParts:list("Host Parts")
-        local LanguageRoots = OnlineParts:list("Language Parts")
         local SessionRoots = OnlineParts:list("Session Parts")
 
     ----========================================----
@@ -289,26 +287,11 @@
         end)
 
         SelfParts:toggle("Partial Invisible", {}, "Turn partially invisible mode (Players will not able to see you), but you will see only yourself, includes vehicles.", function(toggle)
+            local mode = toggle and "on" or "off"
             local remote = toggle and "remote" or "off"
-            EnhanceOTR(toggle)
+            InterCmds("otr ".. mode)
             InterCmds("invisibility ".. remote)
             InterCmds("vehinvisibility " .. remote)
-        end)
-
-        SelfParts:toggle_loop("Enhanced Invisibility", {}, "", function()
-            invis = invis ?? memory.script_global(2657589 + 1 + (players.user() * 466) + 254)
-            if not ENTITY.IS_ENTITY_DEAD(players.user_ped()) then
-                memory.write_byte(invis, 1)
-            else
-                memory.write_byte(invis, 0)
-            end
-        end,function()
-            memory.write_byte(invis, 0)
-            invis = nil
-        end)
-
-        SelfParts:toggle("Better OTR", {}, "No one can see you on your minimap.", function(state)
-            EnhanceOTR(state)
         end)
 
         local maxHealth <const> = 328
@@ -370,26 +353,10 @@
             end
         end)
 
-        SelfParts:slider("Wanted Level", {}, "Useless features, same as Stand", 0, 5, 0, 1, function(value)
-            players.set_wanted_level(players.user(), value)
-        end)
-
    ----========================================----
    ---                 Local Parts
    ---           The part of local self
    ----========================================----
-
-        CustomTimerAutority = LocalParts:slider("Custom Time", {"inttctime"}, "Adding 60 seconds will made you adding more 1 minute to get 3 minutes. Example: 0 means you are in default time: 2 minutes.\nAdding 120 seconds will make you able to stay atleast 4 minutes.", 0, 20000, 0, 1, function()end)
-        LocalParts:toggle("Bribe Authorities", {}, "Remove completely cops for a certain period time.\nDefault time: 2 minutes.", function(toggle)
-            if toggle then
-                local customTime = menu.get_value(CustomTimerAutority) * 1000
-                SET_INT_GLOBAL(2793046 + 4654, 81)
-                SET_INT_GLOBAL(2793046 + 4655, 1)
-                SET_INT_GLOBAL(2793046 + 4657, NETWORK.GET_NETWORK_TIME() + customTime)
-            else
-                SET_INT_GLOBAL(2793046 + 4657, 0)
-            end
-        end)
 
        LocalParts:action("Edit Health", {"inthealth"}, "Edit Health Bar.\n- Male/Female Ped: < 100 = you die\nHealth bar: 100 - 323\n\nWrite nothing = you die.", function()
             local text = display_onscreen_keyboard()
@@ -421,30 +388,6 @@
             STAT_SET_INT("MP_CHAR_ARMOUR_3_COUNT", 10)
             STAT_SET_INT("MP_CHAR_ARMOUR_4_COUNT", 10)
             STAT_SET_INT("MP_CHAR_ARMOUR_5_COUNT", 10)
-        end)
-
-        LocalParts:toggle_loop("CEO Abilities", {""}, "Makes all CEO Abilities Free.", function() 
-            SET_PACKED_INT_GLOBAL(12842, 12851, 0)
-            SET_PACKED_INT_GLOBAL(15968, 15973, 0)
-            SET_INT_GLOBAL(262145 + 15890, 0)
-            SET_INT_GLOBAL(262145 + 19302, 0)
-            SET_INT_GLOBAL(262145 + 19304, 0)
-        end, function()
-            SET_PACKED_INT_GLOBAL(12843, 12845, 5000)
-            SET_PACKED_INT_GLOBAL(15971, 15973, 5000)
-            SET_INT_GLOBAL(262145 + 12842, 20000)
-            SET_INT_GLOBAL(262145 + 12846, 25000)
-            SET_INT_GLOBAL(262145 + 12847, 1000)
-            SET_INT_GLOBAL(262145 + 12848, 1500)
-            SET_INT_GLOBAL(262145 + 12849, 1000)
-            SET_INT_GLOBAL(262145 + 12850, 12000)
-            SET_INT_GLOBAL(262145 + 12851, 15000)
-            SET_INT_GLOBAL(262145 + 15890, 5000)
-            SET_INT_GLOBAL(262145 + 15968, 10000)
-            SET_INT_GLOBAL(262145 + 15969, 7000)
-            SET_INT_GLOBAL(262145 + 15970, 9000)
-            SET_INT_GLOBAL(262145 + 19302, 5000)
-            SET_INT_GLOBAL(262145 + 19304, 10000)
         end)
 
     ----========================================----
@@ -836,31 +779,6 @@
     ---              Vehicle Parts
     ---         The part of vehicle parts
     ----========================================----
-
-        InterWarthog = VehicleParts:toggle_loop("GAU-8 Avenger Warthog", {}, "Only Works on the B-11. Makes the Cannon like how it is in Real Life, you could make BRRRTTT.\n\nNOTE: It will disable when you are not in B-11 Strikeforce.", function()
-            local player_veh = PED.GET_VEHICLE_PED_IS_USING(players.user_ped())
-            if ENTITY.GET_ENTITY_MODEL(player_veh) == util.joaat("strikeforce") then
-                local my_ptr = entities.handle_to_pointer(PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(PLAYER.PLAYER_ID()))
-                local weapon_manager_ptr = memory.read_long(my_ptr + 0x10B8)
-                local vehicle_weapon_info_ptr = memory.read_long(weapon_manager_ptr + 0x70)
-                
-                if PAD.IS_CONTROL_PRESSED(114, 114) then
-                    memory.write_float(vehicle_weapon_info_ptr + 0x13C, 0)
-                    memory.write_float(vehicle_weapon_info_ptr + 0x150, 0)
-                    memory.write_int(vehicle_weapon_info_ptr + 0x24, 0)
-                else
-                    if vehicle_weapon_info_ptr ~= 0 then
-                        memory.write_float(vehicle_weapon_info_ptr + 0x13C, 0.125)
-                        memory.write_float(vehicle_weapon_info_ptr + 0x150, 0.125)
-                        memory.write_int(vehicle_weapon_info_ptr + 0x24, 57)
-                    end
-                end
-            else
-                InterNotify("You have to be in a B-11 Strikeforce to use the feature.")
-                InterCmd(InterWarthog, "off")
-            end
-        end)
-    
 
         VehicleParts:text_input("Plate Name", {"intplatecar"}, "Apply Plate Name if the player is in a vehicle.", function(name)
             local player = players.user_ped()
@@ -1458,32 +1376,27 @@
                 menu.trigger_command(NoLockRadar, "off")
             end
         end)
-
+        
         DetectionRadar:toggle_loop("Car Stealth Radar", {}, "Only works for ground vehicles.", function()
             OTR = menu.ref_by_path("Online>Off The Radar")
-            local altitude = 5 -- Allow only ground vehicles which can able to fly
-            local altitudeBike = 75 -- Allow only ground bikes (Oppressor1/MK2 and others bikes) vehicles which can able to fly
-            local player_veh = PED.GET_VEHICLE_PED_IS_USING(players.user_ped())
+            local altitude = 5
+            local altitudeBike = 75
             local ped = PLAYER.PLAYER_PED_ID()
-            if PED.IS_PED_ON_ANY_BIKE(ped) and ENTITY.GET_ENTITY_HEIGHT_ABOVE_GROUND(PED.GET_VEHICLE_PED_IS_USING(ped)) < altitudeBike then 
-                HUD.TOGGLE_STEALTH_RADAR(true)
-                menu.trigger_command(OTR, "on")
-            elseif PED.IS_PED_IN_ANY_VEHICLE(ped, false) and not PED.IS_PED_IN_ANY_HELI(ped) and not PED.IS_PED_IN_ANY_PLANE(ped) and ENTITY.GET_ENTITY_MODEL(player_veh) then
-                if ENTITY.GET_ENTITY_HEIGHT_ABOVE_GROUND(PED.GET_VEHICLE_PED_IS_USING(ped)) < altitude then -- Disable while using Deluxo or Scramjet or every else
-                    HUD.TOGGLE_STEALTH_RADAR(true)
-                    menu.trigger_command(OTR, "on")
-                else
-                    HUD.TOGGLE_STEALTH_RADAR(false)
-                    menu.trigger_command(OTR, "off")
-                end
+            local player_veh = PED.GET_VEHICLE_PED_IS_USING(ped)
+            local isOnBike = PED.IS_PED_ON_ANY_BIKE(ped)
+            local isOnVehicle = PED.IS_PED_IN_ANY_VEHICLE(ped, false)
+            local isNotOnAirVehicle = not PED.IS_PED_IN_ANY_HELI(ped) and not PED.IS_PED_IN_ANY_PLANE(ped)
+            local heightAboveGround = ENTITY.GET_ENTITY_HEIGHT_ABOVE_GROUND(player_veh)
+        
+            if (isOnBike and heightAboveGround < altitudeBike) or 
+               (isOnVehicle and isNotOnAirVehicle and heightAboveGround < altitude) then
+                toggleStealthRadar(true)
             else
-                HUD.TOGGLE_STEALTH_RADAR(false)
-                menu.trigger_command(OTR, "off")
+                toggleStealthRadar(false)
             end
         end, function()
             if OTR ~= nil then
-                HUD.TOGGLE_STEALTH_RADAR(false)
-                menu.trigger_command(OTR, "off")
+                toggleStealthRadar(false)
             end
         end)
 
@@ -1678,9 +1591,7 @@
     ----========================================----
 
         local presets = {
-            ["Austrian Painter"] = {desc = "Austrian Painter changed the entire world", text = "His name is A d o l f  H i t l e r, the best dictatorship of Europe, he changed the entire world."},
             ["Where is Oil"] = {desc = "Somebody say oil?", text = "SOMEBODY SAY OIL? FREEDOM, DEMOCRACY, SECURITY IS COMING."},
-            ["I hate who?"] = {desc = "", text = "I HATE N I G G A S"},
             ["Slava Ukraini"] = {desc = "Ukraine is better, glory to ukraine, fuck to Russia.", text = "Слава Україні"},
             ["Fuck Russia"] = {desc = "I don't like Russian government and Putin", text = "I f uck the Russian government and terrorist who attack the poor Ukrainians. К черту российское правительство и террористические банды, которые нападают на бедных украинцев"},
             ["What menu I use?"] = {desc = "Show us what are you using, includes:\n- Stand\n- 2Take1 and etc...", text = "I use Stand Ultimate, 2take1 VIP coloaded, Phantom-X Deluxe, Fragment, Nightfall and a ton other menu's and I coded all the InterTools Scripts."}
@@ -1864,7 +1775,9 @@
                     "khanjali",
                     "avenger",
                     "barrage",
-                    "apc"
+                    "apc",
+                    "polgauntlet",
+                    "police5"
                 }
 
                 for _, model in pairs(tables) do
@@ -1924,171 +1837,6 @@
         end)
 
     ----========================================----
-    ---                Host Parts
-    ---         The part of online parts
-    ----========================================----
-
-        HostRoots:click_slider("Max Players", {"intermaxplayers"}, "Set the max Players for the lobby\nOnly works as the Host.", 1, 32, 32, 1, function(value)
-            if players.get_host() == players.user() then
-                NETWORK.NETWORK_SESSION_SET_MATCHMAKING_GROUP_MAX(0, value)
-                InterNotify("Free Slots edited: ".. NETWORK.NETWORK_SESSION_GET_MATCHMAKING_GROUP_FREE(0))
-            else
-                InterNotify("You are not the Host.")
-            end
-        end)
-
-        HostRoots:click_slider("Max Players (Spectators)", {"intermaxsp"}, "Only works as the Host.", 0, 2, 0, 1, function(value)
-            if players.get_host() == players.user() then
-                NETWORK.NETWORK_SESSION_SET_MATCHMAKING_GROUP_MAX(4, value)
-                InterNotify("Free Slots edited: ".. NETWORK.NETWORK_SESSION_GET_MATCHMAKING_GROUP_FREE(4))
-            else
-                InterNotify("You are not the Host.")
-            end
-        end)
-
-        HostRoots:toggle("Block SH Migration", {}, "Only works as the Host.", function(toggle)
-            if util.is_session_started() and players.get_host() == players.user() then
-                NETWORK.NETWORK_PREVENT_SCRIPT_HOST_MIGRATION()
-            end
-        end)
-
-        BreakupForceHost = HostRoots:action("Breakup Host", {"interbreakup"}, "Breakup players position until become host.", function(type)
-            if AvailableSession() then
-                if players.get_host() ~= players.user() then
-                    local players_before_host = players.get_host_queue_position(players.user())
-                    menu.show_warning(BreakupForceHost, type, "DISCLAIMER: You are about to kick around".." "..players_before_host.." ".."players until you become host. Are you sure?", function()
-                        if AvailableSession() then
-                            while players.get_host() ~= players.user() do
-                                local host = players.get_host()
-                                if players.exists(host) then
-                                    InterCmds("kick"..players.get_name(host))
-                                end
-                                InterWait(50)
-                            end
-                            InterNotify("You are host.")
-                        end
-                    end)
-                else
-                    InterNotify("You are already host.".."\n".."Please try later.")
-                end
-            end
-        end)
-
-    ----========================================----
-    ---              Language Roots
-    ---         The part of session online
-    ----========================================----
-
-        local languages = {
-            ["English"] = {0, {"United States", "United Kingdom", "Australia", "Ireland", "Canada", "India", "New Zealand", "Commonwealth Countries", "Baltic Countries (Lithuania, Estonia, Latvia)", "Nordic Countries (Denmark, Norway, Sweden, Finland, Iceland)", "And every countries not listed."}},
-            ["French"] = {1, {"Metropolitan France", "Overseas France (includes La Réunion, Martinique, Guadeloupe, etc...)", "Belgium", "Switzerland", "African Countries", "Canada (Quebec)"}},
-            ["German"] = {2, {"Germany", "Austria", "Switzerland", "Belgium", "Liechtenstein"}},
-            ["Italian"] = {3, {"Italy", "San Marino", "Switzerland", "Vatican City"}},
-            ["Spanish"] = {4, {"Spain", "Overseas Spain", "American Countries (Argentina, Cuba, Colombia, Peru, Panama, Paraguay, etc...)", "African Countries"}},
-            ["Portuguese"] = {5, {"Portugal", "Brazil", "Angola", "Cabo Verde", "Timor Leste", "Equatorial Guinea", "Mozambique", "São Tomé and Príncipe", "Macau (China Mainland)"}},
-            ["Polish"] = {6, {"Poland", "Belarus"}},
-            ["Russian"] = {7, {"Russian Federation", "Ukraine", "Belarus", "Kazakhstan", "Georgia", "Armenia", "Mongolia", "Tajikistan", "Azerbaijan", "Moldova (Transnistria)", "Turkmenistan", "Uzbekistan", "Kyrgyzstan"}},
-            ["Korean"] = {8, {"South Korea", "North Korea"}},
-            ["Chinese Traditional"] = {9, {"Taiwan Island"}},
-            ["Japanese"] = {10, {"Japan"}},
-            ["Mexican"] = {11, {"Mexico"}},
-            ["Chinese Simplified"] = {12, {"China Mainland", "Taiwan Island", "Thailand", "Hong Kong", "Macau", "Singapore"}}
-        }
-
-        local KickSystem = LanguageRoots:list("Kick Options")
-        local CrashSystem = LanguageRoots:list("Crash Options")
- 
-        local sorted_languages = {}
-
-        for language, data in pairs(languages) do
-            table.insert(sorted_languages, {language, data})
-        end
-
-        local languageTable = {
-            "English",
-            "French",
-            "German",
-            "Italian",
-            "Spanish",
-            "Portuguese",
-            "Polish",
-            "Russian",
-            "Korean",
-            "Chinese Traditional",
-            "Japanese",
-            "Mexican",
-            "Chinese Simplified"
-        }
-
-        LanguageRoots:action_slider("Detect Language", {}, "To be precise for Languages: ".."\n- "..table.concat(languageTable, '\n- '), languageTable, function(languageSelect)
-            local languageFound = false
-            for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local languageIndex = players.get_language(pid)
-                    local playerName = players.get_name(pid)
-                    if languageIndex == (languageSelect - 1) then
-                        if playerName ~= "UndiscoveredPlayer" then
-                            InterNotify(playerName .. " is " .. languageTable[languageSelect] .. ".")
-                            languageFound = true
-                        repeat
-                            InterWait()
-                        until pid ~= nil
-                        end
-                    end
-                end
-            if not languageFound then
-                InterNotify("We can't find " .. languageTable[languageSelect] .. " in the Session.")
-            end
-        end)
-
-        table.sort(sorted_languages, function(a, b) return a[2][1] < b[2][1] end)
-
-        for _, language_data in ipairs(sorted_languages) do
-            local language = language_data[1]
-            local data = language_data[2]
-
-            local kick_timeC = 0
-            KickSystem:toggle_loop("Auto Kick " .. language, {"intlkick" .. string.lower(language)}, "To be precise for Languages: ".."\n\n-" .. table.concat(data[2], "\n-"), function()
-                for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                    InterWait(10)
-                    kick_timeC += 1
-                    local languageIndex = players.get_language(pid)
-                        if languageIndex == data[1] then
-                            InterWait(15)
-                            if kick_timeC >= 3 and not players.get_name(pid) ~= "UndiscoveredPlayer" then
-                                InterCmds("kick" .. players.get_name(pid))
-                                repeat
-                                    InterWait()
-                                until pid ~= nil
-                                kick_timeC = 0
-                            end
-                        end
-                    end 
-                end, function()
-                kick_timeC = 0
-            end)
-
-            local crash_time = 0
-            CrashSystem:toggle_loop("Auto Crash " .. language, {"intlcrash" .. string.lower(language)}, "To be precise for Languages: ".."\n\n-" .. table.concat(data[2], "\n-"), function()
-                for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                    InterWait(10)
-                    crash_time += 1
-                    local languageIndex = players.get_language(pid)
-                        if languageIndex == data[1] then
-                            InterWait(15)
-                            if crash_time >= 3 and not players.get_name(pid) ~= "UndiscoveredPlayer" then
-                                InterCmds("crash" .. players.get_name(pid))
-                                repeat
-                                    InterWait()
-                                until pid ~= nil
-                                crash_time = 0
-                            end
-                        end
-                    end 
-                end, function()
-            end)
-        end
-
-    ----========================================----
     ---              Session Roots
     ---         The part of session online
     ----========================================----
@@ -2098,7 +1846,7 @@
         local ExplodeRoot = SessionRoots:list("Explode Parts")
         local SoundRoots = SessionRoots:list("Sound Parts")
         local TeleportsRoots = SessionRoots:list("Teleport Parts")
-        local VehicleRootsO = SessionRoots:list("Vehicle Parts")
+        local WantedRoots = SessionRoots:list("Wanted Parts")
 
     ----========================================----
     ---               Aerial Roots
@@ -2744,50 +2492,32 @@
     ---             Defending the ground
     ----========================================----
 
-        GroundParts:divider("Ground Defense (US Army)")
+        GroundParts:divider("Ground Defense (Cops/US Army)")
         TankToggleGod = GroundParts:toggle_loop("Toggle Godmode Vehicle", {}, "Toggle (Enable/Disable) Godmode Armored Vehicles while using ground vehicles.",  function()end)
-
-        local armoredModel = {
-            ["Rhino Tank"] = "rhino",
-            ["Half-Track"] = "halftrack",
-            ["TM-02 Khanjali"] = "khanjali",
-            ["Nightshark"] = "nightshark",
-            ["Barrage"] = "barrage",
-            ["APC"] = "apc",
-            ["Insurgent Pick-Up Custom"] = "insurgent3",
-            ["Turreted Limo"] = "limo2",
-            ["Weaponized Tampa"] = "tampa3",
-            ["Menacer"] = "menacer",
-            ["Armored Boxville"] = "boxville5",
-            ["Insurgent Pick-Up"] = "insurgent2",
-        }
         
-        local armoredName = {}
-        for name, _ in pairs(armoredModel) do
-            table.insert(armoredName, name)
-        end
-
-        table.sort(armoredName, function(a, b) return a[1] < b[1] end)
-        
-        local selectedArmoredV = "APC"
-        local armoredHash = armoredModel[selectedArmoredV]
-        
-        GroundParts:list_select("Types of Armored Cars", {"interarmored"}, "The entities that will add while sending air force helicopters.", armoredName, 1, function(index)
-            selectedArmoredV = armoredName[index]
-            armoredHash = armoredModel[selectedArmoredV]
-        end)
-        
-        GroundParts:action("Send Ground Army", {"interusarmy"}, "Sending America to war and intervene more ground vehicles.\nWARNING: The action is irreversible in the session if toggle godmode on.\nNOTE: Toggle Exclude features", function()
-            local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+        GroundParts:action("Send Ground Army (Cops)", {"intercops"}, "Sending Cops to war and intervene more ground vehicles.\nWARNING: The action is irreversible in the session if toggle godmode on.\nNOTE: Toggle Exclude features", function()
+            local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+            local vehicleOptions = {"police5", "polgauntlet", "police4"} -- Ajoutez d'autres options ici si nécessaire
             for _, pid in pairs(playerList) do
                 if AvailableSession() then
-                    for i = 1, 2 do
-                        groundAttack(pid, armoredHash, false)
-                        InterWait(10000)
-                    end
+                    local randomVehicle = vehicleOptions[math.random(#vehicleOptions)] -- Sélectionne aléatoirement un véhicule
+                    groundAttack(pid, randomVehicle, true)
+                    InterWait(750)
                 end
             end
-        end, nil, nil, COMMANDPERM_AGGRESSIVE)
+        end)
+
+        GroundParts:action("Send Ground Army (US Army)", {"interusarmy"}, "Sending America to war and intervene more ground vehicles.\nWARNING: The action is irreversible in the session if toggle godmode on.\nNOTE: Toggle Exclude features", function()
+            local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+            local vehicleOptions = {"rhino", "apc", "crusader"} -- Ajoutez d'autres options ici si nécessaire
+            for _, pid in pairs(playerList) do
+                if AvailableSession() then
+                    local randomVehicle = vehicleOptions[math.random(#vehicleOptions)] -- Sélectionne aléatoirement un véhicule
+                    groundAttack(pid, randomVehicle, true)
+                    InterWait(750)
+                end
+            end
+        end)
 
         GroundParts:divider("Advanced")
         CustomVehicle = GroundParts:toggle_loop("Custom Vehicle", {}, "", function()end)
@@ -2799,7 +2529,7 @@
                 for _, pid in pairs(playerList) do
                     if AvailableSession() then
                         groundAttack(pid, textInput, true)
-                        InterWait(10000)
+                        InterWait(750)
                     end
                 end
             else
@@ -2923,74 +2653,27 @@
         end)
         EShakeIntensity = ExplodeRoot:slider("Explosion Shake", {"intereshake"}, "Choose shake explosion intensity [0 - 10]", 0, 10, 1, 1, function()end)
         ExplodeRoot:action_slider("Orbital Cannon Type", {}, "Say hi to the sky", {"Non-Personal", "Owned", "Randomize"}, function(orbSelect)
-            if orbSelect == 1 then
-                for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                    if not players.is_in_interior(pid) and not players.is_godmode(pid) then
-                        local pos = players.get_position(pid)
-                        local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                        pos.z = pos.z - 1.0
-                        STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
+            for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                if not players.is_in_interior(pid) and not players.is_godmode(pid) then
+                    local pos, ped = prepareExplosion(pid)
+        
+                    if orbSelect == 1 then
                         FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 59, 1, true, false, 9.9, false)
-                        while not STREAMING.HAS_NAMED_PTFX_ASSET_LOADED("scr_xm_orbital") do
-                            STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
-                            InterWait(0)
-                        end
-                        GRAPHICS.USE_PARTICLE_FX_ASSET("scr_xm_orbital")
-                        AUDIO.PLAY_SOUND_FROM_COORD(1, "DLC_XM_Explosions_Orbital_Cannon", pos.x, pos.y, pos.z, 0, true, 0, false)
-                        GRAPHICS.START_NETWORKED_PARTICLE_FX_NON_LOOPED_AT_COORD("scr_xm_orbital_blast", pos.x, pos.y, pos.z + 1, 0, 180, 0, 1.0, true, true, true)
-                        for i = 1, 5 do
-                            AUDIO.PLAY_SOUND_FROM_ENTITY(-1, "DLC_XM_Explosions_Orbital_Cannon", ped, 0, true, false)
-                        end
-                    end
-                end
-            elseif orbSelect == 2 then
-                for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                    if not players.is_in_interior(pid) and not players.is_godmode(pid) then
-                        local pos = players.get_position(pid)
-                        local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                    elseif orbSelect == 2 then
                         OwnedOrbitalCannon(true)
-                        pos.z = pos.z - 1.0
-                        STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
                         FIRE.ADD_OWNED_EXPLOSION(players.user_ped(), pos.x, pos.y, pos.z, 59, 1, true, false, 9.9, false)
-                        while not STREAMING.HAS_NAMED_PTFX_ASSET_LOADED("scr_xm_orbital") do
-                            STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
-                            InterWait(0)
-                        end
-                        GRAPHICS.USE_PARTICLE_FX_ASSET("scr_xm_orbital")
-                        AUDIO.PLAY_SOUND_FROM_COORD(1, "DLC_XM_Explosions_Orbital_Cannon", pos.x, pos.y, pos.z, 0, true, 0, false)
-                        GRAPHICS.START_NETWORKED_PARTICLE_FX_NON_LOOPED_AT_COORD("scr_xm_orbital_blast", pos.x, pos.y, pos.z + 1, 0, 180, 0, 1.0, true, true, true)
-                        for i = 1, 5 do
-                            AUDIO.PLAY_SOUND_FROM_ENTITY(-1, "DLC_XM_Explosions_Orbital_Cannon", ped, 0, true, false)
-                        end
                         InterWait(1000)
                         OwnedOrbitalCannon(false)
-                    end
-                end
-            else
-                for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                    if AvailableSession() and players.get_name(pid) ~= "UndiscoveredPlayer" then
-                        if not players.is_in_interior(pid) and not players.is_godmode(pid) then
-                            local pos = players.get_position(pid)
-                            pos.z = pos.z - 1.0
+                    else
+                        if AvailableSession() and players.get_name(pid) ~= "UndiscoveredPlayer" then
                             local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
                             local randomIndex = math.random(#playerList)
-                            local playerId = playerList[randomIndex]
-                            local Ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(playerId)
-                            STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
-                            FIRE.ADD_OWNED_EXPLOSION(Ped, pos.x, pos.y, pos.z, 59, 1, true, false, 9.9, false)
-                            InterWait(0)
-                            while not STREAMING.HAS_NAMED_PTFX_ASSET_LOADED("scr_xm_orbital") do
-                                STREAMING.REQUEST_NAMED_PTFX_ASSET("scr_xm_orbital")
-                                InterWait(0)
-                            end
-                            GRAPHICS.USE_PARTICLE_FX_ASSET("scr_xm_orbital")
-                            AUDIO.PLAY_SOUND_FROM_COORD(1, "DLC_XM_Explosions_Orbital_Cannon", pos.x, pos.y, pos.z, 0, true, 0, false)
-                            GRAPHICS.START_NETWORKED_PARTICLE_FX_NON_LOOPED_AT_COORD("scr_xm_orbital_blast", pos.x, pos.y, pos.z + 1, 0, 180, 0, 1.0, true, true, true)
-                            for i = 1, 5 do
-                                AUDIO.PLAY_SOUND_FROM_ENTITY(-1, "DLC_XM_Explosions_Orbital_Cannon", ped, 0, true, false)
-                            end
+                            local randomPlayerId = playerList[randomIndex]
+                            local randomPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(randomPlayerId)
+                            FIRE.ADD_OWNED_EXPLOSION(randomPed, pos.x, pos.y, pos.z, 59, 1, true, false, 9.9, false)
                         end
                     end
+                    triggerExplosion(pos, ped)
                 end
             end
         end)
@@ -3254,11 +2937,45 @@
         end)
 
     ----========================================----
+    ---              Wanted Parts
+    ---    The part of session wanted online
+    ----========================================----
+
+        WantedLevels = WantedRoots:slider("Wanted Level Choice", {"intwantedc"}, "Choose Wanted amount.", 0, 5, 0, 1, function()end)
+
+        WantedRoots:toggle_loop("Wanted Level", {"intwc"}, "Enable Wanted Level for all Players", function()
+            local playerList = players.list(false, false, EToggleStrangers, EToggleCrew, EToggleOrg)
+            for _, pid in pairs(playerList) do
+                if AvailableSession() and players.get_name(pid) ~= "UndiscoveredPlayer" then
+                    players.set_wanted_level(pid, menu.get_value(WantedLevels))
+                end
+            end
+        end)
+
+        WantedRoots:toggle_loop("Most Wanted", {"intwantedall"}, "Enable Most Wanted Level for all Players", function()
+            local playerList = players.list(false, false, EToggleStrangers, EToggleCrew, EToggleOrg)
+            for _, pid in pairs(playerList) do
+                if AvailableSession() and players.get_name(pid) ~= "UndiscoveredPlayer" then
+                    players.set_wanted_level(pid, 5)
+                end
+            end
+        end)
+
+        WantedRoots:toggle_loop("Never Wanted", {"intneverwantedall"}, "Disable Wanted Level for all Players", function()
+            local playerList = players.list(false, false, EToggleStrangers, EToggleCrew, EToggleOrg)
+            for _, pid in pairs(playerList) do
+                if AvailableSession() and players.get_name(pid) ~= "UndiscoveredPlayer" then
+                    players.set_wanted_level(pid, 0)
+                end
+            end
+        end)
+
+    ----========================================----
     ---              Session Parts
     ---         The part of session online
     ----========================================----
 
-        SessionRoots:action("Write Death Note", {"interdeathnote"}, "Write one name: Adolf Hitler\nYou can't kill yourself.\n\nFor future prevention: Enable 'Exclude Self' will show a error message if you write your own name.", function()
+        SessionRoots:action("Sentence Death", {"interdeathnote"}, "Write one name: anything\nYou can't kill yourself.\n\nFor future prevention: Enable 'Exclude Self' will show a error message if you write your own name.", function()
             local textInput = display_onscreen_keyboard()
             local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
             if EToggleSelf then
@@ -3289,17 +3006,7 @@
             end
         end)
 
-        SessionRoots:toggle("Toggle Passive Mode", {'interpassivemode'}, "Toggle Passive Mode for everyone if they can't use.\nNOTE: Toggle Exclude features", function()
-            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                if AvailableSession() and players.get_name(pid) ~= "UndiscoveredPlayer" then
-                    InterCmds("nopassivemode"..players.get_name(pid))
-                end
-                InterWait(50)
-            end
-            InterWait(500)
-        end)
-
-        SessionRoots:action_slider("Random Action Player", {}, "Different types of player actions:\n- Teleport Player\n- Kick Player\n- Crash Player\n- Bounty Player", {"Teleport", "Kick", "Crash", "Bounty", "Custom Bounty"}, function(randselect)
+        SessionRoots:action_slider("Random Action Player", {}, "Different types of player actions:\n- Teleport Player\n- Kick Player\n- Crash Player\n- Bounty Player (+ Custom Bounty)\n- Wanted Level", {"Teleport", "Kick", "Crash", "Bounty", "Custom Bounty", "Wanted"}, function(randselect)
             if randselect == 1 then
                 local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
                 if #playerList > 0 then
@@ -3348,7 +3055,7 @@
                 else
                     InterNotify("No players are currently in the session.")
                 end
-            else
+            elseif randselect == 5 then
                 local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
                 if #playerList > 0 then
                     local txt = display_onscreen_keyboard()
@@ -3359,6 +3066,18 @@
                 else
                     InterNotify("No players are currently in the session.")
                 end
+            else
+                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+                if #playerList > 0 then
+                    local wantedRand = math.random(1, 5)
+                    local randomIndex = math.random(#playerList)
+                    local playerId = playerList[randomIndex]  -- Utilisez l'ID du joueur, pas le nom
+                    local playerName = players.get_name(playerId)
+                    InterNotify("Player name randomly mostly wanted: "..playerName.."\nWanted Randomized: "..wantedRand)
+                    players.set_wanted_level(playerId, wantedRand)  -- Utilisez l'ID ici
+                else
+                    InterNotify("No players are currently in the session.")
+                end                
             end
         end)
 
@@ -3575,268 +3294,13 @@
             end
         end)
 
-    ----========================================----
-    ---              Vehicle Roots
-    ---         The part of vehicle online
-    ----========================================----
-    
-        local AdvancedVehicles = VehicleRootsO:list("Advanced Settings", {}, "Applicable for all players but exceptions.")
-        VehicleRootsO:list_action("Preset Cars", {}, "", vehicleData, function(index)
-            local hash = util.joaat(vehicleData[index])
-            local function upgrade_vehicle(vehicle)
-                if menu.get_value(ToggleUpgradeAll) == true then
-                    for i = 0,49 do
-                        local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
-                        VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
-                    end
-                else
-                    VEHICLE.SET_VEHICLE_MOD(vehicle, 0, 0 - 1, true)
-                end
-                VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT_INDEX(vehicle, menu.get_value(PlateIndexAll))
-                if PlateNameAll == nil then
-                    VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(vehicle, RandomPlate())
-                else
-                    VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(vehicle, PlateNameAll)
-                end
-            end
-            if not STREAMING.HAS_MODEL_LOADED(hash) then
-                request_model_load(hash)
-            end
-            for k,v in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(v)
-                local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 6.5, -1.0)
-                local veh = entities.create_vehicle(hash, c, CAM.GET_FINAL_RENDERED_CAM_ROT(2).z)
-                upgrade_vehicle(veh)
-                ENTITY.SET_ENTITY_INVINCIBLE(veh, menu.get_value(ToggleGodAll))
-                VEHICLE.SET_VEHICLE_WINDOW_TINT(veh, menu.get_value(WindowTintAll))
-                RequestControlOfEntity(veh)
-                local InvincibleStatus = menu.get_value(ToggleGodAll) and "Active" or "Inactive"
-                local UpgradedCar = menu.get_value(ToggleUpgradeAll) and "Active" or "Inactive"
-                if PlateNameAll == nil then
-                    InterNotify("You have spawned: "..vehicleData[index].. " for everyone with the parameters: \n- Plate Color: "..menu.get_value(PlateIndexAll).."\n- Window Tint: "..menu.get_value(WindowTintAll).."\n- Invincible Status: "..InvincibleStatus.."\n- Upgrade Status: "..UpgradedCar)
-                else
-                    InterNotify("You have spawned: "..vehicleData[index].. " for everyone with the parameters: \n- Plate Name: "..PlateNameAll.."\n- Plate Color: "..menu.get_value(PlateIndexAll).."\n- Window Tint: "..menu.get_value(WindowTintAll).."\n- Invincible Status: "..InvincibleStatus.."\n- Upgrade Status: "..UpgradedCar)
-                end
-            end
-        end)
-
-        VehicleRootsO:action("Spawn Vehicle", {"interspawn"}, "Spawn everyone a vehicle.\nNOTE: It will applied also some modification like Plate License (name/color)", function()
-            local txt = display_onscreen_keyboard()
-            if txt == nil or txt == "" then return end
-            local hash = util.joaat(txt)
-            if not STREAMING.HAS_MODEL_LOADED(hash) then
-                request_model_load(hash)
-            end
-            local function upgrade_vehicle(vehicle)
-                if menu.get_value(ToggleUpgradeAll) == true then
-                    for i = 0,49 do
-                        local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
-                        VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
-                    end
-                else
-                    VEHICLE.SET_VEHICLE_MOD(vehicle, 0, 0 - 1, true)
-                end
-                VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT_INDEX(vehicle, menu.get_value(PlateIndexAll))
-                if PlateNameAll == nil then
-                    VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(vehicle, RandomPlate())
-                else
-                    VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(vehicle, PlateNameAll)
-                end
-            end
-            for k,v in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                if not players.is_in_interior(v) then
-                    if STREAMING.IS_MODEL_A_VEHICLE(hash) then
-                        local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(v)
-                        local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 5.0, 0.0)
-                        local vehicle = entities.create_vehicle(hash, c, 0)
-                        if menu.get_value(TogglePaintAll) == true then
-                            VEHICLE.SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(vehicle, 0, math.random(0, 255), math.random(0, 255))
-                            VEHICLE.SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(vehicle, 0, math.random(0, 255), math.random(0, 255))
-                            VEHICLE.SET_VEHICLE_XENON_LIGHT_COLOR_INDEX(vehicle, math.random(0, 255), math.random(0, 255), math.random(0, 255))
-                        end
-                        ENTITY.SET_ENTITY_INVINCIBLE(vehicle, menu.get_value(ToggleGodAll))
-                        VEHICLE.SET_VEHICLE_WINDOW_TINT(vehicle, menu.get_value(WindowTintAll))
-                        upgrade_vehicle(vehicle)
-                        RequestControlOfEntity(vehicle)
-
-                        local InvincibleStatus = menu.get_value(ToggleGodAll) and "Active" or "Inactive"
-                        local UpgradedCar = menu.get_value(ToggleUpgradeAll) and "Active" or "Inactive"
-                        local RandomPainter = menu.get_value(TogglePaintAll) and "Active" or "Inactive"
-                        if PlateNameAll == nil then
-                            InterNotify("You have spawned: "..txt.. " for everyone with the parameters: \n- Plate Color: "..menu.get_value(PlateIndexAll).."\n- Window Tint: "..menu.get_value(WindowTintAll).."\n- Invincible Status: "..InvincibleStatus.."\n- Upgrade Status: "..UpgradedCar.."\n- Random Paint: "..RandomPainter)
-                        else
-                            InterNotify("You have spawned: "..txt.. " for everyone with the parameters: \n- Plate Name: "..PlateNameAll.."\n- Plate Color: "..menu.get_value(PlateIndexAll).."\n- Window Tint: "..menu.get_value(WindowTintAll).."\n- Invincible Status: "..InvincibleStatus.."\n- Upgrade Status: "..UpgradedCar.."\n- Random Paint: "..RandomPainter)
-                        end
-                    else
-                        InterNotify("The model named: "..txt.." is not recognized, please retry later.")
-                    end  
-                end
-                InterWait()
-            end
-        end)
-
-        VehicleRootsO:text_input("Plate Name", {"interplate"}, "Apply Plate Name when summoning vehicles.\nYou are not allowed to write more than 8 characters.", function(name)
-            if name ~= "" then
-                PlateNameAll = name:sub(1, 8)
-            else
-                PlateNameAll = nil
-            end                    
-        end)
-        
-        ToggleGodAll = VehicleRootsO:toggle_loop("Toggle Invincible Vehicle", {}, "", function()end)
-        ToggleUpgradeAll = VehicleRootsO:toggle_loop("Toggle Upgrade Cars", {}, "", function()end)
-        TogglePaintAll = VehicleRootsO:toggle_loop("Toggle Random Paint", {}, "", function()end)
-        PlateIndexAll = VehicleRootsO:slider("Plate Color", {"interplc"}, "Choose Plate Color.", 0, 5, 0, 1, function()end)
-        WindowTintAll = VehicleRootsO:slider("Window Tint", {"interwt"}, "Choose Window tint Color.", 0, 6, 0, 1, function()end)
-
-    ----========================================----
-    ---            Advance Vehicles Roots
-    ---         The part of vehicle online
-    ----========================================----
-        
-        AdvancedVehicles:action("Change Plate Name", {}, "Troll all players if they are in a vehicle. Name them to make proud of Austrian Painter.\n".."NOTE: Toggle Exclude features to avoid impacted.", function()
-            local name = display_onscreen_keyboard()
-            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
-                NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
-                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                    if name ~= "" or name == nil then
-                        VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(playerVehicle, name)
-                        InterNotify("Plate changed to: "..name)
-                    else
-                        VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(playerVehicle, RandomPlate())
-                        InterNotify("Plate randomized because you don't have changed parameters.")
-                    end
-                end
-            end
-        end)
-
-        AdvancedVehicles:toggle_loop("Lock Vehicle", {}, "Troll all players if they are in a vehicle.".."\n".."Proving they can't exit their car.\n".."NOTE: Toggle Exclude features to avoid impacted.", function()
-            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
-                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
-                    VEHICLE.SET_VEHICLE_DOORS_LOCKED(playerVehicle, 4)
-                end
-            end
-        end, function()
-            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
-                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
-                    VEHICLE.SET_VEHICLE_DOORS_LOCKED(playerVehicle, 0)
-                end
-            end
-        end)
-
-        AdvancedVehicles:toggle_loop("Pink Color", {}, "I love pink color, bcz we called it before Pink menu.\n".."NOTE: Toggle Exclude features to avoid impacted.", function()
-            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
-                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
-                    VEHICLE.SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(playerVehicle, 255, 0, 255)
-                    VEHICLE.SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(playerVehicle, 255, 0, 255)
-                    VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(playerVehicle, "STAND")
-                    VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT_INDEX(playerVehicle, 5)
-                    VEHICLE.SET_VEHICLE_WINDOW_TINT(playerVehicle, 1)
-                    for i = 0, 49 do
-                        local num = VEHICLE.GET_NUM_VEHICLE_MODS(playerVehicle, i)
-                        VEHICLE.SET_VEHICLE_MOD(playerVehicle, i, num - 1, true)
-                    end
-                end
-            end
-        end)
-
-        AdvancedVehicles:toggle_loop("Cut Engine", {}, "cut completely engine for all players.\n".."NOTE: Toggle Exclude features to avoid impacted.", function()
-            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
-                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
-                    VEHICLE.SET_VEHICLE_ENGINE_ON(playerVehicle, false, true, true)
-                    VEHICLE.SET_VEHICLE_ENGINE_HEALTH(playerVehicle, -4000)
-                    VEHICLE.SET_VEHICLE_BODY_HEALTH(playerVehicle, -4000)
-                    VEHICLE.SET_VEHICLE_PETROL_TANK_HEALTH(playerVehicle, -4000)
-                    VEHICLE.SET_VEHICLE_UNDRIVEABLE(playerVehicle, true)
-                end
-            end
-        end, function()
-            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
-                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
-                    VEHICLE.SET_VEHICLE_ENGINE_ON(playerVehicle, true, true, false)
-                    VEHICLE.SET_VEHICLE_ENGINE_HEALTH(playerVehicle, 1000)
-                    VEHICLE.SET_VEHICLE_BODY_HEALTH(playerVehicle, 1000)
-                    VEHICLE.SET_VEHICLE_PETROL_TANK_HEALTH(playerVehicle, 1000)
-                    VEHICLE.SET_VEHICLE_UNDRIVEABLE(playerVehicle, false)
-                end
-            end
-        end)
-
-        AdvancedVehicles:action("Remove Player Vehicle", {}, "Remove instantly player's cars.\n".."NOTE: Toggle Exclude features to avoid impacted.", function()
-            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local player = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(player, true)
-                if PED.IS_PED_IN_VEHICLE(player, playerVehicle, false) then
-                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(playerVehicle)
-                    entities.delete_by_handle(playerVehicle)
-                end
-            end
-        end)
-
     ----===============================================----
     ---                World Parts
     ---    The part of worlds parts, useful or useless
     ----===============================================----
 
-        local plateTables = {
-            "ADOLF", 
-            "HITLER", 
-            "WAFFENSS",
-            "14",
-            "88",
-            "HIMMLER", 
-            "GOEBBELS",
-            "REICH",
-            "NIGGER",
-            "DICKLAND",
-            "39 45",
-            "1939",
-            "1945",
-            "DASREICH"
-        } 
-
-        local currentPlate = plateTables[math.random(#plateTables)]
-
-        GColors = WorldParts:toggle_loop("Made in Germany", {}, "Pray for Austrian Painter", function()
-            if menu.get_value(PinkColors) then
-                menu.set_value(PinkColors, false)
-            end
-            for k, vehicle in pairs(entities.get_all_vehicles_as_handles()) do
-                for i = 0,49 do
-                    local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
-                    VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
-                    VEHICLE.SET_VEHICLE_WINDOW_TINT(vehicle, 2)
-                    VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT_INDEX(vehicle, 5)
-                end
-                VEHICLE.SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(vehicle, 188, 0, 0)
-                VEHICLE.SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(vehicle, 188, 0, 0)
-                VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(vehicle, currentPlate)
-            end
-        end,function()
-            menu.set_value(PinkColors, false)
-        end)
 
         PinkColors = WorldParts:toggle_loop("Pink Color", {}, "Pray for Pink Menu", function()
-            if menu.get_value(GColors) then
-                menu.set_value(GColors, false)
-            end
             for k, vehicle in pairs(entities.get_all_vehicles_as_handles()) do
                 for i = 0,49 do
                     local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
@@ -3849,7 +3313,6 @@
                 VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(vehicle, "STAND")
             end
         end,function()
-            menu.set_value(GColors, false)
         end)
 
         WorldParts:toggle_loop("More Traffic City", {}, "", function()
@@ -3874,7 +3337,7 @@
            else
                MISC.REMOVE_POP_MULTIPLIER_SPHERE(pop_multiplier_id, false);
            end
-       end)
+        end)
 
         WorldParts:action("Blow up nearby vehicles", {}, "It will guaranteed burning all vehicles Specific Personal Vehicles.\n\nNOTE: It will affect players while driving and can burn, die easily.", function()
            for _, vehicle in pairs(entities.get_all_vehicles_as_handles()) do
@@ -3894,16 +3357,6 @@
             end
         end, function()
             VEHICLE.SET_VEHICLE_ENGINE_ON(entities.get_all_vehicles_as_handles(), false, true, true)
-        end)
-
-        WorldParts:action("Change Plate for nearby vehicles", {}, "Fail or not? Hitler will be proud of this.", function()
-            local txt = display_onscreen_keyboard()
-            for _, vehicle in pairs(entities.get_all_vehicles_as_handles()) do
-                if vehicle ~= entities.get_user_personal_vehicle_as_handle() then
-                    NETWORK.NETWORK_REQUEST_CONTROL_OF_ENTITY(vehicle)
-                    VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(vehicle, txt)
-                end
-            end
         end)
 
         WorldParts:action("Teleport to a high altitude", {"intertphigh"}, "Teleports you and your vehicle to a high altitude.", function()
@@ -4712,12 +4165,6 @@
             InterCmds("weather normal")
         end)
 
-        WeatherFeatures:toggle_loop("Toggle Snow", {}, "*works locally*", function()
-            SET_INT_GLOBAL(266897, 1)
-        end,function()
-            SET_INT_GLOBAL(266897, 0)
-        end)
-
         local cloud_types_name = {
             "Altostratus",
             "Cirrus",
@@ -4818,18 +4265,6 @@
         end)
 
         WeatherFeatures:toggle_loop("Remove Clouds", {"interremoveclouds"}, "*works locally*", function() MISC.UNLOAD_ALL_CLOUD_HATS() end)
-
-    ----========================================----
-    ---              Loop Parts
-    ---         The part of function parts
-    ----========================================----
-
-        util.create_thread(function()
-            while true do
-                InterWait(3000) 
-                currentPlate = plateTables[math.random(#plateTables)]
-            end
-        end)
 
     ----========================================----
     ---              Settings Parts
@@ -6195,7 +5630,7 @@
                             math.sin(math.rad(90 - angleDeg)) * math.random(-1, 1), 
                             math.cos(math.rad(angleDeg)) * math.random(-1, 1) 
                         )
-                    
+                        
                         -- Destination du missile
                         local missileDest = v3(abovePed.x + missileDirection.x, abovePed.y + missileDirection.y, abovePed.z + missileDirection.z)
                     
@@ -6349,128 +5784,36 @@
 
             local InterSpam = 88
             local TablesEntities = {"Kosatka", "Cargo Plane", "Boeing 911", "B-1B Lancer", "Rhino Tank"}
-            TrollingOptions:action_slider("Spam Entities", {}, "Spam every each entities of your choice".."\n- Kosatka\n- Cargo Plane\n- Boeing 911\n- B-1B Lancer\n- Rhino Tank", TablesEntities, function(spamType)
-                if spamType == 1 then
-                    local function upgrade_vehicle(vehicle)
-                        for i = 0, 49 do
-                            local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
-                            VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
-                        end
-                    end
-                    local function give_kosatka(pid)
-                        local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                        local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 5.0, 0.0)
-                        local hash = util.joaat("kosatka")
-                        if not STREAMING.HAS_MODEL_LOADED(hash) then
-                            request_model_load(hash)
-                        end
-                        while InterSpam >= 1 do
-                            entities.create_vehicle(hash, c, 0)
-                            InterSpam = InterSpam - 1
-                            InterWait(10)
-                        end
-                        local kosatka = entities.create_vehicle(hash, c, ENTITY.GET_ENTITY_HEADING(ped))
-                        upgrade_vehicle(kosatka)
-                    end
-                    give_kosatka(pid)
-                    InterWait()
-                elseif spamType == 2 then
-                    local function upgrade_vehicle(vehicle)
-                        for i = 0, 49 do
-                            local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
-                            VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
-                        end
-                    end
-                    local function give_cargoplane(pid)
-                        local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                        local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 5.0, 0.0)
-                        local hash = util.joaat("cargoplane")
-                        if not STREAMING.HAS_MODEL_LOADED(hash) then
-                            request_model_load(hash)
-                        end
-                        while InterSpam >= 1 do
-                            entities.create_vehicle(hash, c, 0)
-                            InterSpam = InterSpam - 1
-                            InterWait(10)
-                        end
-                        local cargoplane = entities.create_vehicle(hash, c, ENTITY.GET_ENTITY_HEADING(ped))
-                        upgrade_vehicle(cargoplane)
-                    end
-                    give_cargoplane(pid)
-                    InterWait()
-                elseif spamType == 3 then
-                    local function upgrade_vehicle(vehicle)
-                        for i = 0, 49 do
-                            local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
-                            VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
-                        end
-                    end
-                    local function give_boeing(pid)
-                        local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                        local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 5.0, 0.0)
-                        local hash = util.joaat("jet")
-                        if not STREAMING.HAS_MODEL_LOADED(hash) then
-                            request_model_load(hash)
-                        end
-                        while InterSpam >= 1 do
-                            entities.create_vehicle(hash, c, 0)
-                            InterSpam = InterSpam - 1
-                            InterWait(10)
-                        end
-                        local boeing = entities.create_vehicle(hash, c, ENTITY.GET_ENTITY_HEADING(ped))
-                        upgrade_vehicle(boeing)
-                    end
-                    give_boeing(pid)
-                    InterWait()
-                elseif spamType == 4 then
-                    local function upgrade_vehicle(vehicle)
-                        for i = 0, 49 do
-                            local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
-                            VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
-                        end
-                    end
-                    local function give_lancer(pid)
-                        local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                        local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 5.0, 0.0)
-                        local hash = util.joaat("alkonost")
-                        if not STREAMING.HAS_MODEL_LOADED(hash) then
-                            request_model_load(hash)
-                        end
-                        while InterSpam >= 1 do
-                            entities.create_vehicle(hash, c, 0)
-                            InterSpam = InterSpam - 1
-                            InterWait(10)
-                        end
-                        local lancer = entities.create_vehicle(hash, c, ENTITY.GET_ENTITY_HEADING(ped))
-                        upgrade_vehicle(lancer)
-                    end
-                    give_lancer(pid)
-                    InterWait()
-                else
-                    local function upgrade_vehicle(vehicle)
-                        for i = 0, 49 do
-                            local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
-                            VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
-                        end
-                    end
-                    local function give_leopard(pid)
-                        local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                        local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 5.0, 0.0)
-                        local hash = util.joaat("rhino")
-                        if not STREAMING.HAS_MODEL_LOADED(hash) then
-                            request_model_load(hash)
-                        end
-                        while InterSpam >= 1 do
-                            entities.create_vehicle(hash, c, 0)
-                            InterSpam = InterSpam - 1
-                            InterWait(10)
-                        end
-                        local leopard = entities.create_vehicle(hash, c, ENTITY.GET_ENTITY_HEADING(ped))
-                        upgrade_vehicle(leopard)
-                    end
-                    give_leopard(pid)
-                    InterWait()
+            TrollingOptions:action_slider("Spam Entities", {}, "Spam every each entities of your choice"..
+            "\n- Kosatka\n- Cargo Plane\n- Boeing 911\n- B-1B Lancer\n- Rhino Tank", TablesEntities, function(spamType)
+                local vehicleHashes = {
+                    util.joaat("kosatka"),
+                    util.joaat("cargoplane"),
+                    util.joaat("jet"),
+                    util.joaat("alkonost"),
+                    util.joaat("rhino")
+                }
+            
+                local hash = vehicleHashes[spamType]
+                if not STREAMING.HAS_MODEL_LOADED(hash) then
+                    request_model_load(hash)
                 end
+            
+                local ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
+                local c = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(ped, 0.0, 5.0, 0.0)
+            
+                while InterSpam >= 1 do
+                    entities.create_vehicle(hash, c, 0)
+                    InterSpam = InterSpam - 1
+                    InterWait(10)
+                end
+            
+                local vehicle = entities.create_vehicle(hash, c, ENTITY.GET_ENTITY_HEADING(ped))
+                for i = 0, 49 do
+                    local num = VEHICLE.GET_NUM_VEHICLE_MODS(vehicle, i)
+                    VEHICLE.SET_VEHICLE_MOD(vehicle, i, num - 1, true)
+                end
+                InterWait()
             end)
 
             TrollingOptions:action_slider("Send Plane", {}, "Call the Plane to send "..InterName.." to die.\n\nBOEING IS THE FASTEST PLANE EVER THAN SHITTY PLANES.", {"Boeing 747","F-16 Falcon","Antonov AN-225"}, function(select)
@@ -6498,8 +5841,10 @@
                         local boeing = entities.create_vehicle(hash, c, ENTITY.GET_ENTITY_HEADING(targetID))
                         ENTITY.SET_ENTITY_INVINCIBLE(boeing, false)
                         summon_entity_face(boeing, targetID, true)
-                        VEHICLE.SET_VEHICLE_FORWARD_SPEED(boeing, 1000.0)
-                        VEHICLE.SET_VEHICLE_MAX_SPEED(boeing, 1000.0)
+                        for i = 1, 20 do
+                            VEHICLE.SET_VEHICLE_FORWARD_SPEED(boeing, 1000.0)
+                            VEHICLE.SET_VEHICLE_MAX_SPEED(boeing, 1000.0)
+                        end
                         VEHICLE.CONTROL_LANDING_GEAR(boeing, 3)
                     end
                     if AvailableSession() then
@@ -6531,8 +5876,10 @@
                         local lazersuicide = entities.create_vehicle(hash, c, ENTITY.GET_ENTITY_HEADING(targetID))
                         ENTITY.SET_ENTITY_INVINCIBLE(lazersuicide, false)
                         summon_entity_face(lazersuicide, targetID, true)
-                        VEHICLE.SET_VEHICLE_FORWARD_SPEED(lazersuicide, 540.0)
-                        VEHICLE.SET_VEHICLE_MAX_SPEED(lazersuicide, 540.0)
+                        for i = 1, 20 do
+                            VEHICLE.SET_VEHICLE_FORWARD_SPEED(lazersuicide, 1000.0)
+                            VEHICLE.SET_VEHICLE_MAX_SPEED(lazersuicide, 1000.0)
+                        end
                         VEHICLE.CONTROL_LANDING_GEAR(lazersuicide, 3)
                     end
                     if AvailableSession() then
@@ -6568,8 +5915,10 @@
                         local cargoplane = entities.create_vehicle(hash, c, ENTITY.GET_ENTITY_HEADING(targetID))
                         ENTITY.SET_ENTITY_INVINCIBLE(cargoplane, false)
                         summon_entity_face(cargoplane, targetID, true)
-                        VEHICLE.SET_VEHICLE_FORWARD_SPEED(cargoplane, 1000.0)
-                        VEHICLE.SET_VEHICLE_MAX_SPEED(cargoplane, 1000.0)
+                        for i = 1, 20 do
+                            VEHICLE.SET_VEHICLE_FORWARD_SPEED(cargoplane, 1000.0)
+                            VEHICLE.SET_VEHICLE_MAX_SPEED(cargoplane, 1000.0)
+                        end
                         VEHICLE.CONTROL_LANDING_GEAR(cargoplane, 3)
                     end
                     if AvailableSession() then
