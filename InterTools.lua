@@ -43,7 +43,7 @@
         local int_min = -2147483647
         local int_max = 2147483647
         local STAND_VERSION = menu.get_version().version
-        local SCRIPT_VERSION = "1.76V"
+        local SCRIPT_VERSION = "1.76.1"
         local InterMenu = "InterTools v"..SCRIPT_VERSION
         local GTAO_VERSION = "1.68"
         local InterMessage = "> InterTools v"..SCRIPT_VERSION
@@ -213,6 +213,7 @@
 
         local VehicleParts = InterRoot:list("Vehicles Parts", {"intveh"})
         local Countermeasures = VehicleParts:list("Countermeasures")
+        local Escorts = VehicleParts:list("Escort Method")
         local DetectionRadar = VehicleParts:list("Detection Tools")
         local VehicleSpawnParts = VehicleParts:list("Spawn Tweaks")
         local TeslaParts = VehicleParts:list("Tesla Tools")
@@ -939,7 +940,7 @@
                 VEHICLE.SET_VEHICLE_ENGINE_ON(playerVehicle, false, true, true)
             end
         end,function()
-            VEHICLE.SET_VEHICLE_ENGINE_ON(PED.GET_VEHICLE_PED_IS_IN(player, true), true, true, false)
+            VEHICLE.SET_VEHICLE_ENGINE_ON(PED.GET_VEHICLE_PED_IS_IN(players.user_ped(), true), true, true, false)
         end)
         
         VehicleParts:slider("Opacity Vehicle", {"intveht"}, "", 0, 100, 100, 20, function(value)
@@ -1270,6 +1271,257 @@
                     InterNotify("Flares is ready to start.")
                 end
             end
+        end)
+
+    ----========================================----
+    ---              Escort Tools
+    ---     The part of escort part, survey
+    ----========================================----    
+
+    --[[
+        ONLY A PREVIEW.
+    ]]--
+        --[[
+        local EscortModels = util.joaat("Lazer")
+        local InterSquadSettings = {"Lazer","Raiju", "V-65 Molotok", "Pyro", "B-11 Strikeforce", "Seabreeze", "Howard NX-25", "Besra", "LF-22 Starling", "Rogue", "Alpha-Z1", "Mallard", "Nimbus", "Luxor Deluxe", "Mogul", "Streamer216", "Vestra", "Cuban 800", "Dodo", "Velum", "Mammatus", "Duster", "Ultralight", "F/A-18 Hornet", "F-15 Silent Eagle", "F-111A Aardvaark", "Rafale B", "F-15C Eagle", "Cargo Plane"}
+        local InterSquadNames = {"Lazer","raiju", "molotok", "pyro", "strikeforce", "seabreeze" , "howard", "besra", "starling", "rogue", "Stunt", "alphaz1", "nimbus", "luxor2", "mogul", "streamer216", "vestra", "cuban800", "dodo", "velum", "mammatus", "duster", "microlight", "fa18e", "f15s", "f111a", "rafaleb", "f15c2", "cargoplane"}
+        
+        local vehicleModelToJoaat = {
+            [621481054] = "luxor",
+            [1058115860] = "jet",
+            [368211810] = "cargoplane",
+            [2336777441] = "cargoplane2",
+            [1981688531] = "titan",
+            [165154707] = "Miljet",
+            [2176659152] = "avenger",
+            [408970549] = "avenger2",
+            [3868033424] = "avenger3",
+            [4225674290] = "avenger4",
+            [447548909] = "volatol",
+            [3929093893] = "alkonost",
+            [1077420264] = "velum2",
+            [970385471] = "hydra",
+            [4262088844] = "bombushka",
+            [1043222410] = "tula",
+            [1036591958] = "nokota",
+            [239897677] = "raiju",
+            [3650256867] = "cuban800",
+            [970356638] = "duster",
+            [2172210288] = "Stunt",
+            [2548391185] = "mammatus",
+            [2621610858] = "velum",
+            [3080461301] = "Shamal",
+            [3013282534] = "Lazer",
+            [1341619767] = "vestra",
+            [1824333165] = "besra",
+            [3393804037] = "dodo",
+            [3080673438] = "luxor2",
+            [2999939664] = "nimbus",
+            [3287439187] = "howard",
+            [2771347558] = "alphaz1",
+            [3902291871] = "seabreeze",
+            [1565978651] = "molotok",
+            [2594093022] = "starling",
+            [2531412055] = "microlight",
+            [3319621991] = "rogue",
+            [2908775872] = "pyro",
+            [3545667823] = "mogul",
+            [1692272545] = "strikeforce",
+            [191916658] = "streamer216",
+            [2696774070] = "fa18e",
+            [3965250893] = "f15s",
+            [3464453039] = "f111a",
+            [1619852539] = "rafaleb",
+            [2605445251] = "f15c2",
+        }
+
+        
+        Escorts:textslider("Plane Type", {}, "Select your type of plane...", InterSquadSettings, function (index, name)
+            local pedm = players.user_ped()
+            if PED.IS_PED_IN_ANY_PLANE(pedm) then
+                local vehicle = PED.GET_VEHICLE_PED_IS_IN(pedm, true)
+                local model = ENTITY.GET_ENTITY_MODEL(vehicle)
+                hashJet = util.joaat(vehicleModelToJoaat[model] or "default_model") -- Utilisez un modèle par défaut si nécessaire
+                InterNotify("You are inside a plane, it will be used instead of the plane you clicked on !")
+            else
+                EscortModels = util.joaat(InterSquadNames[index])
+                InterNotify(InterSquadSettings[index] .. " selected !")
+                hashJet = EscortModels
+            end
+        
+            slowPlaneOffset = (index >= 7) and 20 or 0
+            slowPlaneSpeedDecrease = (index >= 7) and 0.2 or 0
+        end)
+
+        ]]--
+
+        local hashJet
+        local slowPlaneOffset = 0
+        local slowPlaneSpeedDecrease = 0
+
+        local modelName = "lazer"
+        hashJet = util.joaat(modelName)
+        Escorts:text_input("Enter Model", {"intermodele"}, "Enter right model.", function(txtModel)
+            if txtModel ~= "" then
+                local modelHash = util.joaat(txtModel)
+                if STREAMING.IS_MODEL_A_VEHICLE(modelHash) then
+                    local vehicleClass = VEHICLE.GET_VEHICLE_CLASS_FROM_NAME(modelHash)
+                    if vehicleClass == 15 or vehicleClass == 16 then
+                        hashJet = modelHash
+                        modelName = txtModel -- Mettre à jour le nom du modèle
+                    else
+                        InterNotify("Invalid vehicle model: " .. txtModel .. ". Only aerial vehicles (planes and helicopters) are allowed.")
+                        modelName = "lazer"
+                        hashJet = util.joaat("lazer")
+                    end
+                else
+                    InterNotify("Invalid vehicle model: " .. txtModel)
+                    modelName = "lazer"
+                    hashJet = util.joaat("lazer")
+                end
+            end
+        end, modelName)
+
+        Escorts:toggle_loop("Squad Protection", {}, "", function()
+            local heading = ENTITY.GET_ENTITY_HEADING(players.user_ped())
+            local hashTarget = 1082797888 --:1082797888
+            util.request_model(hashJet)
+            util.request_model(hashTarget)
+            local aJetSpeed
+            local bJetSpeed
+            --CREATE_PED_INSIDE_VEHICLE
+            local function calculateOffsetCoords(owner, offsetX, offsetY, offsetZ)
+                return ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(owner, offsetX, offsetY, offsetZ)
+            end
+            
+            local owner = players.user_ped()
+            local PlayerJetOffset = calculateOffsetCoords(owner, 0, 0, 200)
+            local aJetOffset = calculateOffsetCoords(owner, -50, -50, 200)
+            local bJetOffset = calculateOffsetCoords(owner, 50, -50, 200)
+            local aJetAimLoc = calculateOffsetCoords(owner, -20, 0, 0)
+            local bJetAimLoc = calculateOffsetCoords(owner, 20, 0, 0)
+            local function assignPlaneMission(pilot, jet, target, attackTask)
+                TASK.TASK_PLANE_MISSION(pilot, jet, PlayerJet, target, 0, 0, 0, attackTask, 100.0, 0.0, -1.0, 5000, 5000, true)
+            end
+    
+            local function adjustJetSpeed(jet, target, offset, speedDecrease)
+                local jetLoc = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(jet, 0, 0, 0)
+                local targetLoc = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(target, 0, 0, 0)
+                local distance = MISC.GET_DISTANCE_BETWEEN_COORDS(jetLoc.x, jetLoc.y, jetLoc.z, targetLoc.x, targetLoc.y, targetLoc.z, true)
+                local speed = (distance < 40 + offset) and -0.8 - speedDecrease or 0.5 + speedDecrease
+                ENTITY.APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(jet, 1, 0, speed, 0, true, true, true, true)
+            end
+    
+            local function createAndSetupJet(hashJet, offset, heading)
+                local jet = entities.create_vehicle(hashJet, offset, heading)
+                local pilot = PED.CREATE_RANDOM_PED_AS_DRIVER(jet, true)
+                VEHICLE.SET_VEHICLE_ENGINE_ON(jet, true, true, 0)
+                VEHICLE.CONTROL_LANDING_GEAR(jet, 3)
+                VEHICLE.SET_VEHICLE_MAX_SPEED(jet, 10000.0)
+                VEHICLE.MODIFY_VEHICLE_TOP_SPEED(jet, 100.0)
+                VEHICLE.SET_VEHICLE_WINDOW_TINT(jet, 2)
+                ENTITY.SET_ENTITY_INVINCIBLE(jet, true)
+                VEHICLE.SET_VEHICLE_FORCE_AFTERBURNER(jet, true)
+                VEHICLE.SET_VEHICLE_FLIGHT_NOZZLE_POSITION_IMMEDIATE(jet, 0)
+                return jet, pilot
+            end
+            
+            local function createAndSetupTarget(hashTarget, aimLoc)
+                local target = entities.create_object(hashTarget, aimLoc)
+                ENTITY.SET_ENTITY_COLLISION(target, false, false)
+                ENTITY.SET_ENTITY_VISIBLE(target, false, false)
+                return target
+            end
+            
+            local function setupPedAsEnemy(target)
+                PED.SET_PED_AS_ENEMY(target, false)
+                PED.SET_DRIVER_AGGRESSIVENESS(target, 0.0)
+                PED.SET_PED_CONFIG_FLAG(target, 281, true)
+                PED.SET_PED_CONFIG_FLAG(target, 2, true)
+                PED.SET_PED_CONFIG_FLAG(target, 33, false)
+            end
+            
+            local pedm = players.user_ped()
+            
+            if not ENTITY.DOES_ENTITY_EXIST(PlayerJet) then
+                if PED.IS_PED_IN_ANY_PLANE(pedm) then
+                    PlayerJet = PED.GET_VEHICLE_PED_IS_IN(pedm, true)
+                    ENTITY.SET_ENTITY_COORDS_NO_OFFSET(PlayerJet, PlayerJetOffset.x, PlayerJetOffset.y, PlayerJetOffset.z, false, false, false)
+                else
+                    PlayerJet = entities.create_vehicle(hashJet, PlayerJetOffset, heading)
+                end
+                VEHICLE.SET_VEHICLE_CAN_BE_TARGETTED(PlayerJet, false)
+                VEHICLE.CONTROL_LANDING_GEAR(PlayerJet, 3)
+                VEHICLE.SET_VEHICLE_WINDOW_TINT(PlayerJet, 2)
+                ENTITY.SET_ENTITY_INVINCIBLE(PlayerJet, true)
+                PED.SET_PED_INTO_VEHICLE(owner, PlayerJet, -1)
+            
+                util.yield(1)
+                ENTITY.APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(PlayerJet, 1, 0, 100, 0, true, true, true, true)
+            
+                aTarget = createAndSetupTarget(hashTarget, aJetAimLoc)
+                bTarget = createAndSetupTarget(hashTarget, bJetAimLoc)
+            
+                JetA, PilotA = createAndSetupJet(hashJet, aJetOffset, heading)
+                JetB, PilotB = createAndSetupJet(hashJet, bJetOffset, heading)
+            
+                setupPedAsEnemy(aTarget)
+                setupPedAsEnemy(bTarget)
+            end
+    
+            set_entity_face_entity(JetA, aTarget, true)
+            set_entity_face_entity(JetB, bTarget, true)
+    
+            local aJetRealLoc = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(JetA, 0, 0, 0)
+            local bJetRealLoc = ENTITY.GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(JetB, 0, 0, 0)
+            local function calculateJetSpeed(jetRealLoc, jetAimLoc, offset, speedDecrease)
+                local distance = MISC.GET_DISTANCE_BETWEEN_COORDS(jetRealLoc.x, jetRealLoc.y, jetRealLoc.z, jetAimLoc.x, jetAimLoc.y, jetAimLoc.z, true)
+                return (distance < 40 + offset) and -0.8 - speedDecrease or 0.5 + speedDecrease
+            end
+    
+            local function setMaxSpeed(jet, speed)
+                VEHICLE.SET_VEHICLE_MAX_SPEED(jet, speed)
+                VEHICLE.MODIFY_VEHICLE_TOP_SPEED(jet, speed)
+            end
+            
+            aJetSpeed = calculateJetSpeed(aJetRealLoc, aJetAimLoc, slowPlaneOffset, slowPlaneSpeedDecrease)
+            bJetSpeed = calculateJetSpeed(bJetRealLoc, bJetAimLoc, slowPlaneOffset, slowPlaneSpeedDecrease)
+            
+            adjustJetSpeed(JetA, aTarget, slowPlaneOffset, slowPlaneSpeedDecrease)
+            adjustJetSpeed(JetB, bTarget, slowPlaneOffset, slowPlaneSpeedDecrease)
+            
+            if not PED.IS_PED_ON_FOOT(owner) then
+                local function manageJetAndTarget(jet, target, jetSpeed, aimLoc)
+                    ENTITY.APPLY_FORCE_TO_ENTITY_CENTER_OF_MASS(jet, 1, 0, jetSpeed, 0, true, true, true, true)
+                    ENTITY.SET_ENTITY_COORDS_NO_OFFSET(target, aimLoc.x, aimLoc.y, aimLoc.z, false, false, false)
+                    PED.SET_PED_AS_ENEMY(target, false)
+                    WEAPON.GIVE_DELAYED_WEAPON_TO_PED(target, 0x8818E1C9, 1, false) -- 0x8818E1C9 est l'ID de l'arme "Unarmed"
+                end
+    
+                local function syncEscortJetSpeed(jet, playerJet)
+                    local playerJetSpeed = ENTITY.GET_ENTITY_SPEED(playerJet)
+                    VEHICLE.SET_VEHICLE_FORWARD_SPEED(jet, playerJetSpeed)
+                end
+    
+                syncEscortJetSpeed(JetA, PlayerJet)
+                syncEscortJetSpeed(JetB, PlayerJet)   
+    
+                local playerJetSpeed = ENTITY.GET_ENTITY_SPEED(PlayerJet)
+                local speedMultiplier = 1500.0 -- Augmenté pour surmonter les limites
+            
+                setMaxSpeed(JetA, playerJetSpeed * speedMultiplier * 4.0)
+                setMaxSpeed(JetB, playerJetSpeed * speedMultiplier * 4.0)
+    
+                manageJetAndTarget(JetA, aTarget, aJetSpeed, aJetAimLoc)
+                manageJetAndTarget(JetB, bTarget, bJetSpeed, bJetAimLoc)
+                local attackTask = 7
+                local owner = players.user_ped()
+    
+                assignPlaneMission(PilotA, JetA, owner, attackTask)
+                assignPlaneMission(PilotB, JetB, owner, attackTask)
+            end
+        end, function()
+            deleteEntities(PlayerJet, JetA, aTarget, JetB, bTarget)
         end)
 
     ----========================================----
@@ -1604,52 +1856,36 @@
         local kick_time = 0
         DetectionRoots:toggle_loop("Auto Kick Host Token Users", {'interhostkick'}, "Kick automatically users while using \"Aggressive\", \"Sweet Spot\" or \"Handicap\" features which can be nuisible and control the entire session might resulting to destroy or block access for modders.", function()
             local commands = {"kick", "nonhostkick", "pickupkick"}
-            for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do --adding false because it will affect self while using host token.
+            for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
                 local SpoofToken = players.get_host_token_hex(pid)
-                local isSpoofToken
                 kick_time += 1
-                if string.sub(SpoofToken, 1, 4) == "FFFF" and kick_time >= 3 then
-                    kick_time += 1
-                    isSpoofToken = "Handicap"
+        
+                local function kickPlayer(spoofType)
                     for _, command in ipairs(commands) do
                         InterCmds(command..players.get_name(pid))
-                        InterNotify(players.get_name(pid).." is using "..isSpoofToken.."\nUser has been force breakup(ed).")
-                    end
-                    repeat
-                        InterWait()
-                    until pid ~= nil
-                    kick_time = 0
-                elseif string.sub(SpoofToken, 1, 4) == "0021" and kick_time >= 3 then
-                    kick_time += 1
-                    local tokenValue = tonumber(string.sub(SpoofToken, 5, 8), 16)
-                    if tokenValue and tokenValue >= 16 and tokenValue <= 37 then
-                        isSpoofToken = "Sweet Spot"
-                        for _, command in ipairs(commands) do
-                            InterCmds(command..players.get_name(pid))
-                            InterNotify(players.get_name(pid).." is using "..isSpoofToken.."\nUser has been force breakup(ed).")
-                        end
-                    end
-                    repeat
-                        InterWait()
-                    until pid ~= nil
-                    kick_time = 0
-                elseif string.sub(SpoofToken, 1, 4) == "0000" and kick_time >= 3 then
-                    kick_time += 1
-                    isSpoofToken = "Aggressive"
-                    for _, command in ipairs(commands) do
-                        InterCmds(command..players.get_name(pid))
-                        InterNotify(players.get_name(pid).." is using "..isSpoofToken.."\nUser has been force breakup(ed).")
+                        InterNotify(players.get_name(pid).." is using "..spoofType.."\nUser has been force breakup(ed).")
                     end
                     repeat
                         InterWait()
                     until pid ~= nil
                     kick_time = 0
                 end
+        
+                if string.sub(SpoofToken, 1, 4) == "FFFF" and kick_time >= 3 then
+                    kickPlayer("Handicap")
+                elseif string.sub(SpoofToken, 1, 4) == "0021" and kick_time >= 3 then
+                    local tokenValue = tonumber(string.sub(SpoofToken, 5, 8), 16)
+                    if tokenValue and tokenValue >= 16 and tokenValue <= 37 then
+                        kickPlayer("Sweet Spot")
+                    end
+                elseif string.sub(SpoofToken, 1, 4) == "0000" and kick_time >= 3 then
+                    kickPlayer("Aggressive")
+                end
             end
         end, function()
             kick_time = 0
         end)
-
+    
         local modderkick = 0
         DetectionRoots:toggle_loop("Auto Kick Modders", {"interkickmod"}, "Kick automatically modders marked as \"Modder\" or \"Attack\" (it means that a Modder is trying to crash you/kick/giving collectibles, etc...).\n\nWarning: Enable Stand User Identification will block any attempt to kick Stand Users or someone, read before to use.", function()
             local commands = {"kick", "confusionkick", "nonhostkick", "pickupkick"}
@@ -1674,12 +1910,8 @@
         DetectionRoots:divider("Related Settings for Detections")
         DetectionRoots:toggle("Toggle Stand User", {"intertogglestand"}, "Toggle (Enable/Disable) Stand User Identification to identifies you and other players.\n\nFind a new session to refresh to able to reveal Stand User or hiding.", function(on_toggle)
             local standid = InterRefBP("Online>Protections>Detections>Stand User Identification")
-            if on_toggle then
-                InterCmd(standid, "on")
-            else
-                InterCmd(standid, "off")
-            end
-        end)
+            InterCmd(standid, on_toggle and "on" or "off")
+        end)        
 
         local VehicleDetections = DetectionRoots:list("Vehicle Detection Parts")
 
@@ -1691,22 +1923,15 @@
         VehicleDetections:action("Plane System Detection", {"interradars"}, "Detect any players while using planes or jets who might be a suspect.", function()
             local players_detected = 0
             for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                if PED.IS_PED_IN_ANY_PLANE(playerPed) then
+                if PED.IS_PED_IN_ANY_PLANE(PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)) then
                     players_detected = players_detected + 1
                 end
             end
-            if players_detected > 0 then
-                local message = tostring(players_detected) .. " player"
-                if players_detected > 1 then
-                    message = message .. "s"
-                end
-                message = message .. " has been detected using planes or jets.\nRadar Status: Ready."
-                AWACSNotify(message)
-            else
-                AWACSNotify("No one is using a jet or a plane.\nTrying to verify. \nPlease wait for complete detection.")
-            end
+            local message = players_detected > 0 and (tostring(players_detected) .. " player" .. (players_detected > 1 and "s" or "") .. " has been detected using planes or jets.\nRadar Status: Ready.") 
+            or "No one is using a jet or a plane.\nTrying to verify. \nPlease wait for complete detection."
+            AWACSNotify(message)
         end)
+    
 
         VehicleDetections:action("Oppressor Detection", {"interopp2"}, "Detect any players while using Oppressor MK II.", function()
             local players_detected = 0
@@ -1745,32 +1970,31 @@
         end)
 
         VehicleDetections:toggle_loop("Remove Armored Vehicles", {"interarmoreddelete"}, "Kick any player while using armored vehicles (includes Planes)", function()
+            local armoredVehicleHashes = {
+                util.joaat("nightshark"),
+                util.joaat("halftrack"),
+                util.joaat("hauler2"),
+                util.joaat("rhino"),
+                util.joaat("khanjali"),
+                util.joaat("avenger"),
+                util.joaat("barrage"),
+                util.joaat("apc"),
+                util.joaat("polgauntlet"),
+                util.joaat("police5")
+            }
+        
             for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                local playerPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid)
-                local vehicle = PED.GET_VEHICLE_PED_IS_IN(playerPed, false)
-
-                local tables = {
-                    "nightshark",
-                    "halftrack",
-                    "hauler2",
-                    "rhino",
-                    "khanjali",
-                    "avenger",
-                    "barrage",
-                    "apc",
-                    "polgauntlet",
-                    "police5"
-                }
-
-                for _, model in pairs(tables) do
-                    local hash = util.joaat(model)
+                local vehicle = PED.GET_VEHICLE_PED_IS_IN(PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(pid), false)
+                for _, hash in pairs(armoredVehicleHashes) do
                     if VEHICLE.IS_VEHICLE_MODEL(vehicle, hash) then
-                        InterCmds("vehkick"..players.get_name(pid))
+                        RequestControlOfEntity(vehicle)
+                        InterCmds("vehkick" .. players.get_name(pid))
                         VEHICLE.SET_VEHICLE_DOORS_LOCKED_FOR_ALL_PLAYERS(vehicle, true)
+                        break  -- Stop checking other models once a match is found
                     end
                 end
             end
-        end)
+        end)        
 
         VehicleDetections:toggle_loop("Remove Surface-to-Air Missile", {"intersamdelete"}, "Kick any player while using Surface-to-Air Missile.", function()
             for _, pid in pairs(players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
@@ -2826,97 +3050,57 @@
         end)
 
         TeleportsRoots:action_slider("Teleport Type", {}, "Different type of teleportation:\n- Near Location\n- Uniform (Teleporting from Random Apartment)\n- Mixed (Teleporting from Random Apartment but distributed throughout the map)", {"Near Location", "Uniform", "Mixed"}, function(tpSelect)
-            if tpSelect == 1 then
-                for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                    if AvailableSession() and players.get_name(pid) ~= "UndiscoveredPlayer" then
-                        InterCmds("aptme"..players.get_name(pid))
-                    end
-                end
-            elseif tpSelect == 2 then
-                local APTRandT = rand(1, 114)
-                for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                    if AvailableSession() and players.get_name(pid) ~= "UndiscoveredPlayer" then
-                        InterCmds("apt"..APTRandT..players.get_name(pid))
-                    end
-                end
-            else
-                local assignedApartments = {}
-                for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
-                    if AvailableSession() and players.get_name(pid) ~= "UndiscoveredPlayer" then
-                        local APTRandom
+            local assignedApartments = {}
+            local APTRandT = tpSelect == 2 and rand(1, 114) or nil
+        
+            for _, pid in pairs(players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)) do
+                if AvailableSession() and players.get_name(pid) ~= "UndiscoveredPlayer" then
+                    local aptNumber
+                    if tpSelect == 1 then
+                        aptNumber = "me"
+                    elseif tpSelect == 2 then
+                        aptNumber = APTRandT
+                    else  -- tpSelect == 3 for "Mixed"
                         repeat
-                            APTRandom = rand(1, 114)
-                        until not assignedApartments[APTRandom]
-                        assignedApartments[APTRandom] = true
-                        InterCmds("apt"..APTRandom..players.get_name(pid))
+                            aptNumber = rand(1, 114)
+                        until not assignedApartments[aptNumber]
+                        assignedApartments[aptNumber] = true
                     end
+                    InterCmds("apt" .. aptNumber .. players.get_name(pid))
                 end
             end
         end)
 
         TeleportsRoots:divider("Advanced")
-
         RandomTeleportCustom = TeleportsRoots:toggle_loop("Random Teleport", {}, "Without Random Teleport => Apartment Type\nWith Random Teleport => randomly generated between 1 and 114.", function()end)
         TeleportCustom = TeleportsRoots:toggle_loop("Toggle Teleport User", {}, "", function()end)
         TeleportsRoots:action("Enter Name", {"interteleportuser"}, "", function()
-            if menu.get_value(TeleportCustom) == true then
-                local textInput = display_onscreen_keyboard()
-                local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                if menu.get_value(RandomTeleportCustom) == true then
-                    if EToggleSelf then
-                        for _, pid in ipairs(playerList) do
-                            if pid == players.user() and textInput == players.get_name(pid) then
-                                InterNotify("You cannot teleport yourself.")
-                                return
-                            end
-                        end
-                    end
-                    if textInput == nil or textInput == "" then return
-                    else
-                        local telported = false
-                        for _, pid in ipairs(playerList) do
-                            local playerName = players.get_name(pid)
-                            if playerName == textInput then
-                                telported = true
-                                InterNotify("Teleport sent to "..textInput.." randomly.")
-                                InterCmds("apt"..math.random(1, 114)..playerName)
-                                break
-                            end
-                        end
-                        if not telported then
-                            InterNotify("We cannot recognize "..textInput..".")
-                        end
-                    end
-                else
-                    if EToggleSelf then
-                        for _, pid in ipairs(playerList) do
-                            if pid == players.user() and textInput == players.get_name(pid) then
-                                InterNotify("You cannot teleport yourself.")
-                                return
-                            end
-                        end
-                    end
-                    if textInput == nil or textInput == "" then return
-                    else
-                        local telported = false
-                        for _, pid in ipairs(playerList) do
-                            local playerName = players.get_name(pid)
-                            if playerName == textInput then
-                                telported = true
-                                InterNotify("Teleport sent to "..textInput..".")
-                                InterCmds("apt"..appartType..playerName)
-                                break
-                            end
-                        end
-                        if not telported then
-                            InterNotify("We cannot recognize "..textInput..".")
-                        end
-                    end
-                end
-            else
+            if not menu.get_value(TeleportCustom) then
                 InterNotify("I'm sorry, please enable 'Toggle Teleport User'.")
+                return
+            end
+        
+            local textInput = display_onscreen_keyboard()
+            if textInput == nil or textInput == "" then return end
+            if EToggleSelf and textInput == players.get_name(players.user()) then InterNotify("You cannot teleport yourself.") return end
+            local playerList = players.list(EToggleSelf, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+            local teleported = false
+            for _, pid in ipairs(playerList) do
+                local playerName = players.get_name(pid)
+                if playerName == textInput then
+                    teleported = true
+                    local aptCommand = "apt" .. (menu.get_value(RandomTeleportCustom) and math.random(1, 114) or appartType) .. playerName
+                    InterCmds(aptCommand)
+                    InterNotify("Teleport sent to "..textInput..(menu.get_value(RandomTeleportCustom) and " randomly." or "."))
+                    break
+                end
+            end
+        
+            if not teleported then
+                InterNotify("We cannot recognize "..textInput..".")
             end
         end)
+        
 
     ----========================================----
     ---              Wanted Parts
@@ -3063,218 +3247,38 @@
             end
         end)
 
-        SessionRoots:action_slider("Random Elimination", {}, "Different type of eliminations:\n- Explosive\n- Silent Mode\n- Gas Mode\n- Randomize\n- Gas Randomize\n- Silent Random\n- Russian Roulette", {"Explosive", "Silent Mode", "Gas Mode", "Randomize", "Gas Randomize", "Silent Random", "Russian Roulette"}, function(randselect)
-            if randselect == 1 then -- Explosive
-                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                if #playerList > 0 then
-                    local randomIndex = math.random(#playerList)
-                    local playerId = playerList[randomIndex]
-                    local playerName = players.get_name(playerId)
-                    if not PLAYER.IS_PLAYER_DEAD(playerId) then
-                        if not players.is_in_interior(playerId) and not players.is_godmode(playerId) then
-                            local pos = players.get_position(playerId)
-                            pos.z = pos.z - 1.0
-                            InterNotify("Random player name targeted kill: "..playerName)
-                            for i = 0, 5 do
-                                FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 34, 1, true, false, 0.0, false)
-                            end
-                            InterWait(100)
-                            for i = 0, 10 do
-                                FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 34, 1, true, false, 0.0, false)
-                            end
-                        else
-                            return
-                        end
-                    end
-                else
-                    InterNotify("No players are currently in the session.")
-                end
-            elseif randselect == 2 then -- Silent Kill
-                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                if #playerList > 0 then
-                    local randomIndex = math.random(#playerList)
-                    local playerId = playerList[randomIndex]
-                    local playerName = players.get_name(playerId)
-                    if not PLAYER.IS_PLAYER_DEAD(playerId) then
-                        if not players.is_in_interior(playerId) and not players.is_godmode(playerId) then
-                            local pos = players.get_position(playerId)
-                            pos.z = pos.z - 1.0
-                            InterNotify("Random player name targeted kill: "..playerName)
-                            for i = 0, 5 do
-                                FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 34, 1, false, true, 0.0, false)
-                            end
-                            InterWait(100)
-                            for i = 0, 10 do
-                                FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 34, 1, false, true, 0.0, false)
-                            end
-                        else
-                            return
-                        end
-                    end
-                else
-                    InterNotify("No players are currently in the session.")
-                end
-            elseif randselect == 3 then -- Gas Mode
-                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                if #playerList > 0 then
-                    local randomIndex = math.random(#playerList)
-                    local playerId = playerList[randomIndex]
-                    local playerName = players.get_name(playerId)
-                    if not PLAYER.IS_PLAYER_DEAD(playerId) then
-                        if not players.is_in_interior(playerId) and not players.is_godmode(playerId) then
-                            local pos = players.get_position(playerId)
-                            pos.z = pos.z - 1.0
-                            InterNotify("Random player name targeted kill: "..playerName)
-                            for i = 0, 5 do
-                                FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 48, 1, true, false, 0.0, false)
-                            end
-                            InterWait(100)
-                            for i = 0, 10 do
-                                FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 48, 1, true, false, 0.0, false)
-                            end
-                        else
-                            return
-                        end
-                    end
-                else
-                    InterNotify("No players are currently in the session.")
-                end
-            elseif randselect == 4 then -- Randomize Explosion
-                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                if #playerList > 0 then
-                    local randomIndex = math.random(#playerList)
-                    local playerId = playerList[randomIndex]
-                    local playerName = players.get_name(playerId)
-                    if not PLAYER.IS_PLAYER_DEAD(playerId) then
-                        if AvailableSession() and not players.is_in_interior(playerId) and not players.is_godmode(playerId) then
-                            local pos = players.get_position(playerId)
-                            pos.z = pos.z - 1.0
-                            local randomPlayerIndex = math.random(#playerList)
-                            local randomPlayerId = playerList[randomPlayerIndex]
-                            local randomPlayerName = players.get_name(randomPlayerId)
-                            local RandomPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(randomPlayerId)
-                            
-                            if randomPlayerId ~= playerId then
-                                InterNotify("Random player killer: "..randomPlayerName.."\nVictim target: "..playerName)
-                            else
-                                InterNotify(playerName.." eliminated themselves.")
-                            end
-                            for i = 0, 5 do
-                                FIRE.ADD_OWNED_EXPLOSION(RandomPed, pos.x, pos.y, pos.z, 34, 1, true, false, 0.0, false)
-                            end
-                            InterWait(100)
-                            for i = 0, 10 do
-                                FIRE.ADD_OWNED_EXPLOSION(RandomPed, pos.x, pos.y, pos.z, 34, 1, true, false, 0.0, false)
-                            end
-                        else
-                            return
-                        end
-                    end
-                else
-                    InterNotify("No players are currently in the session.")
-                end
-            elseif randselect == 5 then -- Randomize Gas
-                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                if #playerList > 0 then
-                    local randomIndex = math.random(#playerList)
-                    local playerId = playerList[randomIndex]
-                    local playerName = players.get_name(playerId)
-                    if not PLAYER.IS_PLAYER_DEAD(playerId) then
-                        if AvailableSession() and not players.is_in_interior(playerId) and not players.is_godmode(playerId) then
-                            local pos = players.get_position(playerId)
-                            pos.z = pos.z - 1.0
-                            local randomPlayerIndex = math.random(#playerList)
-                            local randomPlayerId = playerList[randomPlayerIndex]
-                            local randomPlayerName = players.get_name(randomPlayerId)
-                            local RandomPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(randomPlayerId)
-                            
-                            if randomPlayerId ~= playerId then
-                                InterNotify("Random player killer: "..randomPlayerName.."\nVictim target: "..playerName)
-                            else
-                                InterNotify(playerName.." eliminated themselves.")
-                            end
-                            for i = 0, 5 do
-                                FIRE.ADD_OWNED_EXPLOSION(RandomPed, pos.x, pos.y, pos.z, 48, 1, true, false, 0.0, false)
-                            end
-                            InterWait(100)
-                            for i = 0, 10 do
-                                FIRE.ADD_OWNED_EXPLOSION(RandomPed, pos.x, pos.y, pos.z, 48, 1, true, false, 0.0, false)
-                            end
-                        else
-                            return
-                        end
-                    end
-                else
-                    InterNotify("No players are currently in the session.")
-                end
-            elseif randselect == 6 then -- Silent Kill Random
-                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                if #playerList > 0 then
-                    local randomIndex = math.random(#playerList)
-                    local playerId = playerList[randomIndex]
-                    local playerName = players.get_name(playerId)
-                    if not PLAYER.IS_PLAYER_DEAD(playerId) then
-                        if AvailableSession() and not players.is_in_interior(playerId) and not players.is_godmode(playerId) and not players.is_marked_as_modder(playerId) then
-                            local pos = players.get_position(playerId)
-                            pos.z = pos.z - 1.0
-                            local randomPlayerIndex = math.random(#playerList)
-                            local randomPlayerId = playerList[randomPlayerIndex]
-                            local randomPlayerName = players.get_name(randomPlayerId)
-                            local RandomPed = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(randomPlayerId)
-                            
-                            if randomPlayerId ~= playerId then
-                                InterNotify("Random player killer: "..randomPlayerName.."\nVictim target: "..playerName)
-                            else
-                                InterNotify(playerName.." eliminated themselves.")
-                            end
-                            for i = 0, 5 do
-                                FIRE.ADD_OWNED_EXPLOSION(RandomPed, pos.x, pos.y, pos.z, 34, 1, false, true, 0.0, false)
-                            end
-                            InterWait(100)
-                            for i = 0, 10 do
-                                FIRE.ADD_OWNED_EXPLOSION(RandomPed, pos.x, pos.y, pos.z, 34, 1, false, true, 0.0, false)
-                            end
-                        else
-                            return
-                        end
-                    end
-                else
-                    InterNotify("No players are currently in the session.")
-                end
-            else
-                local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
-                if #playerList > 0 then
-                    local randomIndex = math.random(#playerList)
-                    local playerId = playerList[randomIndex]
-                    if not PLAYER.IS_PLAYER_DEAD(playerId) and playerId ~= PLAYER.PLAYER_ID() then
-                        local playerName = players.get_name(playerId)
-                        -- Simulating the survival chance using a random number from 1 to 6
-                        local survivalChance = math.random(6)
-                        if not players.is_in_interior(playerId) and not players.is_godmode(playerId) then
-                            local pos = players.get_position(playerId)
-                            pos.z = pos.z - 1.0
-                            if survivalChance == 1 then
-                                InterNotify(playerName.." survived the Russian Roulette.")
-                            else
-                                InterNotify(playerName.." did not survive the Russian Roulette.")
-                                -- Triggering explosions to simulate elimination
-                                for i = 0, 5 do
-                                    FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 34, 1, false, true, 0.0, false)
-                                end
-                                InterWait(100)
-                                for i = 0, 10 do
-                                    FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, 34, 1, false, true, 0.0, false)
-                                end
-                            end
-                        else
-                            return
-                        end
-                    end
-                else
-                    InterNotify("No players are currently in the session.")
-                end
+        SessionRoots:action_slider("Random Elimination", {}, "Different type of eliminations (You just got eliminated someone):\n- Explosive\n- Silent Mode\n- Gas Mode\n- Randomize\n- Gas Randomize\n- Silent Random\n- Russian Roulette", {"Explosive", "Silent Mode", "Gas Mode", "Randomize", "Gas Randomize", "Silent Random", "Russian Roulette"}, function(randselect)
+            local playerList = players.list(false, EToggleFriend, EToggleStrangers, EToggleCrew, EToggleOrg)
+            if #playerList == 0 then
+                InterNotify("No players are currently in the session.")
+                return
             end
-        end)
+        
+            local randomIndex = math.random(#playerList)
+            local playerId = playerList[randomIndex]
+            local playerName = players.get_name(playerId)
+        
+            if PLAYER.IS_PLAYER_DEAD(playerId) or players.is_in_interior(playerId) or players.is_godmode(playerId) then
+                return
+            end
+        
+            local pos = players.get_position(playerId)
+            pos.z = pos.z - 1.0
+        
+            local explosionType = (randselect == 1 and 34) or (randselect == 3 and 48) or (randselect == 6 and 34) or 34
+            local visible = (randselect == 2 or randselect == 6) and false or true
+            local audible = (randselect == 2 or randselect == 6) and true or false
+            local killerPed = (randselect == 4 or randselect == 5 or randselect == 6) and PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(randomIndex) or players.user_ped()
+        
+            InterNotify("Random player name targeted kill: "..playerName)
+            for i = 0, 5 do
+                FIRE.ADD_OWNED_EXPLOSION(killerPed, pos.x, pos.y, pos.z, explosionType, 1, visible, audible, 0.0, false)
+            end
+            InterWait(100)
+            for i = 0, 10 do
+                FIRE.ADD_OWNED_EXPLOSION(killerPed, pos.x, pos.y, pos.z, explosionType, 1, visible, audible, 0.0, false)
+            end
+        end)        
 
     ----===============================================----
     ---                World Parts
@@ -3342,19 +3346,27 @@
         end)
 
         WorldParts:action("Teleport to a high altitude", {"intertphigh"}, "Teleports you and your vehicle to a high altitude.", function()
-           local ped = players.user_ped()
-           local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(ped, true)
-           local coords
-           if PED.IS_PED_IN_VEHICLE(ped, playerVehicle, false) then
-                if playerVehicle ~= 0 then 
-                    coords = ENTITY.GET_ENTITY_COORDS(playerVehicle)
-                    ENTITY.SET_ENTITY_COORDS_NO_OFFSET(playerVehicle, coords.x, coords.y, 2000.0, false, false, false)
-                    ENTITY.SET_ENTITY_COORDS_NO_OFFSET(ped, coords.x, coords.y, 2000.0, false, false, false)
-                    TASK.TASK_ENTER_VEHICLE(ped, playerVehicle, 1, -1, 1.0, 1, 0)
+            local ped = players.user_ped()
+            local playerVehicle = PED.GET_VEHICLE_PED_IS_IN(ped, false)
+            local coords = ENTITY.GET_ENTITY_COORDS((playerVehicle ~= 0 and playerVehicle) or ped)
+            local rotation = ENTITY.GET_ENTITY_ROTATION((playerVehicle ~= 0 and playerVehicle) or ped)
+            coords.z = 2000.0
+        
+            if playerVehicle ~= 0 then
+                local seatIndex = -2
+                for i = -1, VEHICLE.GET_VEHICLE_MAX_NUMBER_OF_PASSENGERS(playerVehicle) - 1 do
+                    if VEHICLE.GET_PED_IN_VEHICLE_SEAT(playerVehicle, i) == ped then
+                        seatIndex = i
+                        break
+                    end
+                end
+        
+                ENTITY.SET_ENTITY_COORDS_NO_OFFSET(playerVehicle, coords.x, coords.y, coords.z, false, false, false)
+                ENTITY.SET_ENTITY_ROTATION(playerVehicle, rotation.x, rotation.y, rotation.z, 2, true)
+                if seatIndex ~= -2 then
+                    TASK.TASK_WARP_PED_INTO_VEHICLE(ped, playerVehicle, seatIndex)
                 end
             else
-                coords = ENTITY.GET_ENTITY_COORDS(ped)
-                coords.z = 2000.0
                 ENTITY.SET_ENTITY_COORDS_NO_OFFSET(ped, coords.x, coords.y, coords.z, false, false, false)
             end
         end)
