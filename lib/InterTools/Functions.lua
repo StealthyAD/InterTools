@@ -754,6 +754,25 @@
                 util.toast(content)
             end
         end
+
+        function set_entity_face_entity(entity, target, usePitch)
+            local pos1 = ENTITY.GET_ENTITY_COORDS(entity, false)
+            local pos2 = ENTITY.GET_ENTITY_COORDS(target, false)
+            local rel = v3.new(pos2)
+            rel:sub(pos1)
+            local rot = rel:toRot()
+            if not usePitch then
+                ENTITY.SET_ENTITY_HEADING(entity, rot.z)
+            else
+                ENTITY.SET_ENTITY_ROTATION(entity, rot.x, rot.y, rot.z, 2, 0)
+            end
+        end
+
+        function deleteEntities(...)
+            for _, entity in ipairs({...}) do
+                entities.delete(entity)
+            end
+        end
     
         object_uses = 0
         function mod_uses(type, incr)
